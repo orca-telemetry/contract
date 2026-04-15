@@ -1,4 +1,4 @@
-# Interface
+# Contract
 
 Protobuf definitions and auto-generated gRPC stubs for the Orca distributed
 processing system. This repo is the source of truth for service contracts across

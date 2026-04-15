@@ -4,7 +4,7 @@
 // - protoc             v3.21.12
 // source: service.proto
 
-package _go
+package contract
 
 import (
 	context "context"
