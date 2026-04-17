@@ -729,7 +729,18 @@ type Algorithm struct {
 	// rather than introspected, to allow for validation
 	ResultType ResultType `protobuf:"varint,5,opt,name=result_type,json=resultType,proto3,enum=ResultType" json:"result_type,omitempty"`
 	// A freeform description of the algorithm
-	Description   string `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	Description string `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	// A lookback field that specifies whether this algorithm
+	// requires past results of itself.
+	//
+	// The presence of past results is non-blocking. If no past
+	// results are found, the algorithm will still run
+	//
+	// Types that are valid to be assigned to Lookback:
+	//
+	//	*Algorithm_LookbackNum
+	//	*Algorithm_LookbackTimeDelta
+	Lookback      isAlgorithm_Lookback `protobuf_oneof:"lookback"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -805,6 +816,49 @@ func (x *Algorithm) GetDescription() string {
 	}
 	return ""
 }
+
+func (x *Algorithm) GetLookback() isAlgorithm_Lookback {
+	if x != nil {
+		return x.Lookback
+	}
+	return nil
+}
+
+func (x *Algorithm) GetLookbackNum() uint32 {
+	if x != nil {
+		if x, ok := x.Lookback.(*Algorithm_LookbackNum); ok {
+			return x.LookbackNum
+		}
+	}
+	return 0
+}
+
+func (x *Algorithm) GetLookbackTimeDelta() uint64 {
+	if x != nil {
+		if x, ok := x.Lookback.(*Algorithm_LookbackTimeDelta); ok {
+			return x.LookbackTimeDelta
+		}
+	}
+	return 0
+}
+
+type isAlgorithm_Lookback interface {
+	isAlgorithm_Lookback()
+}
+
+type Algorithm_LookbackNum struct {
+	// Number of past results to depend on (if at all)
+	LookbackNum uint32 `protobuf:"varint,7,opt,name=lookback_num,json=lookbackNum,proto3,oneof"`
+}
+
+type Algorithm_LookbackTimeDelta struct {
+	// Timeframe of past results to depend on (in nanoseconds)
+	LookbackTimeDelta uint64 `protobuf:"varint,8,opt,name=lookback_time_delta,json=lookbackTimeDelta,proto3,oneof"`
+}
+
+func (*Algorithm_LookbackNum) isAlgorithm_Lookback() {}
+
+func (*Algorithm_LookbackTimeDelta) isAlgorithm_Lookback() {}
 
 // Container for array of float values
 type FloatArray struct {
@@ -1754,7 +1808,7 @@ const file_service_proto_rawDesc = "" +
 	"\x11processor_runtime\x18\x04 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x10processorRuntime\x12#\n" +
 	"\flookback_num\x18\x05 \x01(\rH\x00R\vlookbackNum\x120\n" +
 	"\x13lookback_time_delta\x18\x06 \x01(\x04H\x00R\x11lookbackTimeDeltaB\x11\n" +
-	"\blookback\x12\x05\xbaH\x02\b\x00\"\x9e\x02\n" +
+	"\blookback\x12\x05\xbaH\x02\b\x00\"\x88\x03\n" +
 	"\tAlgorithm\x12\x1a\n" +
 	"\x04name\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12 \n" +
 	"\aversion\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\aversion\x124\n" +
@@ -1763,7 +1817,10 @@ const file_service_proto_rawDesc = "" +
 	"\fdependencies\x18\x04 \x03(\v2\x14.AlgorithmDependencyR\fdependencies\x124\n" +
 	"\vresult_type\x18\x05 \x01(\x0e2\v.ResultTypeB\x06\xbaH\x03\xc8\x01\x01R\n" +
 	"resultType\x12-\n" +
-	"\vdescription\x18\x06 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xe8\aR\vdescription\"$\n" +
+	"\vdescription\x18\x06 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xe8\aR\vdescription\x12#\n" +
+	"\flookback_num\x18\a \x01(\rH\x00R\vlookbackNum\x120\n" +
+	"\x13lookback_time_delta\x18\b \x01(\x04H\x00R\x11lookbackTimeDeltaB\x11\n" +
+	"\blookback\x12\x05\xbaH\x02\b\x00\"$\n" +
 	"\n" +
 	"FloatArray\x12\x16\n" +
 	"\x06values\x18\x01 \x03(\x02R\x06values\"\x81\x02\n" +
@@ -1952,6 +2009,10 @@ func file_service_proto_init() {
 	file_service_proto_msgTypes[5].OneofWrappers = []any{
 		(*AlgorithmDependency_LookbackNum)(nil),
 		(*AlgorithmDependency_LookbackTimeDelta)(nil),
+	}
+	file_service_proto_msgTypes[6].OneofWrappers = []any{
+		(*Algorithm_LookbackNum)(nil),
+		(*Algorithm_LookbackTimeDelta)(nil),
 	}
 	file_service_proto_msgTypes[8].OneofWrappers = []any{
 		(*Result_SingleValue)(nil),
