@@ -360,7 +360,24 @@ export interface Algorithm {
     | ResultType
     | undefined;
   /** A freeform description of the algorithm */
-  description?: string | undefined;
+  description?:
+    | string
+    | undefined;
+  /**
+   * A lookback field that specifies whether this algorithm
+   * requires past results of itself.
+   *
+   * The presence of past results is non-blocking. If no past
+   * results are found, the algorithm will still run>
+   */
+  lookback?:
+    | //
+    /** Number of past results to depend on (if at all) */
+    { $case: "lookbackNum"; value: number }
+    | //
+    /** Timeframe of past results to depend on (in nanoseconds) */
+    { $case: "lookbackTimeDelta"; value: string }
+    | undefined;
 }
 
 /** Container for array of float values */
@@ -457,7 +474,11 @@ export interface ExecuteAlgorithm {
     | Algorithm
     | undefined;
   /** The results of a dependent algorithm */
-  dependencies?: AlgorithmDependencyResult[] | undefined;
+  dependencies?:
+    | AlgorithmDependencyResult[]
+    | undefined;
+  /** The past results of the algorithm as per "selfLookback" */
+  selfResults?: AlgorithmDependencyResultRow[] | undefined;
 }
 
 /**
@@ -1272,7 +1293,15 @@ export const AlgorithmDependency: MessageFns<AlgorithmDependency> = {
 };
 
 function createBaseAlgorithm(): Algorithm {
-  return { name: "", version: "", windowType: undefined, dependencies: [], resultType: 0, description: "" };
+  return {
+    name: "",
+    version: "",
+    windowType: undefined,
+    dependencies: [],
+    resultType: 0,
+    description: "",
+    lookback: undefined,
+  };
 }
 
 export const Algorithm: MessageFns<Algorithm> = {
@@ -1296,6 +1325,14 @@ export const Algorithm: MessageFns<Algorithm> = {
     }
     if (message.description !== undefined && message.description !== "") {
       writer.uint32(50).string(message.description);
+    }
+    switch (message.lookback?.$case) {
+      case "lookbackNum":
+        writer.uint32(56).uint32(message.lookback.value);
+        break;
+      case "lookbackTimeDelta":
+        writer.uint32(64).uint64(message.lookback.value);
+        break;
     }
     return writer;
   },
@@ -1358,6 +1395,22 @@ export const Algorithm: MessageFns<Algorithm> = {
           message.description = reader.string();
           continue;
         }
+        case 7: {
+          if (tag !== 56) {
+            break;
+          }
+
+          message.lookback = { $case: "lookbackNum", value: reader.uint32() };
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.lookback = { $case: "lookbackTimeDelta", value: reader.uint64().toString() };
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1385,6 +1438,15 @@ export const Algorithm: MessageFns<Algorithm> = {
         ? resultTypeFromJSON(object.result_type)
         : 0,
       description: isSet(object.description) ? globalThis.String(object.description) : "",
+      lookback: isSet(object.lookbackNum)
+        ? { $case: "lookbackNum", value: globalThis.Number(object.lookbackNum) }
+        : isSet(object.lookback_num)
+        ? { $case: "lookbackNum", value: globalThis.Number(object.lookback_num) }
+        : isSet(object.lookbackTimeDelta)
+        ? { $case: "lookbackTimeDelta", value: globalThis.String(object.lookbackTimeDelta) }
+        : isSet(object.lookback_time_delta)
+        ? { $case: "lookbackTimeDelta", value: globalThis.String(object.lookback_time_delta) }
+        : undefined,
     };
   },
 
@@ -1408,6 +1470,11 @@ export const Algorithm: MessageFns<Algorithm> = {
     if (message.description !== undefined && message.description !== "") {
       obj.description = message.description;
     }
+    if (message.lookback?.$case === "lookbackNum") {
+      obj.lookbackNum = Math.round(message.lookback.value);
+    } else if (message.lookback?.$case === "lookbackTimeDelta") {
+      obj.lookbackTimeDelta = message.lookback.value;
+    }
     return obj;
   },
 
@@ -1424,6 +1491,20 @@ export const Algorithm: MessageFns<Algorithm> = {
     message.dependencies = object.dependencies?.map((e) => AlgorithmDependency.fromPartial(e)) || [];
     message.resultType = object.resultType ?? 0;
     message.description = object.description ?? "";
+    switch (object.lookback?.$case) {
+      case "lookbackNum": {
+        if (object.lookback?.value !== undefined && object.lookback?.value !== null) {
+          message.lookback = { $case: "lookbackNum", value: object.lookback.value };
+        }
+        break;
+      }
+      case "lookbackTimeDelta": {
+        if (object.lookback?.value !== undefined && object.lookback?.value !== null) {
+          message.lookback = { $case: "lookbackTimeDelta", value: object.lookback.value };
+        }
+        break;
+      }
+    }
     return message;
   },
 };
@@ -1960,7 +2041,7 @@ export const AlgorithmDependencyResult: MessageFns<AlgorithmDependencyResult> = 
 };
 
 function createBaseExecuteAlgorithm(): ExecuteAlgorithm {
-  return { algorithm: undefined, dependencies: [] };
+  return { algorithm: undefined, dependencies: [], selfResults: [] };
 }
 
 export const ExecuteAlgorithm: MessageFns<ExecuteAlgorithm> = {
@@ -1971,6 +2052,11 @@ export const ExecuteAlgorithm: MessageFns<ExecuteAlgorithm> = {
     if (message.dependencies !== undefined && message.dependencies.length !== 0) {
       for (const v of message.dependencies) {
         AlgorithmDependencyResult.encode(v!, writer.uint32(18).fork()).join();
+      }
+    }
+    if (message.selfResults !== undefined && message.selfResults.length !== 0) {
+      for (const v of message.selfResults) {
+        AlgorithmDependencyResultRow.encode(v!, writer.uint32(26).fork()).join();
       }
     }
     return writer;
@@ -2002,6 +2088,17 @@ export const ExecuteAlgorithm: MessageFns<ExecuteAlgorithm> = {
           }
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          const el = AlgorithmDependencyResultRow.decode(reader, reader.uint32());
+          if (el !== undefined) {
+            message.selfResults!.push(el);
+          }
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2017,6 +2114,9 @@ export const ExecuteAlgorithm: MessageFns<ExecuteAlgorithm> = {
       dependencies: globalThis.Array.isArray(object?.dependencies)
         ? object.dependencies.map((e: any) => AlgorithmDependencyResult.fromJSON(e))
         : [],
+      selfResults: globalThis.Array.isArray(object?.selfResults)
+        ? object.selfResults.map((e: any) => AlgorithmDependencyResultRow.fromJSON(e))
+        : [],
     };
   },
 
@@ -2027,6 +2127,9 @@ export const ExecuteAlgorithm: MessageFns<ExecuteAlgorithm> = {
     }
     if (message.dependencies?.length) {
       obj.dependencies = message.dependencies.map((e) => AlgorithmDependencyResult.toJSON(e));
+    }
+    if (message.selfResults?.length) {
+      obj.selfResults = message.selfResults.map((e) => AlgorithmDependencyResultRow.toJSON(e));
     }
     return obj;
   },
@@ -2040,6 +2143,7 @@ export const ExecuteAlgorithm: MessageFns<ExecuteAlgorithm> = {
       ? Algorithm.fromPartial(object.algorithm)
       : undefined;
     message.dependencies = object.dependencies?.map((e) => AlgorithmDependencyResult.fromPartial(e)) || [];
+    message.selfResults = object.selfResults?.map((e) => AlgorithmDependencyResultRow.fromPartial(e)) || [];
     return message;
   },
 };

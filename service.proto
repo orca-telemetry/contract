@@ -221,6 +221,21 @@ message Algorithm {
     (buf.validate.field).required = true,
     (buf.validate.field).string.max_len = 1000
   ];
+
+  // A lookback field that specifies whether this algorithm 
+  // requires past results of itself.
+  //
+  // The presence of past results is non-blocking. If no past
+  // results are found, the algorithm will still run>
+  oneof lookback {
+    option (buf.validate.oneof).required = false;
+
+    // Number of past results to depend on (if at all)
+    uint32 lookback_num = 7;
+
+    // Timeframe of past results to depend on (in nanoseconds)
+    uint64 lookback_time_delta = 8;
+  }
 }
 
 // ResultStatus indicates the outcome of algorithm execution
@@ -314,6 +329,9 @@ message ExecuteAlgorithm {
 
   // The results of a dependent algorithm
   repeated AlgorithmDependencyResult dependencies = 2;
+
+  // The past results of the algorithm as per "selfLookback"
+  repeated AlgorithmDependencyResultRow selfResults = 3;
 }
 
 // ExecutionRequest provides a statement of processing as requested

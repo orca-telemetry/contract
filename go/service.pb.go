@@ -729,7 +729,18 @@ type Algorithm struct {
 	// rather than introspected, to allow for validation
 	ResultType ResultType `protobuf:"varint,5,opt,name=result_type,json=resultType,proto3,enum=ResultType" json:"result_type,omitempty"`
 	// A freeform description of the algorithm
-	Description   string `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	Description string `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	// A lookback field that specifies whether this algorithm
+	// requires past results of itself.
+	//
+	// The presence of past results is non-blocking. If no past
+	// results are found, the algorithm will still run>
+	//
+	// Types that are valid to be assigned to Lookback:
+	//
+	//	*Algorithm_LookbackNum
+	//	*Algorithm_LookbackTimeDelta
+	Lookback      isAlgorithm_Lookback `protobuf_oneof:"lookback"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -805,6 +816,49 @@ func (x *Algorithm) GetDescription() string {
 	}
 	return ""
 }
+
+func (x *Algorithm) GetLookback() isAlgorithm_Lookback {
+	if x != nil {
+		return x.Lookback
+	}
+	return nil
+}
+
+func (x *Algorithm) GetLookbackNum() uint32 {
+	if x != nil {
+		if x, ok := x.Lookback.(*Algorithm_LookbackNum); ok {
+			return x.LookbackNum
+		}
+	}
+	return 0
+}
+
+func (x *Algorithm) GetLookbackTimeDelta() uint64 {
+	if x != nil {
+		if x, ok := x.Lookback.(*Algorithm_LookbackTimeDelta); ok {
+			return x.LookbackTimeDelta
+		}
+	}
+	return 0
+}
+
+type isAlgorithm_Lookback interface {
+	isAlgorithm_Lookback()
+}
+
+type Algorithm_LookbackNum struct {
+	// Number of past results to depend on (if at all)
+	LookbackNum uint32 `protobuf:"varint,7,opt,name=lookback_num,json=lookbackNum,proto3,oneof"`
+}
+
+type Algorithm_LookbackTimeDelta struct {
+	// Timeframe of past results to depend on (in nanoseconds)
+	LookbackTimeDelta uint64 `protobuf:"varint,8,opt,name=lookback_time_delta,json=lookbackTimeDelta,proto3,oneof"`
+}
+
+func (*Algorithm_LookbackNum) isAlgorithm_Lookback() {}
+
+func (*Algorithm_LookbackTimeDelta) isAlgorithm_Lookback() {}
 
 // Container for array of float values
 type FloatArray struct {
@@ -1177,7 +1231,9 @@ type ExecuteAlgorithm struct {
 	// The algorithm to execute
 	Algorithm *Algorithm `protobuf:"bytes,1,opt,name=algorithm,proto3" json:"algorithm,omitempty"`
 	// The results of a dependent algorithm
-	Dependencies  []*AlgorithmDependencyResult `protobuf:"bytes,2,rep,name=dependencies,proto3" json:"dependencies,omitempty"`
+	Dependencies []*AlgorithmDependencyResult `protobuf:"bytes,2,rep,name=dependencies,proto3" json:"dependencies,omitempty"`
+	// The past results of the algorithm as per "selfLookback"
+	SelfResults   []*AlgorithmDependencyResultRow `protobuf:"bytes,3,rep,name=selfResults,proto3" json:"selfResults,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1222,6 +1278,13 @@ func (x *ExecuteAlgorithm) GetAlgorithm() *Algorithm {
 func (x *ExecuteAlgorithm) GetDependencies() []*AlgorithmDependencyResult {
 	if x != nil {
 		return x.Dependencies
+	}
+	return nil
+}
+
+func (x *ExecuteAlgorithm) GetSelfResults() []*AlgorithmDependencyResultRow {
+	if x != nil {
+		return x.SelfResults
 	}
 	return nil
 }
@@ -1754,7 +1817,7 @@ const file_service_proto_rawDesc = "" +
 	"\x11processor_runtime\x18\x04 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x10processorRuntime\x12#\n" +
 	"\flookback_num\x18\x05 \x01(\rH\x00R\vlookbackNum\x120\n" +
 	"\x13lookback_time_delta\x18\x06 \x01(\x04H\x00R\x11lookbackTimeDeltaB\x11\n" +
-	"\blookback\x12\x05\xbaH\x02\b\x00\"\x9e\x02\n" +
+	"\blookback\x12\x05\xbaH\x02\b\x00\"\x88\x03\n" +
 	"\tAlgorithm\x12\x1a\n" +
 	"\x04name\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12 \n" +
 	"\aversion\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\aversion\x124\n" +
@@ -1763,7 +1826,10 @@ const file_service_proto_rawDesc = "" +
 	"\fdependencies\x18\x04 \x03(\v2\x14.AlgorithmDependencyR\fdependencies\x124\n" +
 	"\vresult_type\x18\x05 \x01(\x0e2\v.ResultTypeB\x06\xbaH\x03\xc8\x01\x01R\n" +
 	"resultType\x12-\n" +
-	"\vdescription\x18\x06 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xe8\aR\vdescription\"$\n" +
+	"\vdescription\x18\x06 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xe8\aR\vdescription\x12#\n" +
+	"\flookback_num\x18\a \x01(\rH\x00R\vlookbackNum\x120\n" +
+	"\x13lookback_time_delta\x18\b \x01(\x04H\x00R\x11lookbackTimeDeltaB\x11\n" +
+	"\blookback\x12\x05\xbaH\x02\b\x00\"$\n" +
 	"\n" +
 	"FloatArray\x12\x16\n" +
 	"\x06values\x18\x01 \x03(\x02R\x06values\"\x81\x02\n" +
@@ -1787,11 +1853,12 @@ const file_service_proto_rawDesc = "" +
 	"\x19AlgorithmDependencyResult\x120\n" +
 	"\talgorithm\x18\x01 \x01(\v2\n" +
 	".AlgorithmB\x06\xbaH\x03\xc8\x01\x01R\talgorithm\x12=\n" +
-	"\x06result\x18\x02 \x03(\v2\x1d.AlgorithmDependencyResultRowB\x06\xbaH\x03\xc8\x01\x01R\x06result\"\x84\x01\n" +
+	"\x06result\x18\x02 \x03(\v2\x1d.AlgorithmDependencyResultRowB\x06\xbaH\x03\xc8\x01\x01R\x06result\"\xc5\x01\n" +
 	"\x10ExecuteAlgorithm\x120\n" +
 	"\talgorithm\x18\x01 \x01(\v2\n" +
 	".AlgorithmB\x06\xbaH\x03\xc8\x01\x01R\talgorithm\x12>\n" +
-	"\fdependencies\x18\x02 \x03(\v2\x1a.AlgorithmDependencyResultR\fdependencies\"\x9d\x02\n" +
+	"\fdependencies\x18\x02 \x03(\v2\x1a.AlgorithmDependencyResultR\fdependencies\x12?\n" +
+	"\vselfResults\x18\x03 \x03(\v2\x1d.AlgorithmDependencyResultRowR\vselfResults\"\x9d\x02\n" +
 	"\x10ExecutionRequest\x12\x1f\n" +
 	"\aexec_id\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x06execId\x12'\n" +
 	"\x06window\x18\x02 \x01(\v2\a.WindowB\x06\xbaH\x03\xc8\x01\x01R\x06window\x12A\n" +
@@ -1916,32 +1983,33 @@ var file_service_proto_depIdxs = []int32{
 	14, // 15: AlgorithmDependencyResult.result:type_name -> AlgorithmDependencyResultRow
 	10, // 16: ExecuteAlgorithm.algorithm:type_name -> Algorithm
 	15, // 17: ExecuteAlgorithm.dependencies:type_name -> AlgorithmDependencyResult
-	5,  // 18: ExecutionRequest.window:type_name -> Window
-	19, // 19: ExecutionRequest.algorithm_results:type_name -> AlgorithmResult
-	10, // 20: ExecutionRequest.algorithms:type_name -> Algorithm
-	16, // 21: ExecutionRequest.algorithm_executions:type_name -> ExecuteAlgorithm
-	19, // 22: ExecutionResult.algorithm_result:type_name -> AlgorithmResult
-	10, // 23: AlgorithmResult.algorithm:type_name -> Algorithm
-	12, // 24: AlgorithmResult.result:type_name -> Result
-	5,  // 25: AlgorithmResult.window:type_name -> Window
-	3,  // 26: HealthCheckResponse.status:type_name -> HealthCheckResponse.Status
-	23, // 27: HealthCheckResponse.metrics:type_name -> ProcessorMetrics
-	13, // 28: InternalState.processors:type_name -> ProcessorRegistration
-	13, // 29: OrcaCore.RegisterProcessor:input_type -> ProcessorRegistration
-	5,  // 30: OrcaCore.EmitWindow:input_type -> Window
-	4,  // 31: OrcaCore.Expose:input_type -> ExposeSettings
-	17, // 32: OrcaProcessor.ExecuteDagPart:input_type -> ExecutionRequest
-	21, // 33: OrcaProcessor.HealthCheck:input_type -> HealthCheckRequest
-	20, // 34: OrcaCore.RegisterProcessor:output_type -> Status
-	8,  // 35: OrcaCore.EmitWindow:output_type -> WindowEmitStatus
-	24, // 36: OrcaCore.Expose:output_type -> InternalState
-	18, // 37: OrcaProcessor.ExecuteDagPart:output_type -> ExecutionResult
-	22, // 38: OrcaProcessor.HealthCheck:output_type -> HealthCheckResponse
-	34, // [34:39] is the sub-list for method output_type
-	29, // [29:34] is the sub-list for method input_type
-	29, // [29:29] is the sub-list for extension type_name
-	29, // [29:29] is the sub-list for extension extendee
-	0,  // [0:29] is the sub-list for field type_name
+	14, // 18: ExecuteAlgorithm.selfResults:type_name -> AlgorithmDependencyResultRow
+	5,  // 19: ExecutionRequest.window:type_name -> Window
+	19, // 20: ExecutionRequest.algorithm_results:type_name -> AlgorithmResult
+	10, // 21: ExecutionRequest.algorithms:type_name -> Algorithm
+	16, // 22: ExecutionRequest.algorithm_executions:type_name -> ExecuteAlgorithm
+	19, // 23: ExecutionResult.algorithm_result:type_name -> AlgorithmResult
+	10, // 24: AlgorithmResult.algorithm:type_name -> Algorithm
+	12, // 25: AlgorithmResult.result:type_name -> Result
+	5,  // 26: AlgorithmResult.window:type_name -> Window
+	3,  // 27: HealthCheckResponse.status:type_name -> HealthCheckResponse.Status
+	23, // 28: HealthCheckResponse.metrics:type_name -> ProcessorMetrics
+	13, // 29: InternalState.processors:type_name -> ProcessorRegistration
+	13, // 30: OrcaCore.RegisterProcessor:input_type -> ProcessorRegistration
+	5,  // 31: OrcaCore.EmitWindow:input_type -> Window
+	4,  // 32: OrcaCore.Expose:input_type -> ExposeSettings
+	17, // 33: OrcaProcessor.ExecuteDagPart:input_type -> ExecutionRequest
+	21, // 34: OrcaProcessor.HealthCheck:input_type -> HealthCheckRequest
+	20, // 35: OrcaCore.RegisterProcessor:output_type -> Status
+	8,  // 36: OrcaCore.EmitWindow:output_type -> WindowEmitStatus
+	24, // 37: OrcaCore.Expose:output_type -> InternalState
+	18, // 38: OrcaProcessor.ExecuteDagPart:output_type -> ExecutionResult
+	22, // 39: OrcaProcessor.HealthCheck:output_type -> HealthCheckResponse
+	35, // [35:40] is the sub-list for method output_type
+	30, // [30:35] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_service_proto_init() }
@@ -1952,6 +2020,10 @@ func file_service_proto_init() {
 	file_service_proto_msgTypes[5].OneofWrappers = []any{
 		(*AlgorithmDependency_LookbackNum)(nil),
 		(*AlgorithmDependency_LookbackTimeDelta)(nil),
+	}
+	file_service_proto_msgTypes[6].OneofWrappers = []any{
+		(*Algorithm_LookbackNum)(nil),
+		(*Algorithm_LookbackTimeDelta)(nil),
 	}
 	file_service_proto_msgTypes[8].OneofWrappers = []any{
 		(*Result_SingleValue)(nil),
