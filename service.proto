@@ -173,6 +173,19 @@ message AlgorithmDependency {
     // Timeframe of past results to depend on (in nanoseconds)
     uint64 lookback_time_delta = 6;
   }
+
+  // A field that specifies any gap that should apply to the
+  // lookback. E.g. a pause going back in time until the lookback 
+  // period starts
+  oneof lookback_gap {
+    option (buf.validate.oneof).required = false;
+
+    // Number of past results to skip before starting the lookback
+    uint32 lookback_gap_num = 7;
+
+    // Amount of time to skip before starting the lookback
+    uint64 lookback_gap_time_delta = 8;
+  }
 }
 
 enum ResultType {
@@ -235,6 +248,19 @@ message Algorithm {
 
     // Timeframe of past results to depend on (in nanoseconds)
     uint64 lookback_time_delta = 8;
+  }
+
+  // A field that specifies any gap that should apply to the
+  // lookback. E.g. a pause going back in time until the lookback 
+  // period starts
+  oneof lookback_gap {
+    option (buf.validate.oneof).required = false;
+
+    // Number of past results to skip before starting the lookback
+    uint32 lookback_gap_num = 9;
+
+    // Amount of time to skip before starting the lookback
+    uint64 lookback_gap_time_delta = 10;
   }
 }
 

@@ -90,23 +90,27 @@ class WindowEmitStatus(_message.Message):
     def __init__(self, status: _Optional[_Union[WindowEmitStatus.StatusEnum, str]] = ...) -> None: ...
 
 class AlgorithmDependency(_message.Message):
-    __slots__ = ("name", "version", "processor_name", "processor_runtime", "lookback_num", "lookback_time_delta")
+    __slots__ = ("name", "version", "processor_name", "processor_runtime", "lookback_num", "lookback_time_delta", "lookback_gap_num", "lookback_gap_time_delta")
     NAME_FIELD_NUMBER: _ClassVar[int]
     VERSION_FIELD_NUMBER: _ClassVar[int]
     PROCESSOR_NAME_FIELD_NUMBER: _ClassVar[int]
     PROCESSOR_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     LOOKBACK_NUM_FIELD_NUMBER: _ClassVar[int]
     LOOKBACK_TIME_DELTA_FIELD_NUMBER: _ClassVar[int]
+    LOOKBACK_GAP_NUM_FIELD_NUMBER: _ClassVar[int]
+    LOOKBACK_GAP_TIME_DELTA_FIELD_NUMBER: _ClassVar[int]
     name: str
     version: str
     processor_name: str
     processor_runtime: str
     lookback_num: int
     lookback_time_delta: int
-    def __init__(self, name: _Optional[str] = ..., version: _Optional[str] = ..., processor_name: _Optional[str] = ..., processor_runtime: _Optional[str] = ..., lookback_num: _Optional[int] = ..., lookback_time_delta: _Optional[int] = ...) -> None: ...
+    lookback_gap_num: int
+    lookback_gap_time_delta: int
+    def __init__(self, name: _Optional[str] = ..., version: _Optional[str] = ..., processor_name: _Optional[str] = ..., processor_runtime: _Optional[str] = ..., lookback_num: _Optional[int] = ..., lookback_time_delta: _Optional[int] = ..., lookback_gap_num: _Optional[int] = ..., lookback_gap_time_delta: _Optional[int] = ...) -> None: ...
 
 class Algorithm(_message.Message):
-    __slots__ = ("name", "version", "window_type", "dependencies", "result_type", "description", "lookback_num", "lookback_time_delta")
+    __slots__ = ("name", "version", "window_type", "dependencies", "result_type", "description", "lookback_num", "lookback_time_delta", "lookback_gap_num", "lookback_gap_time_delta")
     NAME_FIELD_NUMBER: _ClassVar[int]
     VERSION_FIELD_NUMBER: _ClassVar[int]
     WINDOW_TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -115,6 +119,8 @@ class Algorithm(_message.Message):
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     LOOKBACK_NUM_FIELD_NUMBER: _ClassVar[int]
     LOOKBACK_TIME_DELTA_FIELD_NUMBER: _ClassVar[int]
+    LOOKBACK_GAP_NUM_FIELD_NUMBER: _ClassVar[int]
+    LOOKBACK_GAP_TIME_DELTA_FIELD_NUMBER: _ClassVar[int]
     name: str
     version: str
     window_type: WindowType
@@ -123,7 +129,9 @@ class Algorithm(_message.Message):
     description: str
     lookback_num: int
     lookback_time_delta: int
-    def __init__(self, name: _Optional[str] = ..., version: _Optional[str] = ..., window_type: _Optional[_Union[WindowType, _Mapping]] = ..., dependencies: _Optional[_Iterable[_Union[AlgorithmDependency, _Mapping]]] = ..., result_type: _Optional[_Union[ResultType, str]] = ..., description: _Optional[str] = ..., lookback_num: _Optional[int] = ..., lookback_time_delta: _Optional[int] = ...) -> None: ...
+    lookback_gap_num: int
+    lookback_gap_time_delta: int
+    def __init__(self, name: _Optional[str] = ..., version: _Optional[str] = ..., window_type: _Optional[_Union[WindowType, _Mapping]] = ..., dependencies: _Optional[_Iterable[_Union[AlgorithmDependency, _Mapping]]] = ..., result_type: _Optional[_Union[ResultType, str]] = ..., description: _Optional[str] = ..., lookback_num: _Optional[int] = ..., lookback_time_delta: _Optional[int] = ..., lookback_gap_num: _Optional[int] = ..., lookback_gap_time_delta: _Optional[int] = ...) -> None: ...
 
 class FloatArray(_message.Message):
     __slots__ = ("values",)

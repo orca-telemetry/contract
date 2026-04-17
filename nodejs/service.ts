@@ -316,6 +316,19 @@ export interface AlgorithmDependency {
     /** Timeframe of past results to depend on (in nanoseconds) */
     { $case: "lookbackTimeDelta"; value: string }
     | undefined;
+  /**
+   * A field that specifies any gap that should apply to the
+   * lookback. E.g. a pause going back in time until the lookback
+   * period starts
+   */
+  lookbackGap?:
+    | //
+    /** Number of past results to skip before starting the lookback */
+    { $case: "lookbackGapNum"; value: number }
+    | //
+    /** Amount of time to skip before starting the lookback */
+    { $case: "lookbackGapTimeDelta"; value: string }
+    | undefined;
 }
 
 /**
@@ -377,6 +390,19 @@ export interface Algorithm {
     | //
     /** Timeframe of past results to depend on (in nanoseconds) */
     { $case: "lookbackTimeDelta"; value: string }
+    | undefined;
+  /**
+   * A field that specifies any gap that should apply to the
+   * lookback. E.g. a pause going back in time until the lookback
+   * period starts
+   */
+  lookbackGap?:
+    | //
+    /** Number of past results to skip before starting the lookback */
+    { $case: "lookbackGapNum"; value: number }
+    | //
+    /** Amount of time to skip before starting the lookback */
+    { $case: "lookbackGapTimeDelta"; value: string }
     | undefined;
 }
 
@@ -1125,7 +1151,14 @@ export const WindowEmitStatus: MessageFns<WindowEmitStatus> = {
 };
 
 function createBaseAlgorithmDependency(): AlgorithmDependency {
-  return { name: "", version: "", processorName: "", processorRuntime: "", lookback: undefined };
+  return {
+    name: "",
+    version: "",
+    processorName: "",
+    processorRuntime: "",
+    lookback: undefined,
+    lookbackGap: undefined,
+  };
 }
 
 export const AlgorithmDependency: MessageFns<AlgorithmDependency> = {
@@ -1148,6 +1181,14 @@ export const AlgorithmDependency: MessageFns<AlgorithmDependency> = {
         break;
       case "lookbackTimeDelta":
         writer.uint32(48).uint64(message.lookback.value);
+        break;
+    }
+    switch (message.lookbackGap?.$case) {
+      case "lookbackGapNum":
+        writer.uint32(56).uint32(message.lookbackGap.value);
+        break;
+      case "lookbackGapTimeDelta":
+        writer.uint32(64).uint64(message.lookbackGap.value);
         break;
     }
     return writer;
@@ -1208,6 +1249,22 @@ export const AlgorithmDependency: MessageFns<AlgorithmDependency> = {
           message.lookback = { $case: "lookbackTimeDelta", value: reader.uint64().toString() };
           continue;
         }
+        case 7: {
+          if (tag !== 56) {
+            break;
+          }
+
+          message.lookbackGap = { $case: "lookbackGapNum", value: reader.uint32() };
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.lookbackGap = { $case: "lookbackGapTimeDelta", value: reader.uint64().toString() };
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1240,6 +1297,15 @@ export const AlgorithmDependency: MessageFns<AlgorithmDependency> = {
         : isSet(object.lookback_time_delta)
         ? { $case: "lookbackTimeDelta", value: globalThis.String(object.lookback_time_delta) }
         : undefined,
+      lookbackGap: isSet(object.lookbackGapNum)
+        ? { $case: "lookbackGapNum", value: globalThis.Number(object.lookbackGapNum) }
+        : isSet(object.lookback_gap_num)
+        ? { $case: "lookbackGapNum", value: globalThis.Number(object.lookback_gap_num) }
+        : isSet(object.lookbackGapTimeDelta)
+        ? { $case: "lookbackGapTimeDelta", value: globalThis.String(object.lookbackGapTimeDelta) }
+        : isSet(object.lookback_gap_time_delta)
+        ? { $case: "lookbackGapTimeDelta", value: globalThis.String(object.lookback_gap_time_delta) }
+        : undefined,
     };
   },
 
@@ -1261,6 +1327,11 @@ export const AlgorithmDependency: MessageFns<AlgorithmDependency> = {
       obj.lookbackNum = Math.round(message.lookback.value);
     } else if (message.lookback?.$case === "lookbackTimeDelta") {
       obj.lookbackTimeDelta = message.lookback.value;
+    }
+    if (message.lookbackGap?.$case === "lookbackGapNum") {
+      obj.lookbackGapNum = Math.round(message.lookbackGap.value);
+    } else if (message.lookbackGap?.$case === "lookbackGapTimeDelta") {
+      obj.lookbackGapTimeDelta = message.lookbackGap.value;
     }
     return obj;
   },
@@ -1288,6 +1359,20 @@ export const AlgorithmDependency: MessageFns<AlgorithmDependency> = {
         break;
       }
     }
+    switch (object.lookbackGap?.$case) {
+      case "lookbackGapNum": {
+        if (object.lookbackGap?.value !== undefined && object.lookbackGap?.value !== null) {
+          message.lookbackGap = { $case: "lookbackGapNum", value: object.lookbackGap.value };
+        }
+        break;
+      }
+      case "lookbackGapTimeDelta": {
+        if (object.lookbackGap?.value !== undefined && object.lookbackGap?.value !== null) {
+          message.lookbackGap = { $case: "lookbackGapTimeDelta", value: object.lookbackGap.value };
+        }
+        break;
+      }
+    }
     return message;
   },
 };
@@ -1301,6 +1386,7 @@ function createBaseAlgorithm(): Algorithm {
     resultType: 0,
     description: "",
     lookback: undefined,
+    lookbackGap: undefined,
   };
 }
 
@@ -1332,6 +1418,14 @@ export const Algorithm: MessageFns<Algorithm> = {
         break;
       case "lookbackTimeDelta":
         writer.uint32(64).uint64(message.lookback.value);
+        break;
+    }
+    switch (message.lookbackGap?.$case) {
+      case "lookbackGapNum":
+        writer.uint32(72).uint32(message.lookbackGap.value);
+        break;
+      case "lookbackGapTimeDelta":
+        writer.uint32(80).uint64(message.lookbackGap.value);
         break;
     }
     return writer;
@@ -1411,6 +1505,22 @@ export const Algorithm: MessageFns<Algorithm> = {
           message.lookback = { $case: "lookbackTimeDelta", value: reader.uint64().toString() };
           continue;
         }
+        case 9: {
+          if (tag !== 72) {
+            break;
+          }
+
+          message.lookbackGap = { $case: "lookbackGapNum", value: reader.uint32() };
+          continue;
+        }
+        case 10: {
+          if (tag !== 80) {
+            break;
+          }
+
+          message.lookbackGap = { $case: "lookbackGapTimeDelta", value: reader.uint64().toString() };
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1447,6 +1557,15 @@ export const Algorithm: MessageFns<Algorithm> = {
         : isSet(object.lookback_time_delta)
         ? { $case: "lookbackTimeDelta", value: globalThis.String(object.lookback_time_delta) }
         : undefined,
+      lookbackGap: isSet(object.lookbackGapNum)
+        ? { $case: "lookbackGapNum", value: globalThis.Number(object.lookbackGapNum) }
+        : isSet(object.lookback_gap_num)
+        ? { $case: "lookbackGapNum", value: globalThis.Number(object.lookback_gap_num) }
+        : isSet(object.lookbackGapTimeDelta)
+        ? { $case: "lookbackGapTimeDelta", value: globalThis.String(object.lookbackGapTimeDelta) }
+        : isSet(object.lookback_gap_time_delta)
+        ? { $case: "lookbackGapTimeDelta", value: globalThis.String(object.lookback_gap_time_delta) }
+        : undefined,
     };
   },
 
@@ -1475,6 +1594,11 @@ export const Algorithm: MessageFns<Algorithm> = {
     } else if (message.lookback?.$case === "lookbackTimeDelta") {
       obj.lookbackTimeDelta = message.lookback.value;
     }
+    if (message.lookbackGap?.$case === "lookbackGapNum") {
+      obj.lookbackGapNum = Math.round(message.lookbackGap.value);
+    } else if (message.lookbackGap?.$case === "lookbackGapTimeDelta") {
+      obj.lookbackGapTimeDelta = message.lookbackGap.value;
+    }
     return obj;
   },
 
@@ -1501,6 +1625,20 @@ export const Algorithm: MessageFns<Algorithm> = {
       case "lookbackTimeDelta": {
         if (object.lookback?.value !== undefined && object.lookback?.value !== null) {
           message.lookback = { $case: "lookbackTimeDelta", value: object.lookback.value };
+        }
+        break;
+      }
+    }
+    switch (object.lookbackGap?.$case) {
+      case "lookbackGapNum": {
+        if (object.lookbackGap?.value !== undefined && object.lookbackGap?.value !== null) {
+          message.lookbackGap = { $case: "lookbackGapNum", value: object.lookbackGap.value };
+        }
+        break;
+      }
+      case "lookbackGapTimeDelta": {
+        if (object.lookbackGap?.value !== undefined && object.lookbackGap?.value !== null) {
+          message.lookbackGap = { $case: "lookbackGapTimeDelta", value: object.lookbackGap.value };
         }
         break;
       }

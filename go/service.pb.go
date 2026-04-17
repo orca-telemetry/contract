@@ -602,7 +602,16 @@ type AlgorithmDependency struct {
 	//
 	//	*AlgorithmDependency_LookbackNum
 	//	*AlgorithmDependency_LookbackTimeDelta
-	Lookback      isAlgorithmDependency_Lookback `protobuf_oneof:"lookback"`
+	Lookback isAlgorithmDependency_Lookback `protobuf_oneof:"lookback"`
+	// A field that specifies any gap that should apply to the
+	// lookback. E.g. a pause going back in time until the lookback
+	// period starts
+	//
+	// Types that are valid to be assigned to LookbackGap:
+	//
+	//	*AlgorithmDependency_LookbackGapNum
+	//	*AlgorithmDependency_LookbackGapTimeDelta
+	LookbackGap   isAlgorithmDependency_LookbackGap `protobuf_oneof:"lookback_gap"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -690,6 +699,31 @@ func (x *AlgorithmDependency) GetLookbackTimeDelta() uint64 {
 	return 0
 }
 
+func (x *AlgorithmDependency) GetLookbackGap() isAlgorithmDependency_LookbackGap {
+	if x != nil {
+		return x.LookbackGap
+	}
+	return nil
+}
+
+func (x *AlgorithmDependency) GetLookbackGapNum() uint32 {
+	if x != nil {
+		if x, ok := x.LookbackGap.(*AlgorithmDependency_LookbackGapNum); ok {
+			return x.LookbackGapNum
+		}
+	}
+	return 0
+}
+
+func (x *AlgorithmDependency) GetLookbackGapTimeDelta() uint64 {
+	if x != nil {
+		if x, ok := x.LookbackGap.(*AlgorithmDependency_LookbackGapTimeDelta); ok {
+			return x.LookbackGapTimeDelta
+		}
+	}
+	return 0
+}
+
 type isAlgorithmDependency_Lookback interface {
 	isAlgorithmDependency_Lookback()
 }
@@ -707,6 +741,24 @@ type AlgorithmDependency_LookbackTimeDelta struct {
 func (*AlgorithmDependency_LookbackNum) isAlgorithmDependency_Lookback() {}
 
 func (*AlgorithmDependency_LookbackTimeDelta) isAlgorithmDependency_Lookback() {}
+
+type isAlgorithmDependency_LookbackGap interface {
+	isAlgorithmDependency_LookbackGap()
+}
+
+type AlgorithmDependency_LookbackGapNum struct {
+	// Number of past results to skip before starting the lookback
+	LookbackGapNum uint32 `protobuf:"varint,7,opt,name=lookback_gap_num,json=lookbackGapNum,proto3,oneof"`
+}
+
+type AlgorithmDependency_LookbackGapTimeDelta struct {
+	// Amount of time to skip before starting the lookback
+	LookbackGapTimeDelta uint64 `protobuf:"varint,8,opt,name=lookback_gap_time_delta,json=lookbackGapTimeDelta,proto3,oneof"`
+}
+
+func (*AlgorithmDependency_LookbackGapNum) isAlgorithmDependency_LookbackGap() {}
+
+func (*AlgorithmDependency_LookbackGapTimeDelta) isAlgorithmDependency_LookbackGap() {}
 
 // Algorithm defines a processing unit that can be executed by processors.
 // Algorithms form the nodes in the processing DAG and are triggered by specific window types.
@@ -740,7 +792,16 @@ type Algorithm struct {
 	//
 	//	*Algorithm_LookbackNum
 	//	*Algorithm_LookbackTimeDelta
-	Lookback      isAlgorithm_Lookback `protobuf_oneof:"lookback"`
+	Lookback isAlgorithm_Lookback `protobuf_oneof:"lookback"`
+	// A field that specifies any gap that should apply to the
+	// lookback. E.g. a pause going back in time until the lookback
+	// period starts
+	//
+	// Types that are valid to be assigned to LookbackGap:
+	//
+	//	*Algorithm_LookbackGapNum
+	//	*Algorithm_LookbackGapTimeDelta
+	LookbackGap   isAlgorithm_LookbackGap `protobuf_oneof:"lookback_gap"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -842,6 +903,31 @@ func (x *Algorithm) GetLookbackTimeDelta() uint64 {
 	return 0
 }
 
+func (x *Algorithm) GetLookbackGap() isAlgorithm_LookbackGap {
+	if x != nil {
+		return x.LookbackGap
+	}
+	return nil
+}
+
+func (x *Algorithm) GetLookbackGapNum() uint32 {
+	if x != nil {
+		if x, ok := x.LookbackGap.(*Algorithm_LookbackGapNum); ok {
+			return x.LookbackGapNum
+		}
+	}
+	return 0
+}
+
+func (x *Algorithm) GetLookbackGapTimeDelta() uint64 {
+	if x != nil {
+		if x, ok := x.LookbackGap.(*Algorithm_LookbackGapTimeDelta); ok {
+			return x.LookbackGapTimeDelta
+		}
+	}
+	return 0
+}
+
 type isAlgorithm_Lookback interface {
 	isAlgorithm_Lookback()
 }
@@ -859,6 +945,24 @@ type Algorithm_LookbackTimeDelta struct {
 func (*Algorithm_LookbackNum) isAlgorithm_Lookback() {}
 
 func (*Algorithm_LookbackTimeDelta) isAlgorithm_Lookback() {}
+
+type isAlgorithm_LookbackGap interface {
+	isAlgorithm_LookbackGap()
+}
+
+type Algorithm_LookbackGapNum struct {
+	// Number of past results to skip before starting the lookback
+	LookbackGapNum uint32 `protobuf:"varint,9,opt,name=lookback_gap_num,json=lookbackGapNum,proto3,oneof"`
+}
+
+type Algorithm_LookbackGapTimeDelta struct {
+	// Amount of time to skip before starting the lookback
+	LookbackGapTimeDelta uint64 `protobuf:"varint,10,opt,name=lookback_gap_time_delta,json=lookbackGapTimeDelta,proto3,oneof"`
+}
+
+func (*Algorithm_LookbackGapNum) isAlgorithm_LookbackGap() {}
+
+func (*Algorithm_LookbackGapTimeDelta) isAlgorithm_LookbackGap() {}
 
 // Container for array of float values
 type FloatArray struct {
@@ -1809,15 +1913,18 @@ const file_service_proto_rawDesc = "" +
 	"StatusEnum\x12\x15\n" +
 	"\x11TRIGGERING_FAILED\x10\x00\x12\x1b\n" +
 	"\x17NO_TRIGGERED_ALGORITHMS\x10\x01\x12\x18\n" +
-	"\x14PROCESSING_TRIGGERED\x10\x02\"\xa1\x02\n" +
+	"\x14PROCESSING_TRIGGERED\x10\x02\"\x9d\x03\n" +
 	"\x13AlgorithmDependency\x12\x1a\n" +
 	"\x04name\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12 \n" +
 	"\aversion\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\aversion\x12-\n" +
 	"\x0eprocessor_name\x18\x03 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\rprocessorName\x123\n" +
 	"\x11processor_runtime\x18\x04 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x10processorRuntime\x12#\n" +
 	"\flookback_num\x18\x05 \x01(\rH\x00R\vlookbackNum\x120\n" +
-	"\x13lookback_time_delta\x18\x06 \x01(\x04H\x00R\x11lookbackTimeDeltaB\x11\n" +
-	"\blookback\x12\x05\xbaH\x02\b\x00\"\x88\x03\n" +
+	"\x13lookback_time_delta\x18\x06 \x01(\x04H\x00R\x11lookbackTimeDelta\x12*\n" +
+	"\x10lookback_gap_num\x18\a \x01(\rH\x01R\x0elookbackGapNum\x127\n" +
+	"\x17lookback_gap_time_delta\x18\b \x01(\x04H\x01R\x14lookbackGapTimeDeltaB\x11\n" +
+	"\blookback\x12\x05\xbaH\x02\b\x00B\x15\n" +
+	"\flookback_gap\x12\x05\xbaH\x02\b\x00\"\x84\x04\n" +
 	"\tAlgorithm\x12\x1a\n" +
 	"\x04name\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12 \n" +
 	"\aversion\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\aversion\x124\n" +
@@ -1828,8 +1935,12 @@ const file_service_proto_rawDesc = "" +
 	"resultType\x12-\n" +
 	"\vdescription\x18\x06 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xe8\aR\vdescription\x12#\n" +
 	"\flookback_num\x18\a \x01(\rH\x00R\vlookbackNum\x120\n" +
-	"\x13lookback_time_delta\x18\b \x01(\x04H\x00R\x11lookbackTimeDeltaB\x11\n" +
-	"\blookback\x12\x05\xbaH\x02\b\x00\"$\n" +
+	"\x13lookback_time_delta\x18\b \x01(\x04H\x00R\x11lookbackTimeDelta\x12*\n" +
+	"\x10lookback_gap_num\x18\t \x01(\rH\x01R\x0elookbackGapNum\x127\n" +
+	"\x17lookback_gap_time_delta\x18\n" +
+	" \x01(\x04H\x01R\x14lookbackGapTimeDeltaB\x11\n" +
+	"\blookback\x12\x05\xbaH\x02\b\x00B\x15\n" +
+	"\flookback_gap\x12\x05\xbaH\x02\b\x00\"$\n" +
 	"\n" +
 	"FloatArray\x12\x16\n" +
 	"\x06values\x18\x01 \x03(\x02R\x06values\"\x81\x02\n" +
@@ -2020,10 +2131,14 @@ func file_service_proto_init() {
 	file_service_proto_msgTypes[5].OneofWrappers = []any{
 		(*AlgorithmDependency_LookbackNum)(nil),
 		(*AlgorithmDependency_LookbackTimeDelta)(nil),
+		(*AlgorithmDependency_LookbackGapNum)(nil),
+		(*AlgorithmDependency_LookbackGapTimeDelta)(nil),
 	}
 	file_service_proto_msgTypes[6].OneofWrappers = []any{
 		(*Algorithm_LookbackNum)(nil),
 		(*Algorithm_LookbackTimeDelta)(nil),
+		(*Algorithm_LookbackGapNum)(nil),
+		(*Algorithm_LookbackGapTimeDelta)(nil),
 	}
 	file_service_proto_msgTypes[8].OneofWrappers = []any{
 		(*Result_SingleValue)(nil),
