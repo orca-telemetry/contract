@@ -400,7 +400,10 @@ type MetadataField struct {
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Description of the field
 	// Examples: "Unique ID of the asset"
-	Description   string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	// Whether the field should be removed before storing the window
+	// Examples: false, true
+	NoStore       bool `protobuf:"varint,3,opt,name=noStore,proto3" json:"noStore,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -447,6 +450,13 @@ func (x *MetadataField) GetDescription() string {
 		return x.Description
 	}
 	return ""
+}
+
+func (x *MetadataField) GetNoStore() bool {
+	if x != nil {
+		return x.NoStore
+	}
+	return false
 }
 
 // WindowType defines a category of window that can trigger algorithms.
@@ -1719,10 +1729,11 @@ const file_service_proto_rawDesc = "" +
 	"\x06origin\x18\x05 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x06origin\x123\n" +
 	"\bmetadata\x18\x06 \x01(\v2\x17.google.protobuf.StructR\bmetadata:b\xbaH_\x1a]\n" +
-	"\x14window.time_ordering\x12&time_to must be greater than time_from\x1a\x1dthis.time_to > this.time_from\"U\n" +
+	"\x14window.time_ordering\x12&time_to must be greater than time_from\x1a\x1dthis.time_to > this.time_from\"o\n" +
 	"\rMetadataField\x12\x1a\n" +
 	"\x04name\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12(\n" +
-	"\vdescription\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\vdescription\"\xac\x01\n" +
+	"\vdescription\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\vdescription\x12\x18\n" +
+	"\anoStore\x18\x03 \x01(\bR\anoStore\"\xac\x01\n" +
 	"\n" +
 	"WindowType\x12\x1a\n" +
 	"\x04name\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12 \n" +

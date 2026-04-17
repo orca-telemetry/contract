@@ -189,7 +189,14 @@ export interface MetadataField {
    * Description of the field
    * Examples: "Unique ID of the asset"
    */
-  description?: string | undefined;
+  description?:
+    | string
+    | undefined;
+  /**
+   * Whether the field should be removed before storing the window
+   * Examples: false, true
+   */
+  noStore?: boolean | undefined;
 }
 
 /**
@@ -832,7 +839,7 @@ export const Window: MessageFns<Window> = {
 };
 
 function createBaseMetadataField(): MetadataField {
-  return { name: "", description: "" };
+  return { name: "", description: "", noStore: false };
 }
 
 export const MetadataField: MessageFns<MetadataField> = {
@@ -842,6 +849,9 @@ export const MetadataField: MessageFns<MetadataField> = {
     }
     if (message.description !== undefined && message.description !== "") {
       writer.uint32(18).string(message.description);
+    }
+    if (message.noStore !== undefined && message.noStore !== false) {
+      writer.uint32(24).bool(message.noStore);
     }
     return writer;
   },
@@ -869,6 +879,14 @@ export const MetadataField: MessageFns<MetadataField> = {
           message.description = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.noStore = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -882,6 +900,7 @@ export const MetadataField: MessageFns<MetadataField> = {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
+      noStore: isSet(object.noStore) ? globalThis.Boolean(object.noStore) : false,
     };
   },
 
@@ -893,6 +912,9 @@ export const MetadataField: MessageFns<MetadataField> = {
     if (message.description !== undefined && message.description !== "") {
       obj.description = message.description;
     }
+    if (message.noStore !== undefined && message.noStore !== false) {
+      obj.noStore = message.noStore;
+    }
     return obj;
   },
 
@@ -903,6 +925,7 @@ export const MetadataField: MessageFns<MetadataField> = {
     const message = createBaseMetadataField();
     message.name = object.name ?? "";
     message.description = object.description ?? "";
+    message.noStore = object.noStore ?? false;
     return message;
   },
 };

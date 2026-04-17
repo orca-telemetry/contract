@@ -54,12 +54,14 @@ class Window(_message.Message):
     def __init__(self, time_from: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., time_to: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., window_type_name: _Optional[str] = ..., window_type_version: _Optional[str] = ..., origin: _Optional[str] = ..., metadata: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class MetadataField(_message.Message):
-    __slots__ = ("name", "description")
+    __slots__ = ("name", "description", "noStore")
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    NOSTORE_FIELD_NUMBER: _ClassVar[int]
     name: str
     description: str
-    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ...) -> None: ...
+    noStore: bool
+    def __init__(self, name: _Optional[str] = ..., description: _Optional[str] = ..., noStore: bool = ...) -> None: ...
 
 class WindowType(_message.Message):
     __slots__ = ("name", "version", "description", "metadataFields")
