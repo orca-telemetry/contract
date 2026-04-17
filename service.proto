@@ -105,6 +105,9 @@ message MetadataField {
   // Description of the field
   // Examples: "Unique ID of the asset"
   string description = 2 [(buf.validate.field).required = true];
+  // Whether the field should be removed before storing the window
+  // Examples: false, true
+  bool noStore = 3;
 }
 
 // WindowType defines a category of window that can trigger algorithms.
