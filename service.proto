@@ -93,7 +93,7 @@ message Window {
   option (buf.validate.message).cel = {
     id: "window.time_ordering",
     message: "time_to must be greater than time_from",
-    expression: "this.time_to > this.time_from"
+    expression: "this.time_to >= this.time_from"
   };
 }
 
