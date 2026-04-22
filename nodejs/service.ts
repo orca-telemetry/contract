@@ -196,7 +196,14 @@ export interface MetadataField {
    * Whether the field should be removed before storing the window
    * Examples: false, true
    */
-  noStore?: boolean | undefined;
+  noStore?:
+    | boolean
+    | undefined;
+  /**
+   * Whether this field should be used to filter windows when
+   * performing retrievals of past algorithm results
+   */
+  filter?: boolean | undefined;
 }
 
 /**
@@ -886,7 +893,7 @@ export const Window: MessageFns<Window> = {
 };
 
 function createBaseMetadataField(): MetadataField {
-  return { name: "", description: "", noStore: false };
+  return { name: "", description: "", noStore: false, filter: false };
 }
 
 export const MetadataField: MessageFns<MetadataField> = {
@@ -899,6 +906,9 @@ export const MetadataField: MessageFns<MetadataField> = {
     }
     if (message.noStore !== undefined && message.noStore !== false) {
       writer.uint32(24).bool(message.noStore);
+    }
+    if (message.filter !== undefined && message.filter !== false) {
+      writer.uint32(32).bool(message.filter);
     }
     return writer;
   },
@@ -934,6 +944,14 @@ export const MetadataField: MessageFns<MetadataField> = {
           message.noStore = reader.bool();
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.filter = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -948,6 +966,7 @@ export const MetadataField: MessageFns<MetadataField> = {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       noStore: isSet(object.noStore) ? globalThis.Boolean(object.noStore) : false,
+      filter: isSet(object.filter) ? globalThis.Boolean(object.filter) : false,
     };
   },
 
@@ -962,6 +981,9 @@ export const MetadataField: MessageFns<MetadataField> = {
     if (message.noStore !== undefined && message.noStore !== false) {
       obj.noStore = message.noStore;
     }
+    if (message.filter !== undefined && message.filter !== false) {
+      obj.filter = message.filter;
+    }
     return obj;
   },
 
@@ -973,6 +995,7 @@ export const MetadataField: MessageFns<MetadataField> = {
     message.name = object.name ?? "";
     message.description = object.description ?? "";
     message.noStore = object.noStore ?? false;
+    message.filter = object.filter ?? false;
     return message;
   },
 };

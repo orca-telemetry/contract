@@ -108,6 +108,9 @@ message MetadataField {
   // Whether the field should be removed before storing the window
   // Examples: false, true
   bool noStore = 3;
+  // Whether this field should be used to filter windows when
+  // performing retrievals of past algorithm results
+  bool filter = 4;
 }
 
 // WindowType defines a category of window that can trigger algorithms.

@@ -1,4 +1,4 @@
-module github.com/orca-telemetry/contract
+module github.com/orca-telemetry/contract/go
 
 go 1.25.3
 
