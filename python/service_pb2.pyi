@@ -142,18 +142,20 @@ class FloatArray(_message.Message):
     def __init__(self, values: _Optional[_Iterable[float]] = ...) -> None: ...
 
 class Result(_message.Message):
-    __slots__ = ("status", "single_value", "float_values", "struct_value", "timestamp")
+    __slots__ = ("status", "single_value", "float_values", "struct_value", "timestamp", "error")
     STATUS_FIELD_NUMBER: _ClassVar[int]
     SINGLE_VALUE_FIELD_NUMBER: _ClassVar[int]
     FLOAT_VALUES_FIELD_NUMBER: _ClassVar[int]
     STRUCT_VALUE_FIELD_NUMBER: _ClassVar[int]
     TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
+    ERROR_FIELD_NUMBER: _ClassVar[int]
     status: ResultStatus
     single_value: float
     float_values: FloatArray
     struct_value: _struct_pb2.Struct
     timestamp: int
-    def __init__(self, status: _Optional[_Union[ResultStatus, str]] = ..., single_value: _Optional[float] = ..., float_values: _Optional[_Union[FloatArray, _Mapping]] = ..., struct_value: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., timestamp: _Optional[int] = ...) -> None: ...
+    error: _struct_pb2.Struct
+    def __init__(self, status: _Optional[_Union[ResultStatus, str]] = ..., single_value: _Optional[float] = ..., float_values: _Optional[_Union[FloatArray, _Mapping]] = ..., struct_value: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., timestamp: _Optional[int] = ..., error: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
 
 class ProcessorRegistration(_message.Message):
     __slots__ = ("name", "runtime", "connection_str", "supported_algorithms", "project_name")

@@ -307,6 +307,10 @@ message Result {
 
   // Timestamp when the result was produced
   int64 timestamp = 5 [(buf.validate.field).required = true];
+
+  // A freeform struct to include any errof information.
+  // Should only be supplied if the algorithm errored
+  google.protobuf.Struct error = 6;
 }
 
 
