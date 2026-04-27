@@ -1033,7 +1033,10 @@ type Result struct {
 	//	*Result_StructValue
 	ResultData isResult_ResultData `protobuf_oneof:"result_data"`
 	// Timestamp when the result was produced
-	Timestamp     int64 `protobuf:"varint,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp int64 `protobuf:"varint,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// A freeform struct to include any errof information.
+	// Should only be supplied if the algorithm errored
+	Error         *structpb.Struct `protobuf:"bytes,6,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1114,6 +1117,13 @@ func (x *Result) GetTimestamp() int64 {
 		return x.Timestamp
 	}
 	return 0
+}
+
+func (x *Result) GetError() *structpb.Struct {
+	if x != nil {
+		return x.Error
+	}
+	return nil
 }
 
 type isResult_ResultData interface {
@@ -1954,13 +1964,14 @@ const file_service_proto_rawDesc = "" +
 	"\flookback_gap\x12\x05\xbaH\x02\b\x00\"$\n" +
 	"\n" +
 	"FloatArray\x12\x16\n" +
-	"\x06values\x18\x01 \x03(\x02R\x06values\"\x81\x02\n" +
+	"\x06values\x18\x01 \x03(\x02R\x06values\"\xb0\x02\n" +
 	"\x06Result\x12-\n" +
 	"\x06status\x18\x01 \x01(\x0e2\r.ResultStatusB\x06\xbaH\x03\xc8\x01\x01R\x06status\x12#\n" +
 	"\fsingle_value\x18\x02 \x01(\x02H\x00R\vsingleValue\x120\n" +
 	"\ffloat_values\x18\x03 \x01(\v2\v.FloatArrayH\x00R\vfloatValues\x12<\n" +
 	"\fstruct_value\x18\x04 \x01(\v2\x17.google.protobuf.StructH\x00R\vstructValue\x12$\n" +
-	"\ttimestamp\x18\x05 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\ttimestampB\r\n" +
+	"\ttimestamp\x18\x05 \x01(\x03B\x06\xbaH\x03\xc8\x01\x01R\ttimestamp\x12-\n" +
+	"\x05error\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x05errorB\r\n" +
 	"\vresult_data\"\xee\x01\n" +
 	"\x15ProcessorRegistration\x12\x1a\n" +
 	"\x04name\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12 \n" +
@@ -2098,40 +2109,41 @@ var file_service_proto_depIdxs = []int32{
 	1,  // 8: Result.status:type_name -> ResultStatus
 	11, // 9: Result.float_values:type_name -> FloatArray
 	26, // 10: Result.struct_value:type_name -> google.protobuf.Struct
-	10, // 11: ProcessorRegistration.supported_algorithms:type_name -> Algorithm
-	12, // 12: AlgorithmDependencyResultRow.result:type_name -> Result
-	5,  // 13: AlgorithmDependencyResultRow.window:type_name -> Window
-	10, // 14: AlgorithmDependencyResult.algorithm:type_name -> Algorithm
-	14, // 15: AlgorithmDependencyResult.result:type_name -> AlgorithmDependencyResultRow
-	10, // 16: ExecuteAlgorithm.algorithm:type_name -> Algorithm
-	15, // 17: ExecuteAlgorithm.dependencies:type_name -> AlgorithmDependencyResult
-	14, // 18: ExecuteAlgorithm.selfResults:type_name -> AlgorithmDependencyResultRow
-	5,  // 19: ExecutionRequest.window:type_name -> Window
-	19, // 20: ExecutionRequest.algorithm_results:type_name -> AlgorithmResult
-	10, // 21: ExecutionRequest.algorithms:type_name -> Algorithm
-	16, // 22: ExecutionRequest.algorithm_executions:type_name -> ExecuteAlgorithm
-	19, // 23: ExecutionResult.algorithm_result:type_name -> AlgorithmResult
-	10, // 24: AlgorithmResult.algorithm:type_name -> Algorithm
-	12, // 25: AlgorithmResult.result:type_name -> Result
-	5,  // 26: AlgorithmResult.window:type_name -> Window
-	3,  // 27: HealthCheckResponse.status:type_name -> HealthCheckResponse.Status
-	23, // 28: HealthCheckResponse.metrics:type_name -> ProcessorMetrics
-	13, // 29: InternalState.processors:type_name -> ProcessorRegistration
-	13, // 30: OrcaCore.RegisterProcessor:input_type -> ProcessorRegistration
-	5,  // 31: OrcaCore.EmitWindow:input_type -> Window
-	4,  // 32: OrcaCore.Expose:input_type -> ExposeSettings
-	17, // 33: OrcaProcessor.ExecuteDagPart:input_type -> ExecutionRequest
-	21, // 34: OrcaProcessor.HealthCheck:input_type -> HealthCheckRequest
-	20, // 35: OrcaCore.RegisterProcessor:output_type -> Status
-	8,  // 36: OrcaCore.EmitWindow:output_type -> WindowEmitStatus
-	24, // 37: OrcaCore.Expose:output_type -> InternalState
-	18, // 38: OrcaProcessor.ExecuteDagPart:output_type -> ExecutionResult
-	22, // 39: OrcaProcessor.HealthCheck:output_type -> HealthCheckResponse
-	35, // [35:40] is the sub-list for method output_type
-	30, // [30:35] is the sub-list for method input_type
-	30, // [30:30] is the sub-list for extension type_name
-	30, // [30:30] is the sub-list for extension extendee
-	0,  // [0:30] is the sub-list for field type_name
+	26, // 11: Result.error:type_name -> google.protobuf.Struct
+	10, // 12: ProcessorRegistration.supported_algorithms:type_name -> Algorithm
+	12, // 13: AlgorithmDependencyResultRow.result:type_name -> Result
+	5,  // 14: AlgorithmDependencyResultRow.window:type_name -> Window
+	10, // 15: AlgorithmDependencyResult.algorithm:type_name -> Algorithm
+	14, // 16: AlgorithmDependencyResult.result:type_name -> AlgorithmDependencyResultRow
+	10, // 17: ExecuteAlgorithm.algorithm:type_name -> Algorithm
+	15, // 18: ExecuteAlgorithm.dependencies:type_name -> AlgorithmDependencyResult
+	14, // 19: ExecuteAlgorithm.selfResults:type_name -> AlgorithmDependencyResultRow
+	5,  // 20: ExecutionRequest.window:type_name -> Window
+	19, // 21: ExecutionRequest.algorithm_results:type_name -> AlgorithmResult
+	10, // 22: ExecutionRequest.algorithms:type_name -> Algorithm
+	16, // 23: ExecutionRequest.algorithm_executions:type_name -> ExecuteAlgorithm
+	19, // 24: ExecutionResult.algorithm_result:type_name -> AlgorithmResult
+	10, // 25: AlgorithmResult.algorithm:type_name -> Algorithm
+	12, // 26: AlgorithmResult.result:type_name -> Result
+	5,  // 27: AlgorithmResult.window:type_name -> Window
+	3,  // 28: HealthCheckResponse.status:type_name -> HealthCheckResponse.Status
+	23, // 29: HealthCheckResponse.metrics:type_name -> ProcessorMetrics
+	13, // 30: InternalState.processors:type_name -> ProcessorRegistration
+	13, // 31: OrcaCore.RegisterProcessor:input_type -> ProcessorRegistration
+	5,  // 32: OrcaCore.EmitWindow:input_type -> Window
+	4,  // 33: OrcaCore.Expose:input_type -> ExposeSettings
+	17, // 34: OrcaProcessor.ExecuteDagPart:input_type -> ExecutionRequest
+	21, // 35: OrcaProcessor.HealthCheck:input_type -> HealthCheckRequest
+	20, // 36: OrcaCore.RegisterProcessor:output_type -> Status
+	8,  // 37: OrcaCore.EmitWindow:output_type -> WindowEmitStatus
+	24, // 38: OrcaCore.Expose:output_type -> InternalState
+	18, // 39: OrcaProcessor.ExecuteDagPart:output_type -> ExecutionResult
+	22, // 40: OrcaProcessor.HealthCheck:output_type -> HealthCheckResponse
+	36, // [36:41] is the sub-list for method output_type
+	31, // [31:36] is the sub-list for method input_type
+	31, // [31:31] is the sub-list for extension type_name
+	31, // [31:31] is the sub-list for extension extendee
+	0,  // [0:31] is the sub-list for field type_name
 }
 
 func init() { file_service_proto_init() }

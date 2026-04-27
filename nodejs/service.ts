@@ -440,7 +440,14 @@ export interface Result {
     { $case: "structValue"; value: { [key: string]: any } | undefined }
     | undefined;
   /** Timestamp when the result was produced */
-  timestamp?: string | undefined;
+  timestamp?:
+    | string
+    | undefined;
+  /**
+   * A freeform struct to include any errof information.
+   * Should only be supplied if the algorithm errored
+   */
+  error?: { [key: string]: any } | undefined;
 }
 
 /**
@@ -1745,7 +1752,7 @@ export const FloatArray: MessageFns<FloatArray> = {
 };
 
 function createBaseResult(): Result {
-  return { status: 0, resultData: undefined, timestamp: "0" };
+  return { status: 0, resultData: undefined, timestamp: "0", error: undefined };
 }
 
 export const Result: MessageFns<Result> = {
@@ -1766,6 +1773,9 @@ export const Result: MessageFns<Result> = {
     }
     if (message.timestamp !== undefined && message.timestamp !== "0") {
       writer.uint32(40).int64(message.timestamp);
+    }
+    if (message.error !== undefined) {
+      Struct.encode(Struct.wrap(message.error), writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -1817,6 +1827,14 @@ export const Result: MessageFns<Result> = {
           message.timestamp = reader.int64().toString();
           continue;
         }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.error = Struct.unwrap(Struct.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1843,6 +1861,7 @@ export const Result: MessageFns<Result> = {
         ? { $case: "structValue", value: object.struct_value }
         : undefined,
       timestamp: isSet(object.timestamp) ? globalThis.String(object.timestamp) : "0",
+      error: isObject(object.error) ? object.error : undefined,
     };
   },
 
@@ -1860,6 +1879,9 @@ export const Result: MessageFns<Result> = {
     }
     if (message.timestamp !== undefined && message.timestamp !== "0") {
       obj.timestamp = message.timestamp;
+    }
+    if (message.error !== undefined) {
+      obj.error = message.error;
     }
     return obj;
   },
@@ -1891,6 +1913,7 @@ export const Result: MessageFns<Result> = {
       }
     }
     message.timestamp = object.timestamp ?? "0";
+    message.error = object.error ?? undefined;
     return message;
   },
 };
