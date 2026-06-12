@@ -7,28 +7,37 @@ import "google/protobuf/timestamp.proto";
 import "vendor/validate.proto";
 
 // OrcaCore is the central orchestration service that:
-// - Manages the lifecycle of processing windows
+// - Registers resources such as data functions, tasks and workflows
+// - Manages the lifecycle of triggering workflows
 // - Coordinates algorithm execution across distributed processors
-// - Tracks DAG dependencies and execution state
-// - Routes results between dependent algorithms
-service OrcaCore {
-  // ------------------- Core operations ------------------- 
+// - Tracks DAG execution state and handles failover
+service Core {
+  // Registers a data function available for calling
+  rpc RegisterDataFunction(DataFunction) return (DataFunctionRegistrationStatus)
 
-  // Register a processor node and its supported algorithms
-  rpc RegisterProcessor(ProcessorRegistration) returns (Status);
+  // Registers a task
+  rpc RegisterTask(Task) return (TaskRegistrationStatus)
 
-  // Submit a window for processing
-  rpc EmitWindow(Window) returns (WindowEmitStatus);
+  // Registers a workflow
+  rpc RegisterWorkflow(Workflow) return (WorkflowRegistrationStatus)
+  
+  // Triggers a workflow
+  rpc TriggerWorkflow(Trigger) return (TriggerStatus)
 
+  // Queries past results for a specific task
+  rpc QueryResults(ResultsQuery) return (TaskResults)
+
+
+
+  // TODO: remove?
   // Expose the internal Orca state
   rpc Expose(ExposeSettings) returns (InternalState);
 }
 
-// OrcaProcessor defines the interface that each processing node must implement.
-// Processors are language-agnostic services that:
-// - Execute individual algorithms
-// - Handle their own internal state
-// - Report results back to the orchestrator
+// Worker defines the interface service that a worker implements to start listening for execution requests.
+// Workers are language-agnostic services that:
+// - Execute Data Functions
+// - Execute individual tasks via workflows
 // Orca will schedule processors asynchronously as per the DAG
 service OrcaProcessor {
   // Execute part of a DAG with streaming results
