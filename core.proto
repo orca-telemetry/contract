@@ -12,28 +12,28 @@ import "shared.proto";
 // - Tracks DAG execution state and handles distributed failure modes
 service Core {
   // Registers a data function available for calling
-  rpc RegisterDataFunction(DataFunction) returns (DataFunctionRegistrationStatus);
+  rpc RegisterDataFunction(RegisterDataFunctionRequest) returns (RegisterDataFunctionResponse);
 
   // Registers a task
-  rpc RegisterTask(Task) returns (TaskRegistrationStatus);
+  rpc RegisterTask(RegisterTaskRequest) returns (RegisterTaskResponse);
 
   // Registers a workflow
-  rpc RegisterWorkflow(Workflow) returns (WorkflowRegistrationStatus);
-  
+  rpc RegisterWorkflow(RegisterWorkflowRequest) returns (RegisterWorkflowResponse);
+
   // Triggers a workflow
-  rpc TriggerWorkflow(Trigger) returns (TriggerStatus);
+  rpc TriggerWorkflow(TriggerWorkflowRequest) returns (TriggerWorkflowResponse);
 
   // Register the completion result of the data function
-  rpc RegisterDataFunctionResult(DataFunctionResult) returns (DataFunctionResultStatus);
+  rpc RegisterDataFunctionResult(RegisterDataFunctionCompletionRequest) returns (RegisterDataFunctionCompletionResponse);
 
   // Registers the result of a task
-  rpc RegisterTaskResult(TaskResult) returns (TaskResultStatus);
+  rpc RegisterTaskResult(RegisterTaskResultRequest) returns (RegisterTaskResultResponse);
 
   // Expose the internal state of the orchestration stack
-  rpc ExposeState(ExposeSettings) returns (InternalState);
+  rpc ExposeState(ExposeStateRequest) returns (ExposeStateResponse);
 
   // Query past results of tasks
-  rpc QueryTaskResult(QueryParams) returns (stream PastReults);
+  rpc QueryTaskResult(QueryParams) returns (stream PastResults);
 };
 
 // ============================================================

@@ -15,10 +15,10 @@ import "shared.proto";
 // workflow segments) as per the distributed DAG.
 service Worker {
   // Execute a data function call
-  rpc ExecuteDataFunction(DataFunction) returns (DataFunctionStatus);
+  rpc ExecuteDataFunction(ExecuteDataFunctionRequest) returns (ExecuteDataFunctionResponse);
 
   // Execute a workflow segment (potentially all of it)
-  rpc ExecuteWorkflowSegment(ExecuteWorkflowRequest) returns (ExecutionWorkflowResult);
+  rpc ExecuteWorkflowSegment(ExecuteWorkflowSegmentRequest) returns (ExecuteWorkflowSegmentResponse);
 
   // Check the liveness of a worker via a simple heartbeat
   rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
