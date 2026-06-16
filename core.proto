@@ -1,5 +1,611 @@
-syntax="proto3";
+syntax = "proto3";
 
 option go_package = "github.com/orca-telemetry/contract/go";
 
-message
+import "google/protobuf/timestamp.proto";
+
+// ============================================================
+// Shared Enums
+// ============================================================
+
+// TriggerSource denotes the origin of a workflow trigger event.
+enum TriggerSource {
+  TRIGGER_SOURCE_UNSPECIFIED = 0;
+  TRIGGER_SOURCE_CRON = 1;
+  TRIGGER_SOURCE_WEBHOOK = 2;
+  TRIGGER_SOURCE_UI = 3;
+  TRIGGER_SOURCE_CLI = 4;
+}
+
+// RegistrationStatus is the result of a registration RPC.
+enum RegistrationStatus {
+  REGISTRATION_STATUS_UNSPECIFIED = 0;
+  REGISTRATION_STATUS_SUCCESSFUL = 1;
+  REGISTRATION_STATUS_FAILED = 2;
+}
+
+// TriggerStatus is the result of a workflow trigger RPC.
+enum TriggerStatus {
+  TRIGGER_STATUS_UNSPECIFIED = 0;
+  TRIGGER_STATUS_ACCEPTED = 1;
+  TRIGGER_STATUS_REJECTED = 2;
+}
+
+// ExecutionStatus is the result of a task or data function execution.
+enum ExecutionStatus {
+  EXECUTION_STATUS_UNSPECIFIED = 0;
+  EXECUTION_STATUS_SUCCESSFUL = 1;
+  EXECUTION_STATUS_FAILED = 2;
+}
+
+// BackoffStrategy defines the retry backoff behaviour for a task.
+enum BackoffStrategy {
+  BACKOFF_STRATEGY_UNSPECIFIED = 0;
+  BACKOFF_STRATEGY_LINEAR = 1;
+  BACKOFF_STRATEGY_EXPONENTIAL = 2;
+}
+
+// ============================================================
+// Shared / Embedded Messages
+// ============================================================
+
+// DataFunctionSettings holds configuration that governs the lifecycle of
+// data produced by a data function.
+message DataFunctionSettings {
+  // TTL controls how long produced data is retained.
+  // 0 = clean up immediately after DAG execution of all dependent tasks completes.
+  // >0 = retention duration in seconds.
+  int64 ttl = 1;
+
+  // Timeout is the maximum duration (in seconds) allowed for the data
+  // function's full lifecycle.
+  int64 timeout = 2;
+}
+
+// TaskExecutionSettings governs how a task is executed and retried.
+message TaskExecutionSettings {
+  // ExecutionTimeout is the maximum duration (in seconds) allowed for a
+  // single task execution attempt.
+  int64 executionTimeout = 1;
+
+  // RetryCount is the number of times the task should be retried on failure.
+  int32 retryCount = 2;
+
+  // BackoffStrategy defines whether retries use linear or exponential backoff.
+  BackoffStrategy backoffStrategy = 3;
+
+  // Deadline is an SLA value in seconds. If execution exceeds this deadline,
+  // an alert is raised against this task's execution status.
+  int64 deadline = 4;
+}
+
+// RequiredPastResult describes a prior task result that must be available
+// before the owning task can execute.
+message RequiredPastResult {
+  // TaskName is the name of the task whose prior result is required.
+  string taskName = 1;
+
+  // ExecutionParams is the marshalled JSON of the execution parameters
+  // used when the referenced workflow was triggered.
+  string executionParams = 2;
+
+  // TaskResult is the expected result value of the referenced task execution.
+  string taskResult = 3;
+}
+
+// WorkflowExecutionSettings defines pipeline-level concurrency and
+// prioritisation configuration.
+message WorkflowExecutionSettings {
+  // PriorityQueue lists tasks that should be prioritised over others
+  // during parallel execution.
+  repeated string priorityQueue = 1;
+
+  // ConcurrencyLimit caps the number of tasks that may execute in
+  // parallel at any point in time.
+  int32 concurrencyLimit = 2;
+}
+
+// ComputeMetrics captures resource consumption for a single task execution.
+message ComputeMetrics {
+  // CpuSeconds is the total CPU time consumed, measured in CPU-seconds.
+  double cpuSeconds = 1;
+
+  // MemoryGiBSeconds is the total memory consumed, measured in GiB-seconds.
+  double memoryGiBSeconds = 2;
+}
+
+// ============================================================
+// Core Entities
+// ============================================================
+
+// DataFunction defines a registered data function and its metadata.
+message DataFunction {
+  // Name is the globally unique identifier for this data function.
+  string name = 1;
+
+  // Hash is the hash of the AST segment that defines the data function.
+  string hash = 2;
+
+  // GitCommitHash is the hash of the git commit at registration time.
+  string gitCommitHash = 3;
+
+  // RepositoryName is the repository in which this data function is defined.
+  string repositoryName = 4;
+
+  // InputModel is a marshalled JSON schema describing the accepted input.
+  // This model must be satisfied by the execution model of the owning workflow.
+  string inputModel = 5;
+
+  // OutputModel is a marshalled JSON schema describing a single output record.
+  // The data function produces an array of this schema, streamed to the
+  // orchestrator for caching. Validated once at retrieval time.
+  string outputModel = 6;
+
+  // Settings governs the lifecycle and retention of data produced by this
+  // data function.
+  DataFunctionSettings settings = 7;
+}
+
+// Task defines a registered task and its execution configuration.
+message Task {
+  // TaskHash is the hash of the AST segment corresponding to this task.
+  string taskHash = 1;
+
+  // Name is the unique name of this task.
+  string name = 2;
+
+  // Description is a human-readable summary of the task's purpose.
+  string description = 3;
+
+  // GitCommitHash is the hash of the git commit at registration time,
+  // inferred from the local .git folder if present.
+  string gitCommitHash = 4;
+
+  // ExecutionSettings governs execution timeouts, retries, backoff, and SLA deadlines.
+  TaskExecutionSettings executionSettings = 5;
+
+  // InputModel is a marshalled JSON schema (JSON Schema Standard) describing
+  // the task's accepted input. Validation and pointer extensions are not enforced.
+  string inputModel = 6;
+
+  // OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
+  // the task's output. Validation and pointer extensions are not enforced.
+  string outputModel = 7;
+
+  // RequiredDataFunctions lists all data functions this task depends on.
+  repeated string requiredDataFunctions = 8;
+
+  // RequiredPastResults lists prior task results that must be available
+  // before this task can execute.
+  repeated RequiredPastResult requiredPastResults = 9;
+
+  // RepositoryName is the workspace repository this task belongs to.
+  string repositoryName = 10;
+}
+
+// Workflow defines a registered workflow, its task graph, and runtime settings.
+message Workflow {
+  // WorkflowName is the globally unique string identifier for this workflow.
+  string workflowName = 1;
+
+  // Description is a human-readable explanation of the workflow's purpose.
+  string description = 2;
+
+  // GitCommitHash is the version control commit hash matching the deployment
+  // workspace state at registration time.
+  string gitCommitHash = 3;
+
+  // RepositoryName is the repository in which this workflow is defined.
+  string repositoryName = 4;
+
+  // WorkflowHash is a hash of the workflow structure, factoring in tasks,
+  // dependencies, and execution models.
+  string workflowHash = 5;
+
+  // Tasks is a list of structural identifiers linking to pre-registered tasks,
+  // including local stubs of cross-language definitions.
+  repeated string tasks = 6;
+
+  // Edges defines the dependency relationships between tasks in this workflow.
+  repeated string edges = 7;
+
+  // ExecutionSettings defines concurrency limits and task prioritisation.
+  WorkflowExecutionSettings executionSettings = 8;
+
+  // ExecutionParametersModel is a marshalled JSON schema describing the
+  // parameters that must be provided at workflow trigger time.
+  string executionParametersModel = 9;
+
+  // HaltOnFailure instructs the orchestrator to stop parallel task execution
+  // if any task encounters a failure.
+  bool haltOnFailure = 10;
+
+  // ConnectionUrl is the gRPC server URL exposing this workflow. Must match
+  // the local or cloud implementation visible to the core orchestrator.
+  string connectionUrl = 11;
+}
+
+// ============================================================
+// RegisterDataFunction RPC
+// ============================================================
+
+// RegisterDataFunctionRequest is the request message for the RegisterDataFunction RPC.
+message RegisterDataFunctionRequest {
+  // Name is the globally unique name for this data function.
+  // A conflict error is raised if this name is already registered.
+  string name = 1;
+
+  // Hash is the hash of the AST segment that defines this data function.
+  string hash = 2;
+
+  // GitCommitHash is the hash of the latest git commit.
+  string gitCommitHash = 3;
+
+  // RepositoryName is the repository in which this data function is defined.
+  string repositoryName = 4;
+
+  // InputModel is a marshalled JSON schema describing the accepted input.
+  // Must be satisfied by the execution model of the owning workflow's tasks.
+  string inputModel = 5;
+
+  // OutputModel is a marshalled JSON schema describing a single output record.
+  // The data function streams an array of this schema to the orchestrator.
+  // Validated once at retrieval time.
+  string outputModel = 6;
+
+  // Settings governs data lifecycle behaviour such as TTL and execution timeout.
+  DataFunctionSettings settings = 7;
+}
+
+// RegisterDataFunctionResponse is the response message for the RegisterDataFunction RPC.
+message RegisterDataFunctionResponse {
+  // Status indicates whether registration succeeded or failed.
+  RegistrationStatus status = 1;
+
+  // Message provides detail on why registration failed, if applicable.
+  string message = 2;
+}
+
+// ============================================================
+// RegisterTask RPC
+// ============================================================
+
+// RegisterTaskRequest is the request message for the RegisterTask RPC.
+message RegisterTaskRequest {
+  // TaskHash is the hash of the AST segment corresponding to the task function.
+  string taskHash = 1;
+
+  // Name is the unique name for this task.
+  string name = 2;
+
+  // Description is a human-readable summary of the task's purpose.
+  string description = 3;
+
+  // GitCommitHash is the hash of the current git commit, inferred from the
+  // local .git folder if present.
+  string gitCommitHash = 4;
+
+  // ExecutionSettings governs timeouts, retry behaviour, backoff strategy,
+  // and SLA deadlines for this task.
+  TaskExecutionSettings executionSettings = 5;
+
+  // InputModel is a marshalled JSON schema (JSON Schema Standard) describing
+  // the task's accepted input. Validation and pointer extensions are not enforced.
+  string inputModel = 6;
+
+  // OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
+  // the task's output. Validation and pointer extensions are not enforced.
+  string outputModel = 7;
+
+  // RequiredDataFunctions is an array of data function names this task depends on.
+  repeated string requiredDataFunctions = 8;
+
+  // RequiredPastResults is an array of prior task results that must be
+  // available before this task can execute.
+  repeated RequiredPastResult requiredPastResults = 9;
+
+  // RepositoryName is the workspace repository this task belongs to.
+  string repositoryName = 10;
+}
+
+// RegisterTaskResponse is the response message for the RegisterTask RPC.
+message RegisterTaskResponse {
+  // Status indicates whether registration succeeded or failed.
+  RegistrationStatus status = 1;
+
+  // Message provides detail on why registration failed, if applicable.
+  string message = 2;
+}
+
+// ============================================================
+// RegisterWorkflow RPC
+// ============================================================
+
+// RegisterWorkflowRequest is the request message for the RegisterWorkflow RPC.
+message RegisterWorkflowRequest {
+  // WorkflowName is a globally unique string identifier for this workflow.
+  string workflowName = 1;
+
+  // Description is a human-readable explanation of the workflow's purpose.
+  string description = 2;
+
+  // GitCommitHash is the version control commit hash matching the current
+  // deployment workspace state.
+  string gitCommitHash = 3;
+
+  // RepositoryName is the repository in which this workflow is defined.
+  string repositoryName = 4;
+
+  // WorkflowHash is a hash of the workflow structure, including tasks,
+  // dependencies, and execution models.
+  string workflowHash = 5;
+
+  // Tasks is a list of structural identifiers for pre-registered tasks,
+  // including local stubs for cross-language definitions.
+  repeated string tasks = 6;
+
+  // Edges defines dependencies between tasks in the workflow DAG.
+  repeated string edges = 7;
+
+  // ExecutionSettings defines concurrency limits and task priority configuration.
+  WorkflowExecutionSettings executionSettings = 8;
+
+  // ExecutionParametersModel is a marshalled JSON schema for the parameters
+  // that must be supplied when this workflow is triggered at runtime.
+  string executionParametersModel = 9;
+
+  // HaltOnFailure, when true, stops parallel task execution if any task fails.
+  bool haltOnFailure = 10;
+
+  // ConnectionUrl is the gRPC server URL exposing this workflow, as seen by
+  // the core orchestrator.
+  string connectionUrl = 11;
+}
+
+// RegisterWorkflowResponse is the response message for the RegisterWorkflow RPC.
+message RegisterWorkflowResponse {
+  // Status indicates whether registration succeeded or failed.
+  RegistrationStatus status = 1;
+
+  // Message provides detail on DAG validation errors (e.g. cyclic dependencies).
+  string message = 2;
+}
+
+// ============================================================
+// TriggerWorkflow RPC
+// ============================================================
+
+// TriggerWorkflowRequest is the request message for the TriggerWorkflow RPC.
+message TriggerWorkflowRequest {
+  // WorkflowName identifies the target workflow to execute.
+  string workflowName = 1;
+
+  // LogicalDate is the target execution timestamp. If unset, execution is immediate.
+  optional google.protobuf.Timestamp logicalDate = 2;
+
+  // ExecutionParameters is a marshalled JSON struct of runtime parameters,
+  // conforming to the workflow's ExecutionParametersModel schema.
+  string executionParameters = 3;
+
+  // TriggerSource identifies the origin of this trigger event.
+  TriggerSource triggerSource = 4;
+}
+
+// TriggerWorkflowResponse is the response message for the TriggerWorkflow RPC.
+message TriggerWorkflowResponse {
+  // WorkflowRunID is the unique runtime execution tracker generated by the
+  // orchestrator for this run.
+  string workflowRunId = 1;
+
+  // Status indicates whether the trigger was accepted or rejected.
+  TriggerStatus status = 2;
+
+  // Message provides detail on parameter or trigger validation failures.
+  string message = 3;
+}
+
+// ============================================================
+// RegisterDataFunctionCompletion RPC
+// ============================================================
+
+// RegisterDataFunctionCompletionRequest is the request message for the
+// RegisterDataFunctionCompletion RPC.
+message RegisterDataFunctionCompletionRequest {
+  // WorkflowRunID is the ID of the workflow run that invoked the data function.
+  string workflowRunId = 1;
+
+  // Status indicates whether the data function completed successfully or failed.
+  ExecutionStatus status = 2;
+
+  // Message is a client-provided description of the failure, ideally including
+  // a full stack trace.
+  string message = 3;
+}
+
+// RegisterDataFunctionCompletionResponse is the response message for the
+// RegisterDataFunctionCompletion RPC. Currently carries no fields.
+message RegisterDataFunctionCompletionResponse {}
+
+// ============================================================
+// RegisterTaskResult RPC
+// ============================================================
+
+// RegisterTaskResultRequest is the request message for the RegisterTaskResult RPC.
+message RegisterTaskResultRequest {
+  // WorkflowRunID is the ID of the workflow run this result belongs to.
+  string workflowRunId = 1;
+
+  // TaskName is the name of the task within the workflow.
+  string taskName = 2;
+
+  // Result is the task's output as a marshalled JSON object. Validated on retrieval.
+  string result = 3;
+
+  // Status indicates whether the task completed successfully or failed.
+  ExecutionStatus status = 4;
+
+  // Message is the failure description produced by the worker, ideally a full
+  // stack trace.
+  string message = 5;
+
+  // ComputeMetrics captures the CPU and memory resources consumed by this task.
+  ComputeMetrics computeMetrics = 6;
+}
+
+// RegisterTaskResultResponse is the response message for the RegisterTaskResult RPC.
+// Currently carries no fields.
+message RegisterTaskResultResponse {}
+
+// ============================================================
+// ExposeState RPC
+// ============================================================
+
+// ExposeStateRequest is the request message for the ExposeState RPC.
+message ExposeStateRequest {
+  // GitCommitHash, if provided, returns state as of that specific commit.
+  // Takes priority over Timestamp when both are set.
+  optional string gitCommitHash = 1;
+
+  // Timestamp, if provided, returns state as of the closest commit to that time.
+  // Ignored if GitCommitHash is set.
+  optional google.protobuf.Timestamp timestamp = 2;
+
+  // Repository, if provided, filters out all assets (Tasks, Workflows,
+  // DataFunctions, etc.) registered under this repository from the response.
+  optional string repository = 3;
+}
+
+// ExposeStateResponse is the response message for the ExposeState RPC.
+message ExposeStateResponse {
+  // Tasks is the array of registered tasks matching the requested state.
+  repeated Task tasks = 1;
+
+  // Workflows is the array of registered workflows and their task references.
+  repeated Workflow workflows = 2;
+
+  // DataFunctions is the array of registered data functions.
+  repeated DataFunction dataFunctions = 3;
+}
+
+
+// ============================================================
+// QueryTaskResult RPC
+// ============================================================
+//
+// The top-level request message for QueryTaskResult.
+message QueryParams {
+  // The name of the task to return results for.
+  string name = 1;
+
+  // Filters applied to execution parameters. Groups are AND-ed together.
+  repeated FilterGroup execution_parameter_filters = 2;
+
+  // Filters applied to task results. Groups are AND-ed together.
+  repeated FilterGroup result_filters = 3;
+
+  // Defines how results should be sorted. Evaluated in order.
+  repeated OrderByStatement order_by = 4;
+
+  // If set, only these keys will be included in each result's payload.
+  repeated string result_fields = 5;
+
+  // The maximum number of results to return. Required.
+  int32 page_size = 6;
+
+  // Opaque token from a previous response. Omit on the first request.
+  optional string page_token = 7;
+}
+
+// The top-level response message for QueryTaskResult.
+message PastResults {
+  // The matched task results.
+  repeated TaskResult results = 1;
+
+  // Opaque token to pass as page_token in the next request.
+  // Absent if there are no further results.
+  optional string next_page_token = 2;
+}
+
+// A single task result entry.
+message TaskResult {
+  // The name of the task.
+  string name = 1;
+
+  // The execution parameters that triggered this task, as a marshalled JSON string.
+  string execution_parameters = 2;
+
+  // The task result, as a marshalled JSON string.
+  // If result_fields was set on the request, only those fields will be present.
+  string result = 3;
+}
+
+// A set of LeafFilters joined by OR. All FilterGroups in a list are AND-ed together.
+message FilterGroup {
+  // At least one filter must match for this group to be satisfied.
+  repeated LeafFilter filters = 1;
+}
+
+// A single condition evaluated against one KV pair.
+message LeafFilter {
+  // The key to filter on.
+  string key = 1;
+
+  // The comparison operation to apply.
+  Comparator comparator = 2;
+
+  // The value(s) to compare against.
+  // Omit for EXISTS and NOT_EXISTS.
+  // Populate values (not value) for IN and NOT_IN.
+  oneof value_oneof {
+    string value = 3;        // For EQ, NEQ, GT, GTE, LT, LTE, CONTAINS, PREFIX
+    StringList values = 4;   // For IN, NOT_IN
+  }
+}
+
+// A wrapper for a list of strings, used for IN / NOT_IN comparators.
+message StringList {
+  repeated string values = 1;
+}
+
+// Defines a single sort statement.
+message OrderByStatement {
+  // The key to sort by.
+  string key = 1;
+
+  // Which table the key belongs to.
+  DataSource source = 2;
+
+  // The sort direction.
+  SortDirection direction = 3;
+}
+
+// The comparator to apply in a LeafFilter.
+enum Comparator {
+  COMPARATOR_UNSPECIFIED = 0;
+  EQ         = 1;  // Equal to
+  NEQ        = 2;  // Not equal to
+  GT         = 3;  // Greater than
+  GTE        = 4;  // Greater than or equal to
+  LT         = 5;  // Less than
+  LTE        = 6;  // Less than or equal to
+  IN         = 7;  // Value is one of a set
+  NOT_IN     = 8;  // Value is not any of a set
+  EXISTS     = 9;  // Key is present (no value required)
+  NOT_EXISTS = 10; // Key is absent (no value required)
+  CONTAINS   = 11; // Value contains the given substring
+  PREFIX     = 12; // Value starts with the given string
+}
+
+// Identifies which data source a key belongs to, used in OrderByStatement.
+enum DataSource {
+  DATA_SOURCE_UNSPECIFIED    = 0;
+  RESULT                     = 1;
+  EXECUTION_PARAMETERS       = 2;
+}
+
+// Sort direction for an OrderByStatement.
+enum SortDirection {
+  SORT_DIRECTION_UNSPECIFIED = 0;
+  ASC                        = 1;
+  DESC                       = 2;
+}

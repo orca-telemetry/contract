@@ -13,10 +13,12 @@ is stored ephemerally ready to be accessed by tasks.
 
 ### Request Message
 
-* **DataFunctionName**: A globally unique name for the data function, if
+* **Name**: A globally unique name for the data function, if
 conflicting name is detected on the server, a conflict is raised 
-* **DataFunctionHash**: A hash of the AST segment that defines the data function
+* **Hash**: A hash of the AST segment that defines the data function
 * **GitCommitHash**: The hash of the latest git commit
+* **RepositoryName**: The name of the repository that the data function is
+defined in.
 * **InputModel**:**&#x20;**&#x41; marshalled JSON schema of the accepted input
 model. This model must be satisfied by the execution model of the workflow that
 owns the task.
@@ -65,6 +67,13 @@ Standard. The validation and pointers extension of the json schema are not
 enforced at registration time or runtime, though may be supported
 * **RequiredDataFunctions**: An array of all of the required data functions that
 this task requires.
+* **RequiredPastResults**: An array of past results that are required by this
+task to execute:
+  * **TaskName**: The name of the task
+  * **ExecutionParams**: The parameters that executed the workflow the task is
+  triggered by
+  * **TaskResult**: Result of the tasks execution
+* **RepositoryName**: The name of the workspace that the task belongs to.
 
 ### Response Message
 
@@ -85,6 +94,8 @@ globally unique definition of the workflow.
 * **Description**: A textual explanation of the workflow's purpose.
 * **GitCommitHash**: The current version control commit hash matching the
 deployment workspace state.
+* **RepositoryName**: The name of the repository that the workflow is defined
+in.
 * **WorkflowHash**: A hash of the workflow structure, factoring in the tasks,
 dependencies, and execution models.
 * **Tasks**: A list of structural identifiers linking to independent,
@@ -133,24 +144,6 @@ orchestrator core.
 * **Status**: Accepted | Rejected
 * **Message**: Information regarding parameter or trigger validation failures.
 
-## QueryPastResults (Lookback API)
-
-A data discovery service allowing worker execution runtimes or the orchestrator
-core to look up historical output states derived from past executions.
-
-**gRPC Mode**: Unary request/response
-
-### Request Message
-
-* **TaskName**: The name of the target task execution records being isolated.
-* **LookbackFilters**: Target data filtering parameters including matching
-entity IDs, historical time boundaries, and record count thresholds.
-
-### Response Message
-
-* **PastResults**: A list of past payload data contexts paired with their
-respective logical run dates and provenance metadata.
-
 ## RegisterDataFunctionCompletion
 
 An RPC that registers that a data function has completed.
@@ -185,6 +178,164 @@ full stack trace)
 CPU-seconds and memory-GiB-seconds expended for this task.
 
 ### Response Message
+
+## ExposeState
+
+An RPC that exposes the inner (current) state of the orchestration stack. Used by CLI
+tooling to build stubs locally that represent the remote state of tasks and
+workflows.
+
+### Request Message
+- **GitCommitHash**: The git commit hash to generate the state for. If omitted, provides the latest state. Take priority over timestamp.
+- **Timestamp**: A timestamp that can be provided to capture the state from. The
+  closest commit to this timestamp will be used.
+- **Repository**: A repository to filter against. If provided, all assets
+(Tasks, Workflows, DataFunctions etc.) registered in this repository will be
+omitted from the response to this RPC.
+
+### Response Message
+- **Tasks**: An array of tasks.
+- **Workflows**: An array of workflows, and their references to tasks.
+- **DataFunctions**: An array of data functions.
+
+## QueryTaskResult
+
+An RPC that queries past task results. Uses Conjunctive Normal Form to construct
+queries to give the user _enough_ flexibility whilst also remaining
+maintainable. Results are streamed back to the worker.
+
+### RequestMessage
+
+- **Name**: The name of the task to return results for.
+- **ExecutionParameterFilters**: A list of `FilterGroup` objects applied to
+  the execution parameters. Groups are evaluated with AND between them. If
+  omitted, no filtering is applied to execution parameters.
+- **ResultFilters**: A list of `FilterGroup` objects applied to the task
+  result. Groups are evaluated with AND between them. If omitted, no filtering
+  is applied to results.
+- **OrderBy**: A list of statements that defines how results should be sorted.
+    - **Key**: The key to sort by.
+    - **Source**: Whether the key belongs to `RESULT` or
+      `EXECUTION_PARAMETERS`.
+    - **Direction**: The sort direction. One of: `ASC`, `DESC`.
+- **ResultFields**: An optional list of keys to return from the result object.
+  If omitted, the full result is returned. If specified, only the listed keys
+  will be included in each result's `Result` payload.
+- **PageSize**: The maximum number of results to return. Required.
+- **PageToken**: An opaque token returned by a previous response used to fetch
+  the next page. Omit on the first request.
+
+### ResponseMessage
+
+- **Results**: An array of task results:
+    - **Name**: The name of the task.
+    - **ExecutionParameters**: The parameters that executed the workflow the
+      task belongs to, as a marshalled JSON string.
+    - **Result**: The task result, as a marshalled JSON string. If
+      `ResultFields` was specified in the request, only those fields will be
+      present.
+- **NextPageToken**: An opaque token to pass as `PageToken` in a subsequent
+  request to retrieve the next page. Absent if there are no further results.
+
+### Supporting Types
+
+#### FilterGroup
+
+A set of conditions joined by OR. At least one condition must be satisfied for
+the group to pass. All `FilterGroup` objects in a list are AND-ed together.
+
+- **Filters**: A non-empty list of `LeafFilter` objects. At least one must
+  match for this group to be satisfied.
+
+#### LeafFilter
+
+A single condition evaluated against one KV pair.
+
+- **Key**: The key to filter on.
+- **Comparator**: The comparison operation to apply. One of:
+    - `EQ` - equal to
+    - `NEQ` - not equal to
+    - `GT` - greater than
+    - `GTE` - greater than or equal to
+    - `LT` - less than
+    - `LTE` - less than or equal to
+    - `IN` - value is one of a set
+    - `NOT_IN` - value is not any of a set
+    - `EXISTS` - the key is present (no `Value` required)
+    - `NOT_EXISTS` - the key is absent (no `Value` required)
+    - `CONTAINS` - value contains the given substring
+    - `PREFIX` - value starts with the given string
+- **Value**: The value to compare against. For `IN` and `NOT_IN`, this is a
+  list of strings. For `EXISTS` and `NOT_EXISTS`, this field is omitted. For
+  all other comparators, this is a single string.
+
+### Examples
+
+#### Simple equality filter
+
+```json
+{
+  "Name": "image-resize",
+  "ExecutionParameterFilters": [
+    {
+      "Filters": [
+        { "Key": "environment", "Comparator": "EQ", "Value": "production" }
+      ]
+    }
+  ],
+  "ResultFilters": [
+    {
+      "Filters": [
+        { "Key": "status", "Comparator": "EQ", "Value": "success" }
+      ]
+    }
+  ],
+  "PageSize": 25
+}
+```
+
+#### Compound CNF filter
+
+Matches tasks where:
+- `environment` is `production` OR `staging`, AND
+- `region` is `us-east-1` OR `eu-west-1`, AND
+- `status` is `success`, AND
+- `duration_ms` is at most `3000`
+
+```json
+{
+  "Name": "image-resize",
+  "ExecutionParameterFilters": [
+    {
+      "Filters": [
+        { "Key": "environment", "Comparator": "EQ", "Value": "production" },
+        { "Key": "environment", "Comparator": "EQ", "Value": "staging" }
+      ]
+    },
+    {
+      "Filters": [
+        { "Key": "region", "Comparator": "EQ", "Value": "us-east-1" },
+        { "Key": "region", "Comparator": "EQ", "Value": "eu-west-1" }
+      ]
+    }
+  ],
+  "ResultFilters": [
+    {
+      "Filters": [
+        { "Key": "status", "Comparator": "EQ", "Value": "success" }
+      ]
+    },
+    {
+      "Filters": [
+        { "Key": "duration_ms", "Comparator": "LTE", "Value": "3000" }
+      ]
+    }
+  ],
+  "OrderBy": { "Key": "duration_ms", "Source": "RESULT", "Direction": "ASC" },
+  "ResultFields": ["status", "duration_ms", "output_url"],
+  "PageSize": 10
+}
+```
 
 # Worker Services
 
