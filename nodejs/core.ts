@@ -245,14 +245,6 @@ export interface DataFunction {
   hash?:
     | string
     | undefined;
-  /** GitCommitHash is the hash of the git commit at registration time. */
-  gitCommitHash?:
-    | string
-    | undefined;
-  /** CodebaseName is the codebase in which this data function is defined. */
-  codebaseName?:
-    | string
-    | undefined;
   /**
    * InputModel is a marshalled JSON schema describing the accepted input.
    * This model must be satisfied by the execution model of the owning workflow.
@@ -289,13 +281,6 @@ export interface Task {
   description?:
     | string
     | undefined;
-  /**
-   * GitCommitHash is the hash of the git commit at registration time,
-   * inferred from the local .git folder if present.
-   */
-  gitCommitHash?:
-    | string
-    | undefined;
   /** ExecutionSettings governs execution timeouts, retries, backoff, and SLA deadlines. */
   executionSettings?:
     | TaskExecutionSettings
@@ -322,11 +307,7 @@ export interface Task {
    * RequiredPastResults lists prior task results that must be available
    * before this task can execute.
    */
-  requiredPastResults?:
-    | RequiredPastResult[]
-    | undefined;
-  /** RepositoryName is the workspace repository this task belongs to. */
-  repositoryName?: string | undefined;
+  requiredPastResults?: RequiredPastResult[] | undefined;
 }
 
 /** Workflow defines a registered workflow, its task graph, and runtime settings. */
@@ -337,17 +318,6 @@ export interface Workflow {
     | undefined;
   /** Description is a human-readable explanation of the workflow's purpose. */
   description?:
-    | string
-    | undefined;
-  /**
-   * GitCommitHash is the version control commit hash matching the deployment
-   * workspace state at registration time.
-   */
-  gitCommitHash?:
-    | string
-    | undefined;
-  /** RepositoryName is the repository in which this workflow is defined. */
-  repositoryName?:
     | string
     | undefined;
   /**
@@ -395,209 +365,69 @@ export interface Workflow {
 
 /**
  * ============================================================
- * RegisterCodebase RPC
+ * RegisterWorkerSnapshot RPC
  * ============================================================
  */
-export interface RegisterCodebaseRequest {
+export interface RegisterWorkerRequest {
   /** Name is the globally unique name of the codebase. */
-  name?: string | undefined;
-}
-
-/** RegisterCodebaseResponse is the response message for the Registercodebase RPC. */
-export interface RegisterCodebaseResponse {
-  /** Status indicates whether registration succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why registration failed, if applicable. */
-  message?: string | undefined;
-}
-
-/** RegisterDataFunctionRequest is the request message for the RegisterDataFunction RPC. */
-export interface RegisterDataFunctionRequest {
-  /**
-   * Name is the globally unique name for this data function.
-   * A conflict error is raised if this name is already registered.
-   */
   name?:
     | string
     | undefined;
-  /** Hash is the hash of the AST segment that defines this data function. */
-  hash?:
-    | string
-    | undefined;
-  /** GitCommitHash is the hash of the latest git commit. */
+  /** GitCommitHash is the current git commit */
   gitCommitHash?:
     | string
     | undefined;
-  /** RepositoryName is the repository in which this data function is defined. */
-  repositoryName?:
-    | string
+  /** Datafunctions is an array of data functions */
+  dataFunctions?:
+    | DataFunction[]
     | undefined;
-  /**
-   * InputModel is a marshalled JSON schema describing the accepted input.
-   * Must be satisfied by the execution model of the owning workflow's tasks.
-   */
-  inputModel?:
-    | string
-    | undefined;
-  /**
-   * OutputModel is a marshalled JSON schema describing a single output record.
-   * The data function streams an array of this schema to the orchestrator.
-   * Validated once at retrieval time.
-   */
-  outputModel?:
-    | string
-    | undefined;
-  /** Settings governs data lifecycle behaviour such as TTL and execution timeout. */
-  settings?: DataFunctionSettings | undefined;
-}
-
-/** RegisterDataFunctionResponse is the response message for the RegisterDataFunction RPC. */
-export interface RegisterDataFunctionResponse {
-  /** Status indicates whether registration succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why registration failed, if applicable. */
-  message?: string | undefined;
-}
-
-/** RegisterTaskRequest is the request message for the RegisterTask RPC. */
-export interface RegisterTaskRequest {
-  /** TaskHash is the hash of the AST segment corresponding to the task function. */
-  taskHash?:
-    | string
-    | undefined;
-  /** Name is the unique name for this task. */
-  name?:
-    | string
-    | undefined;
-  /** Description is a human-readable summary of the task's purpose. */
-  description?:
-    | string
-    | undefined;
-  /**
-   * GitCommitHash is the hash of the current git commit, inferred from the
-   * local .git folder if present.
-   */
-  gitCommitHash?:
-    | string
-    | undefined;
-  /**
-   * ExecutionSettings governs timeouts, retry behaviour, backoff strategy,
-   * and SLA deadlines for this task.
-   */
-  executionSettings?:
-    | TaskExecutionSettings
-    | undefined;
-  /**
-   * InputModel is a marshalled JSON schema (JSON Schema Standard) describing
-   * the task's accepted input. Validation and pointer extensions are not enforced.
-   */
-  inputModel?:
-    | string
-    | undefined;
-  /**
-   * OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
-   * the task's output. Validation and pointer extensions are not enforced.
-   */
-  outputModel?:
-    | string
-    | undefined;
-  /** RequiredDataFunctions is an array of data function names this task depends on. */
-  requiredDataFunctions?:
-    | string[]
-    | undefined;
-  /**
-   * RequiredPastResults is an array of prior task results that must be
-   * available before this task can execute.
-   */
-  requiredPastResults?:
-    | RequiredPastResult[]
-    | undefined;
-  /** RepositoryName is the workspace repository this task belongs to. */
-  repositoryName?: string | undefined;
-}
-
-/** RegisterTaskResponse is the response message for the RegisterTask RPC. */
-export interface RegisterTaskResponse {
-  /** Status indicates whether registration succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why registration failed, if applicable. */
-  message?: string | undefined;
-}
-
-/** RegisterWorkflowRequest is the request message for the RegisterWorkflow RPC. */
-export interface RegisterWorkflowRequest {
-  /** WorkflowName is a globally unique string identifier for this workflow. */
-  workflowName?:
-    | string
-    | undefined;
-  /** Description is a human-readable explanation of the workflow's purpose. */
-  description?:
-    | string
-    | undefined;
-  /**
-   * GitCommitHash is the version control commit hash matching the current
-   * deployment workspace state.
-   */
-  gitCommitHash?:
-    | string
-    | undefined;
-  /** CodebaseName is the codebase in which this workflow is defined. */
-  codebaseName?:
-    | string
-    | undefined;
-  /**
-   * WorkflowHash is a hash of the workflow structure, including tasks,
-   * dependencies, and execution models.
-   */
-  workflowHash?:
-    | string
-    | undefined;
-  /**
-   * Tasks is a list of structural identifiers for pre-registered tasks,
-   * including local stubs for cross-language definitions.
-   */
+  /** Tasks is an array of tasks */
   tasks?:
-    | string[]
+    | Task[]
     | undefined;
-  /** Edges defines dependencies between tasks in the workflow DAG. */
-  edges?:
-    | string[]
-    | undefined;
-  /** ExecutionSettings defines concurrency limits and task priority configuration. */
-  executionSettings?:
-    | WorkflowExecutionSettings
-    | undefined;
-  /**
-   * ExecutionParametersModel is a marshalled JSON schema for the parameters
-   * that must be supplied when this workflow is triggered at runtime.
-   */
-  executionParametersModel?:
-    | string
-    | undefined;
-  /** HaltOnFailure, when true, stops parallel task execution if any task fails. */
-  haltOnFailure?:
-    | boolean
-    | undefined;
-  /**
-   * ConnectionUrl is the gRPC server URL exposing this workflow, as seen by
-   * the core orchestrator.
-   */
-  connectionUrl?: string | undefined;
+  /** Workflows is an array of workflows */
+  workflows?: Workflow[] | undefined;
 }
 
-/** RegisterWorkflowResponse is the response message for the RegisterWorkflow RPC. */
-export interface RegisterWorkflowResponse {
+/** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
+export interface RegisterWorkerResponse {
   /** Status indicates whether registration succeeded or failed. */
   status?:
     | RegistrationStatus
     | undefined;
-  /** Message provides detail on DAG validation errors (e.g. cyclic dependencies). */
+  /** Message provides detail on why registration failed, if applicable. */
+  message?: string | undefined;
+}
+
+/**
+ * ============================================================
+ * RegisterServingStatus RPC
+ * ============================================================
+ * RegisterServingStatus message
+ */
+export interface RegisterServingRequest {
+  /** MD5 hash of the worker */
+  md5?:
+    | string
+    | undefined;
+  /** Connection URL from the perspective of the core orchestrator */
+  connectionUrl?:
+    | string
+    | undefined;
+  /**
+   * Serving percentage to apply when the MD5 exists but has a different
+   * connection URL
+   */
+  servingPercentage?: number | undefined;
+}
+
+/** RegisterServingResponse message */
+export interface RegisterServingResponse {
+  /** Status indicates whether registration succeeded or failed. */
+  status?:
+    | RegistrationStatus
+    | undefined;
+  /** Message provides detail on why registration failed, if applicable. */
   message?: string | undefined;
 }
 
@@ -856,15 +686,7 @@ export interface OrderByStatement {
 }
 
 function createBaseDataFunction(): DataFunction {
-  return {
-    name: "",
-    hash: "",
-    gitCommitHash: "",
-    codebaseName: "",
-    inputModel: "",
-    outputModel: "",
-    settings: undefined,
-  };
+  return { name: "", hash: "", inputModel: "", outputModel: "", settings: undefined };
 }
 
 export const DataFunction: MessageFns<DataFunction> = {
@@ -875,20 +697,14 @@ export const DataFunction: MessageFns<DataFunction> = {
     if (message.hash !== undefined && message.hash !== "") {
       writer.uint32(18).string(message.hash);
     }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      writer.uint32(26).string(message.gitCommitHash);
-    }
-    if (message.codebaseName !== undefined && message.codebaseName !== "") {
-      writer.uint32(34).string(message.codebaseName);
-    }
     if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(42).string(message.inputModel);
+      writer.uint32(26).string(message.inputModel);
     }
     if (message.outputModel !== undefined && message.outputModel !== "") {
-      writer.uint32(50).string(message.outputModel);
+      writer.uint32(34).string(message.outputModel);
     }
     if (message.settings !== undefined) {
-      DataFunctionSettings.encode(message.settings, writer.uint32(58).fork()).join();
+      DataFunctionSettings.encode(message.settings, writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -921,7 +737,7 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.gitCommitHash = reader.string();
+          message.inputModel = reader.string();
           continue;
         }
         case 4: {
@@ -929,27 +745,11 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.codebaseName = reader.string();
+          message.outputModel = reader.string();
           continue;
         }
         case 5: {
           if (tag !== 42) {
-            break;
-          }
-
-          message.inputModel = reader.string();
-          continue;
-        }
-        case 6: {
-          if (tag !== 50) {
-            break;
-          }
-
-          message.outputModel = reader.string();
-          continue;
-        }
-        case 7: {
-          if (tag !== 58) {
             break;
           }
 
@@ -969,8 +769,6 @@ export const DataFunction: MessageFns<DataFunction> = {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       hash: isSet(object.hash) ? globalThis.String(object.hash) : "",
-      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
-      codebaseName: isSet(object.codebaseName) ? globalThis.String(object.codebaseName) : "",
       inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
       outputModel: isSet(object.outputModel) ? globalThis.String(object.outputModel) : "",
       settings: isSet(object.settings) ? DataFunctionSettings.fromJSON(object.settings) : undefined,
@@ -984,12 +782,6 @@ export const DataFunction: MessageFns<DataFunction> = {
     }
     if (message.hash !== undefined && message.hash !== "") {
       obj.hash = message.hash;
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      obj.gitCommitHash = message.gitCommitHash;
-    }
-    if (message.codebaseName !== undefined && message.codebaseName !== "") {
-      obj.codebaseName = message.codebaseName;
     }
     if (message.inputModel !== undefined && message.inputModel !== "") {
       obj.inputModel = message.inputModel;
@@ -1010,8 +802,6 @@ export const DataFunction: MessageFns<DataFunction> = {
     const message = createBaseDataFunction();
     message.name = object.name ?? "";
     message.hash = object.hash ?? "";
-    message.gitCommitHash = object.gitCommitHash ?? "";
-    message.codebaseName = object.codebaseName ?? "";
     message.inputModel = object.inputModel ?? "";
     message.outputModel = object.outputModel ?? "";
     message.settings = (object.settings !== undefined && object.settings !== null)
@@ -1026,13 +816,11 @@ function createBaseTask(): Task {
     taskHash: "",
     name: "",
     description: "",
-    gitCommitHash: "",
     executionSettings: undefined,
     inputModel: "",
     outputModel: "",
     requiredDataFunctions: [],
     requiredPastResults: [],
-    repositoryName: "",
   };
 }
 
@@ -1047,30 +835,24 @@ export const Task: MessageFns<Task> = {
     if (message.description !== undefined && message.description !== "") {
       writer.uint32(26).string(message.description);
     }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      writer.uint32(34).string(message.gitCommitHash);
-    }
     if (message.executionSettings !== undefined) {
-      TaskExecutionSettings.encode(message.executionSettings, writer.uint32(42).fork()).join();
+      TaskExecutionSettings.encode(message.executionSettings, writer.uint32(34).fork()).join();
     }
     if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(50).string(message.inputModel);
+      writer.uint32(42).string(message.inputModel);
     }
     if (message.outputModel !== undefined && message.outputModel !== "") {
-      writer.uint32(58).string(message.outputModel);
+      writer.uint32(50).string(message.outputModel);
     }
     if (message.requiredDataFunctions !== undefined && message.requiredDataFunctions.length !== 0) {
       for (const v of message.requiredDataFunctions) {
-        writer.uint32(66).string(v!);
+        writer.uint32(58).string(v!);
       }
     }
     if (message.requiredPastResults !== undefined && message.requiredPastResults.length !== 0) {
       for (const v of message.requiredPastResults) {
-        RequiredPastResult.encode(v!, writer.uint32(74).fork()).join();
+        RequiredPastResult.encode(v!, writer.uint32(66).fork()).join();
       }
-    }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      writer.uint32(82).string(message.repositoryName);
     }
     return writer;
   },
@@ -1111,7 +893,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          message.gitCommitHash = reader.string();
+          message.executionSettings = TaskExecutionSettings.decode(reader, reader.uint32());
           continue;
         }
         case 5: {
@@ -1119,7 +901,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          message.executionSettings = TaskExecutionSettings.decode(reader, reader.uint32());
+          message.inputModel = reader.string();
           continue;
         }
         case 6: {
@@ -1127,19 +909,11 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          message.inputModel = reader.string();
+          message.outputModel = reader.string();
           continue;
         }
         case 7: {
           if (tag !== 58) {
-            break;
-          }
-
-          message.outputModel = reader.string();
-          continue;
-        }
-        case 8: {
-          if (tag !== 66) {
             break;
           }
 
@@ -1149,8 +923,8 @@ export const Task: MessageFns<Task> = {
           }
           continue;
         }
-        case 9: {
-          if (tag !== 74) {
+        case 8: {
+          if (tag !== 66) {
             break;
           }
 
@@ -1158,14 +932,6 @@ export const Task: MessageFns<Task> = {
           if (el !== undefined) {
             message.requiredPastResults!.push(el);
           }
-          continue;
-        }
-        case 10: {
-          if (tag !== 82) {
-            break;
-          }
-
-          message.repositoryName = reader.string();
           continue;
         }
       }
@@ -1182,7 +948,6 @@ export const Task: MessageFns<Task> = {
       taskHash: isSet(object.taskHash) ? globalThis.String(object.taskHash) : "",
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
-      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
       executionSettings: isSet(object.executionSettings)
         ? TaskExecutionSettings.fromJSON(object.executionSettings)
         : undefined,
@@ -1194,7 +959,6 @@ export const Task: MessageFns<Task> = {
       requiredPastResults: globalThis.Array.isArray(object?.requiredPastResults)
         ? object.requiredPastResults.map((e: any) => RequiredPastResult.fromJSON(e))
         : [],
-      repositoryName: isSet(object.repositoryName) ? globalThis.String(object.repositoryName) : "",
     };
   },
 
@@ -1208,9 +972,6 @@ export const Task: MessageFns<Task> = {
     }
     if (message.description !== undefined && message.description !== "") {
       obj.description = message.description;
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      obj.gitCommitHash = message.gitCommitHash;
     }
     if (message.executionSettings !== undefined) {
       obj.executionSettings = TaskExecutionSettings.toJSON(message.executionSettings);
@@ -1227,9 +988,6 @@ export const Task: MessageFns<Task> = {
     if (message.requiredPastResults?.length) {
       obj.requiredPastResults = message.requiredPastResults.map((e) => RequiredPastResult.toJSON(e));
     }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      obj.repositoryName = message.repositoryName;
-    }
     return obj;
   },
 
@@ -1241,7 +999,6 @@ export const Task: MessageFns<Task> = {
     message.taskHash = object.taskHash ?? "";
     message.name = object.name ?? "";
     message.description = object.description ?? "";
-    message.gitCommitHash = object.gitCommitHash ?? "";
     message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)
       ? TaskExecutionSettings.fromPartial(object.executionSettings)
       : undefined;
@@ -1249,7 +1006,6 @@ export const Task: MessageFns<Task> = {
     message.outputModel = object.outputModel ?? "";
     message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => e) || [];
     message.requiredPastResults = object.requiredPastResults?.map((e) => RequiredPastResult.fromPartial(e)) || [];
-    message.repositoryName = object.repositoryName ?? "";
     return message;
   },
 };
@@ -1258,8 +1014,6 @@ function createBaseWorkflow(): Workflow {
   return {
     workflowName: "",
     description: "",
-    gitCommitHash: "",
-    repositoryName: "",
     workflowHash: "",
     tasks: [],
     edges: [],
@@ -1278,36 +1032,30 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.description !== undefined && message.description !== "") {
       writer.uint32(18).string(message.description);
     }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      writer.uint32(26).string(message.gitCommitHash);
-    }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      writer.uint32(34).string(message.repositoryName);
-    }
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
-      writer.uint32(42).string(message.workflowHash);
+      writer.uint32(26).string(message.workflowHash);
     }
     if (message.tasks !== undefined && message.tasks.length !== 0) {
       for (const v of message.tasks) {
-        writer.uint32(50).string(v!);
+        writer.uint32(34).string(v!);
       }
     }
     if (message.edges !== undefined && message.edges.length !== 0) {
       for (const v of message.edges) {
-        writer.uint32(58).string(v!);
+        writer.uint32(42).string(v!);
       }
     }
     if (message.executionSettings !== undefined) {
-      WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(66).fork()).join();
+      WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(50).fork()).join();
     }
     if (message.executionParametersModel !== undefined && message.executionParametersModel !== "") {
-      writer.uint32(74).string(message.executionParametersModel);
+      writer.uint32(58).string(message.executionParametersModel);
     }
     if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
-      writer.uint32(80).bool(message.haltOnFailure);
+      writer.uint32(64).bool(message.haltOnFailure);
     }
     if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
-      writer.uint32(90).string(message.connectionUrl);
+      writer.uint32(74).string(message.connectionUrl);
     }
     return writer;
   },
@@ -1340,27 +1088,11 @@ export const Workflow: MessageFns<Workflow> = {
             break;
           }
 
-          message.gitCommitHash = reader.string();
+          message.workflowHash = reader.string();
           continue;
         }
         case 4: {
           if (tag !== 34) {
-            break;
-          }
-
-          message.repositoryName = reader.string();
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          message.workflowHash = reader.string();
-          continue;
-        }
-        case 6: {
-          if (tag !== 50) {
             break;
           }
 
@@ -1370,8 +1102,8 @@ export const Workflow: MessageFns<Workflow> = {
           }
           continue;
         }
-        case 7: {
-          if (tag !== 58) {
+        case 5: {
+          if (tag !== 42) {
             break;
           }
 
@@ -1381,32 +1113,32 @@ export const Workflow: MessageFns<Workflow> = {
           }
           continue;
         }
-        case 8: {
-          if (tag !== 66) {
+        case 6: {
+          if (tag !== 50) {
             break;
           }
 
           message.executionSettings = WorkflowExecutionSettings.decode(reader, reader.uint32());
           continue;
         }
-        case 9: {
-          if (tag !== 74) {
+        case 7: {
+          if (tag !== 58) {
             break;
           }
 
           message.executionParametersModel = reader.string();
           continue;
         }
-        case 10: {
-          if (tag !== 80) {
+        case 8: {
+          if (tag !== 64) {
             break;
           }
 
           message.haltOnFailure = reader.bool();
           continue;
         }
-        case 11: {
-          if (tag !== 90) {
+        case 9: {
+          if (tag !== 74) {
             break;
           }
 
@@ -1426,8 +1158,6 @@ export const Workflow: MessageFns<Workflow> = {
     return {
       workflowName: isSet(object.workflowName) ? globalThis.String(object.workflowName) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
-      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
-      repositoryName: isSet(object.repositoryName) ? globalThis.String(object.repositoryName) : "",
       workflowHash: isSet(object.workflowHash) ? globalThis.String(object.workflowHash) : "",
       tasks: globalThis.Array.isArray(object?.tasks) ? object.tasks.map((e: any) => globalThis.String(e)) : [],
       edges: globalThis.Array.isArray(object?.edges) ? object.edges.map((e: any) => globalThis.String(e)) : [],
@@ -1449,12 +1179,6 @@ export const Workflow: MessageFns<Workflow> = {
     }
     if (message.description !== undefined && message.description !== "") {
       obj.description = message.description;
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      obj.gitCommitHash = message.gitCommitHash;
-    }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      obj.repositoryName = message.repositoryName;
     }
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
       obj.workflowHash = message.workflowHash;
@@ -1487,8 +1211,6 @@ export const Workflow: MessageFns<Workflow> = {
     const message = createBaseWorkflow();
     message.workflowName = object.workflowName ?? "";
     message.description = object.description ?? "";
-    message.gitCommitHash = object.gitCommitHash ?? "";
-    message.repositoryName = object.repositoryName ?? "";
     message.workflowHash = object.workflowHash ?? "";
     message.tasks = object.tasks?.map((e) => e) || [];
     message.edges = object.edges?.map((e) => e) || [];
@@ -1502,753 +1224,40 @@ export const Workflow: MessageFns<Workflow> = {
   },
 };
 
-function createBaseRegisterCodebaseRequest(): RegisterCodebaseRequest {
-  return { name: "" };
+function createBaseRegisterWorkerRequest(): RegisterWorkerRequest {
+  return { name: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [] };
 }
 
-export const RegisterCodebaseRequest: MessageFns<RegisterCodebaseRequest> = {
-  encode(message: RegisterCodebaseRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
+  encode(message: RegisterWorkerRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.name !== undefined && message.name !== "") {
       writer.uint32(10).string(message.name);
     }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterCodebaseRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterCodebaseRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.name = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): RegisterCodebaseRequest {
-    return { name: isSet(object.name) ? globalThis.String(object.name) : "" };
-  },
-
-  toJSON(message: RegisterCodebaseRequest): unknown {
-    const obj: any = {};
-    if (message.name !== undefined && message.name !== "") {
-      obj.name = message.name;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<RegisterCodebaseRequest>, I>>(base?: I): RegisterCodebaseRequest {
-    return RegisterCodebaseRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<RegisterCodebaseRequest>, I>>(object: I): RegisterCodebaseRequest {
-    const message = createBaseRegisterCodebaseRequest();
-    message.name = object.name ?? "";
-    return message;
-  },
-};
-
-function createBaseRegisterCodebaseResponse(): RegisterCodebaseResponse {
-  return { status: 0, message: "" };
-}
-
-export const RegisterCodebaseResponse: MessageFns<RegisterCodebaseResponse> = {
-  encode(message: RegisterCodebaseResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterCodebaseResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterCodebaseResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): RegisterCodebaseResponse {
-    return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-    };
-  },
-
-  toJSON(message: RegisterCodebaseResponse): unknown {
-    const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<RegisterCodebaseResponse>, I>>(base?: I): RegisterCodebaseResponse {
-    return RegisterCodebaseResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<RegisterCodebaseResponse>, I>>(object: I): RegisterCodebaseResponse {
-    const message = createBaseRegisterCodebaseResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
-    return message;
-  },
-};
-
-function createBaseRegisterDataFunctionRequest(): RegisterDataFunctionRequest {
-  return {
-    name: "",
-    hash: "",
-    gitCommitHash: "",
-    repositoryName: "",
-    inputModel: "",
-    outputModel: "",
-    settings: undefined,
-  };
-}
-
-export const RegisterDataFunctionRequest: MessageFns<RegisterDataFunctionRequest> = {
-  encode(message: RegisterDataFunctionRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.name !== undefined && message.name !== "") {
-      writer.uint32(10).string(message.name);
-    }
-    if (message.hash !== undefined && message.hash !== "") {
-      writer.uint32(18).string(message.hash);
-    }
     if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      writer.uint32(26).string(message.gitCommitHash);
+      writer.uint32(18).string(message.gitCommitHash);
     }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      writer.uint32(34).string(message.repositoryName);
-    }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(42).string(message.inputModel);
-    }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      writer.uint32(50).string(message.outputModel);
-    }
-    if (message.settings !== undefined) {
-      DataFunctionSettings.encode(message.settings, writer.uint32(58).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterDataFunctionRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterDataFunctionRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.name = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.hash = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.gitCommitHash = reader.string();
-          continue;
-        }
-        case 4: {
-          if (tag !== 34) {
-            break;
-          }
-
-          message.repositoryName = reader.string();
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          message.inputModel = reader.string();
-          continue;
-        }
-        case 6: {
-          if (tag !== 50) {
-            break;
-          }
-
-          message.outputModel = reader.string();
-          continue;
-        }
-        case 7: {
-          if (tag !== 58) {
-            break;
-          }
-
-          message.settings = DataFunctionSettings.decode(reader, reader.uint32());
-          continue;
-        }
+    if (message.dataFunctions !== undefined && message.dataFunctions.length !== 0) {
+      for (const v of message.dataFunctions) {
+        DataFunction.encode(v!, writer.uint32(26).fork()).join();
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): RegisterDataFunctionRequest {
-    return {
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
-      hash: isSet(object.hash) ? globalThis.String(object.hash) : "",
-      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
-      repositoryName: isSet(object.repositoryName) ? globalThis.String(object.repositoryName) : "",
-      inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
-      outputModel: isSet(object.outputModel) ? globalThis.String(object.outputModel) : "",
-      settings: isSet(object.settings) ? DataFunctionSettings.fromJSON(object.settings) : undefined,
-    };
-  },
-
-  toJSON(message: RegisterDataFunctionRequest): unknown {
-    const obj: any = {};
-    if (message.name !== undefined && message.name !== "") {
-      obj.name = message.name;
-    }
-    if (message.hash !== undefined && message.hash !== "") {
-      obj.hash = message.hash;
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      obj.gitCommitHash = message.gitCommitHash;
-    }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      obj.repositoryName = message.repositoryName;
-    }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      obj.inputModel = message.inputModel;
-    }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      obj.outputModel = message.outputModel;
-    }
-    if (message.settings !== undefined) {
-      obj.settings = DataFunctionSettings.toJSON(message.settings);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<RegisterDataFunctionRequest>, I>>(base?: I): RegisterDataFunctionRequest {
-    return RegisterDataFunctionRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<RegisterDataFunctionRequest>, I>>(object: I): RegisterDataFunctionRequest {
-    const message = createBaseRegisterDataFunctionRequest();
-    message.name = object.name ?? "";
-    message.hash = object.hash ?? "";
-    message.gitCommitHash = object.gitCommitHash ?? "";
-    message.repositoryName = object.repositoryName ?? "";
-    message.inputModel = object.inputModel ?? "";
-    message.outputModel = object.outputModel ?? "";
-    message.settings = (object.settings !== undefined && object.settings !== null)
-      ? DataFunctionSettings.fromPartial(object.settings)
-      : undefined;
-    return message;
-  },
-};
-
-function createBaseRegisterDataFunctionResponse(): RegisterDataFunctionResponse {
-  return { status: 0, message: "" };
-}
-
-export const RegisterDataFunctionResponse: MessageFns<RegisterDataFunctionResponse> = {
-  encode(message: RegisterDataFunctionResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterDataFunctionResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterDataFunctionResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): RegisterDataFunctionResponse {
-    return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-    };
-  },
-
-  toJSON(message: RegisterDataFunctionResponse): unknown {
-    const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<RegisterDataFunctionResponse>, I>>(base?: I): RegisterDataFunctionResponse {
-    return RegisterDataFunctionResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<RegisterDataFunctionResponse>, I>>(object: I): RegisterDataFunctionResponse {
-    const message = createBaseRegisterDataFunctionResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
-    return message;
-  },
-};
-
-function createBaseRegisterTaskRequest(): RegisterTaskRequest {
-  return {
-    taskHash: "",
-    name: "",
-    description: "",
-    gitCommitHash: "",
-    executionSettings: undefined,
-    inputModel: "",
-    outputModel: "",
-    requiredDataFunctions: [],
-    requiredPastResults: [],
-    repositoryName: "",
-  };
-}
-
-export const RegisterTaskRequest: MessageFns<RegisterTaskRequest> = {
-  encode(message: RegisterTaskRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.taskHash !== undefined && message.taskHash !== "") {
-      writer.uint32(10).string(message.taskHash);
-    }
-    if (message.name !== undefined && message.name !== "") {
-      writer.uint32(18).string(message.name);
-    }
-    if (message.description !== undefined && message.description !== "") {
-      writer.uint32(26).string(message.description);
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      writer.uint32(34).string(message.gitCommitHash);
-    }
-    if (message.executionSettings !== undefined) {
-      TaskExecutionSettings.encode(message.executionSettings, writer.uint32(42).fork()).join();
-    }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(50).string(message.inputModel);
-    }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      writer.uint32(58).string(message.outputModel);
-    }
-    if (message.requiredDataFunctions !== undefined && message.requiredDataFunctions.length !== 0) {
-      for (const v of message.requiredDataFunctions) {
-        writer.uint32(66).string(v!);
-      }
-    }
-    if (message.requiredPastResults !== undefined && message.requiredPastResults.length !== 0) {
-      for (const v of message.requiredPastResults) {
-        RequiredPastResult.encode(v!, writer.uint32(74).fork()).join();
-      }
-    }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      writer.uint32(82).string(message.repositoryName);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterTaskRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterTaskRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.taskHash = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.name = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.description = reader.string();
-          continue;
-        }
-        case 4: {
-          if (tag !== 34) {
-            break;
-          }
-
-          message.gitCommitHash = reader.string();
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          message.executionSettings = TaskExecutionSettings.decode(reader, reader.uint32());
-          continue;
-        }
-        case 6: {
-          if (tag !== 50) {
-            break;
-          }
-
-          message.inputModel = reader.string();
-          continue;
-        }
-        case 7: {
-          if (tag !== 58) {
-            break;
-          }
-
-          message.outputModel = reader.string();
-          continue;
-        }
-        case 8: {
-          if (tag !== 66) {
-            break;
-          }
-
-          const el = reader.string();
-          if (el !== undefined) {
-            message.requiredDataFunctions!.push(el);
-          }
-          continue;
-        }
-        case 9: {
-          if (tag !== 74) {
-            break;
-          }
-
-          const el = RequiredPastResult.decode(reader, reader.uint32());
-          if (el !== undefined) {
-            message.requiredPastResults!.push(el);
-          }
-          continue;
-        }
-        case 10: {
-          if (tag !== 82) {
-            break;
-          }
-
-          message.repositoryName = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): RegisterTaskRequest {
-    return {
-      taskHash: isSet(object.taskHash) ? globalThis.String(object.taskHash) : "",
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
-      description: isSet(object.description) ? globalThis.String(object.description) : "",
-      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
-      executionSettings: isSet(object.executionSettings)
-        ? TaskExecutionSettings.fromJSON(object.executionSettings)
-        : undefined,
-      inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
-      outputModel: isSet(object.outputModel) ? globalThis.String(object.outputModel) : "",
-      requiredDataFunctions: globalThis.Array.isArray(object?.requiredDataFunctions)
-        ? object.requiredDataFunctions.map((e: any) => globalThis.String(e))
-        : [],
-      requiredPastResults: globalThis.Array.isArray(object?.requiredPastResults)
-        ? object.requiredPastResults.map((e: any) => RequiredPastResult.fromJSON(e))
-        : [],
-      repositoryName: isSet(object.repositoryName) ? globalThis.String(object.repositoryName) : "",
-    };
-  },
-
-  toJSON(message: RegisterTaskRequest): unknown {
-    const obj: any = {};
-    if (message.taskHash !== undefined && message.taskHash !== "") {
-      obj.taskHash = message.taskHash;
-    }
-    if (message.name !== undefined && message.name !== "") {
-      obj.name = message.name;
-    }
-    if (message.description !== undefined && message.description !== "") {
-      obj.description = message.description;
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      obj.gitCommitHash = message.gitCommitHash;
-    }
-    if (message.executionSettings !== undefined) {
-      obj.executionSettings = TaskExecutionSettings.toJSON(message.executionSettings);
-    }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      obj.inputModel = message.inputModel;
-    }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      obj.outputModel = message.outputModel;
-    }
-    if (message.requiredDataFunctions?.length) {
-      obj.requiredDataFunctions = message.requiredDataFunctions;
-    }
-    if (message.requiredPastResults?.length) {
-      obj.requiredPastResults = message.requiredPastResults.map((e) => RequiredPastResult.toJSON(e));
-    }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      obj.repositoryName = message.repositoryName;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<RegisterTaskRequest>, I>>(base?: I): RegisterTaskRequest {
-    return RegisterTaskRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<RegisterTaskRequest>, I>>(object: I): RegisterTaskRequest {
-    const message = createBaseRegisterTaskRequest();
-    message.taskHash = object.taskHash ?? "";
-    message.name = object.name ?? "";
-    message.description = object.description ?? "";
-    message.gitCommitHash = object.gitCommitHash ?? "";
-    message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)
-      ? TaskExecutionSettings.fromPartial(object.executionSettings)
-      : undefined;
-    message.inputModel = object.inputModel ?? "";
-    message.outputModel = object.outputModel ?? "";
-    message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => e) || [];
-    message.requiredPastResults = object.requiredPastResults?.map((e) => RequiredPastResult.fromPartial(e)) || [];
-    message.repositoryName = object.repositoryName ?? "";
-    return message;
-  },
-};
-
-function createBaseRegisterTaskResponse(): RegisterTaskResponse {
-  return { status: 0, message: "" };
-}
-
-export const RegisterTaskResponse: MessageFns<RegisterTaskResponse> = {
-  encode(message: RegisterTaskResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterTaskResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterTaskResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): RegisterTaskResponse {
-    return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-    };
-  },
-
-  toJSON(message: RegisterTaskResponse): unknown {
-    const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<RegisterTaskResponse>, I>>(base?: I): RegisterTaskResponse {
-    return RegisterTaskResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<RegisterTaskResponse>, I>>(object: I): RegisterTaskResponse {
-    const message = createBaseRegisterTaskResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
-    return message;
-  },
-};
-
-function createBaseRegisterWorkflowRequest(): RegisterWorkflowRequest {
-  return {
-    workflowName: "",
-    description: "",
-    gitCommitHash: "",
-    codebaseName: "",
-    workflowHash: "",
-    tasks: [],
-    edges: [],
-    executionSettings: undefined,
-    executionParametersModel: "",
-    haltOnFailure: false,
-    connectionUrl: "",
-  };
-}
-
-export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
-  encode(message: RegisterWorkflowRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.workflowName !== undefined && message.workflowName !== "") {
-      writer.uint32(10).string(message.workflowName);
-    }
-    if (message.description !== undefined && message.description !== "") {
-      writer.uint32(18).string(message.description);
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      writer.uint32(26).string(message.gitCommitHash);
-    }
-    if (message.codebaseName !== undefined && message.codebaseName !== "") {
-      writer.uint32(34).string(message.codebaseName);
-    }
-    if (message.workflowHash !== undefined && message.workflowHash !== "") {
-      writer.uint32(42).string(message.workflowHash);
     }
     if (message.tasks !== undefined && message.tasks.length !== 0) {
       for (const v of message.tasks) {
-        writer.uint32(50).string(v!);
+        Task.encode(v!, writer.uint32(34).fork()).join();
       }
     }
-    if (message.edges !== undefined && message.edges.length !== 0) {
-      for (const v of message.edges) {
-        writer.uint32(58).string(v!);
+    if (message.workflows !== undefined && message.workflows.length !== 0) {
+      for (const v of message.workflows) {
+        Workflow.encode(v!, writer.uint32(42).fork()).join();
       }
-    }
-    if (message.executionSettings !== undefined) {
-      WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(66).fork()).join();
-    }
-    if (message.executionParametersModel !== undefined && message.executionParametersModel !== "") {
-      writer.uint32(74).string(message.executionParametersModel);
-    }
-    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
-      writer.uint32(80).bool(message.haltOnFailure);
-    }
-    if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
-      writer.uint32(90).string(message.connectionUrl);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkflowRequest {
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerRequest {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterWorkflowRequest();
+    const message = createBaseRegisterWorkerRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2257,7 +1266,7 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
             break;
           }
 
-          message.workflowName = reader.string();
+          message.name = reader.string();
           continue;
         }
         case 2: {
@@ -2265,7 +1274,7 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
             break;
           }
 
-          message.description = reader.string();
+          message.gitCommitHash = reader.string();
           continue;
         }
         case 3: {
@@ -2273,7 +1282,10 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
             break;
           }
 
-          message.gitCommitHash = reader.string();
+          const el = DataFunction.decode(reader, reader.uint32());
+          if (el !== undefined) {
+            message.dataFunctions!.push(el);
+          }
           continue;
         }
         case 4: {
@@ -2281,71 +1293,205 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
             break;
           }
 
-          message.codebaseName = reader.string();
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          message.workflowHash = reader.string();
-          continue;
-        }
-        case 6: {
-          if (tag !== 50) {
-            break;
-          }
-
-          const el = reader.string();
+          const el = Task.decode(reader, reader.uint32());
           if (el !== undefined) {
             message.tasks!.push(el);
           }
           continue;
         }
-        case 7: {
-          if (tag !== 58) {
+        case 5: {
+          if (tag !== 42) {
             break;
           }
 
-          const el = reader.string();
+          const el = Workflow.decode(reader, reader.uint32());
           if (el !== undefined) {
-            message.edges!.push(el);
+            message.workflows!.push(el);
           }
           continue;
         }
-        case 8: {
-          if (tag !== 66) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RegisterWorkerRequest {
+    return {
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
+      dataFunctions: globalThis.Array.isArray(object?.dataFunctions)
+        ? object.dataFunctions.map((e: any) => DataFunction.fromJSON(e))
+        : [],
+      tasks: globalThis.Array.isArray(object?.tasks) ? object.tasks.map((e: any) => Task.fromJSON(e)) : [],
+      workflows: globalThis.Array.isArray(object?.workflows)
+        ? object.workflows.map((e: any) => Workflow.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: RegisterWorkerRequest): unknown {
+    const obj: any = {};
+    if (message.name !== undefined && message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      obj.gitCommitHash = message.gitCommitHash;
+    }
+    if (message.dataFunctions?.length) {
+      obj.dataFunctions = message.dataFunctions.map((e) => DataFunction.toJSON(e));
+    }
+    if (message.tasks?.length) {
+      obj.tasks = message.tasks.map((e) => Task.toJSON(e));
+    }
+    if (message.workflows?.length) {
+      obj.workflows = message.workflows.map((e) => Workflow.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RegisterWorkerRequest>, I>>(base?: I): RegisterWorkerRequest {
+    return RegisterWorkerRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RegisterWorkerRequest>, I>>(object: I): RegisterWorkerRequest {
+    const message = createBaseRegisterWorkerRequest();
+    message.name = object.name ?? "";
+    message.gitCommitHash = object.gitCommitHash ?? "";
+    message.dataFunctions = object.dataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
+    message.tasks = object.tasks?.map((e) => Task.fromPartial(e)) || [];
+    message.workflows = object.workflows?.map((e) => Workflow.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseRegisterWorkerResponse(): RegisterWorkerResponse {
+  return { status: 0, message: "" };
+}
+
+export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
+  encode(message: RegisterWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== undefined && message.status !== 0) {
+      writer.uint32(8).int32(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      writer.uint32(18).string(message.message);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegisterWorkerResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
             break;
           }
 
-          message.executionSettings = WorkflowExecutionSettings.decode(reader, reader.uint32());
+          message.status = reader.int32() as any;
           continue;
         }
-        case 9: {
-          if (tag !== 74) {
+        case 2: {
+          if (tag !== 18) {
             break;
           }
 
-          message.executionParametersModel = reader.string();
+          message.message = reader.string();
           continue;
         }
-        case 10: {
-          if (tag !== 80) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RegisterWorkerResponse {
+    return {
+      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+    };
+  },
+
+  toJSON(message: RegisterWorkerResponse): unknown {
+    const obj: any = {};
+    if (message.status !== undefined && message.status !== 0) {
+      obj.status = registrationStatusToJSON(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      obj.message = message.message;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RegisterWorkerResponse>, I>>(base?: I): RegisterWorkerResponse {
+    return RegisterWorkerResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RegisterWorkerResponse>, I>>(object: I): RegisterWorkerResponse {
+    const message = createBaseRegisterWorkerResponse();
+    message.status = object.status ?? 0;
+    message.message = object.message ?? "";
+    return message;
+  },
+};
+
+function createBaseRegisterServingRequest(): RegisterServingRequest {
+  return { md5: "", connectionUrl: "", servingPercentage: undefined };
+}
+
+export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
+  encode(message: RegisterServingRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.md5 !== undefined && message.md5 !== "") {
+      writer.uint32(10).string(message.md5);
+    }
+    if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
+      writer.uint32(18).string(message.connectionUrl);
+    }
+    if (message.servingPercentage !== undefined) {
+      writer.uint32(29).float(message.servingPercentage);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterServingRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegisterServingRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
             break;
           }
 
-          message.haltOnFailure = reader.bool();
+          message.md5 = reader.string();
           continue;
         }
-        case 11: {
-          if (tag !== 90) {
+        case 2: {
+          if (tag !== 18) {
             break;
           }
 
           message.connectionUrl = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 29) {
+            break;
+          }
+
+          message.servingPercentage = reader.float();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2355,92 +1501,46 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
     return message;
   },
 
-  fromJSON(object: any): RegisterWorkflowRequest {
+  fromJSON(object: any): RegisterServingRequest {
     return {
-      workflowName: isSet(object.workflowName) ? globalThis.String(object.workflowName) : "",
-      description: isSet(object.description) ? globalThis.String(object.description) : "",
-      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
-      codebaseName: isSet(object.codebaseName) ? globalThis.String(object.codebaseName) : "",
-      workflowHash: isSet(object.workflowHash) ? globalThis.String(object.workflowHash) : "",
-      tasks: globalThis.Array.isArray(object?.tasks) ? object.tasks.map((e: any) => globalThis.String(e)) : [],
-      edges: globalThis.Array.isArray(object?.edges) ? object.edges.map((e: any) => globalThis.String(e)) : [],
-      executionSettings: isSet(object.executionSettings)
-        ? WorkflowExecutionSettings.fromJSON(object.executionSettings)
-        : undefined,
-      executionParametersModel: isSet(object.executionParametersModel)
-        ? globalThis.String(object.executionParametersModel)
-        : "",
-      haltOnFailure: isSet(object.haltOnFailure) ? globalThis.Boolean(object.haltOnFailure) : false,
+      md5: isSet(object.md5) ? globalThis.String(object.md5) : "",
       connectionUrl: isSet(object.connectionUrl) ? globalThis.String(object.connectionUrl) : "",
+      servingPercentage: isSet(object.servingPercentage) ? globalThis.Number(object.servingPercentage) : undefined,
     };
   },
 
-  toJSON(message: RegisterWorkflowRequest): unknown {
+  toJSON(message: RegisterServingRequest): unknown {
     const obj: any = {};
-    if (message.workflowName !== undefined && message.workflowName !== "") {
-      obj.workflowName = message.workflowName;
-    }
-    if (message.description !== undefined && message.description !== "") {
-      obj.description = message.description;
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      obj.gitCommitHash = message.gitCommitHash;
-    }
-    if (message.codebaseName !== undefined && message.codebaseName !== "") {
-      obj.codebaseName = message.codebaseName;
-    }
-    if (message.workflowHash !== undefined && message.workflowHash !== "") {
-      obj.workflowHash = message.workflowHash;
-    }
-    if (message.tasks?.length) {
-      obj.tasks = message.tasks;
-    }
-    if (message.edges?.length) {
-      obj.edges = message.edges;
-    }
-    if (message.executionSettings !== undefined) {
-      obj.executionSettings = WorkflowExecutionSettings.toJSON(message.executionSettings);
-    }
-    if (message.executionParametersModel !== undefined && message.executionParametersModel !== "") {
-      obj.executionParametersModel = message.executionParametersModel;
-    }
-    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
-      obj.haltOnFailure = message.haltOnFailure;
+    if (message.md5 !== undefined && message.md5 !== "") {
+      obj.md5 = message.md5;
     }
     if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
       obj.connectionUrl = message.connectionUrl;
     }
+    if (message.servingPercentage !== undefined) {
+      obj.servingPercentage = message.servingPercentage;
+    }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RegisterWorkflowRequest>, I>>(base?: I): RegisterWorkflowRequest {
-    return RegisterWorkflowRequest.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<RegisterServingRequest>, I>>(base?: I): RegisterServingRequest {
+    return RegisterServingRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RegisterWorkflowRequest>, I>>(object: I): RegisterWorkflowRequest {
-    const message = createBaseRegisterWorkflowRequest();
-    message.workflowName = object.workflowName ?? "";
-    message.description = object.description ?? "";
-    message.gitCommitHash = object.gitCommitHash ?? "";
-    message.codebaseName = object.codebaseName ?? "";
-    message.workflowHash = object.workflowHash ?? "";
-    message.tasks = object.tasks?.map((e) => e) || [];
-    message.edges = object.edges?.map((e) => e) || [];
-    message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)
-      ? WorkflowExecutionSettings.fromPartial(object.executionSettings)
-      : undefined;
-    message.executionParametersModel = object.executionParametersModel ?? "";
-    message.haltOnFailure = object.haltOnFailure ?? false;
+  fromPartial<I extends Exact<DeepPartial<RegisterServingRequest>, I>>(object: I): RegisterServingRequest {
+    const message = createBaseRegisterServingRequest();
+    message.md5 = object.md5 ?? "";
     message.connectionUrl = object.connectionUrl ?? "";
+    message.servingPercentage = object.servingPercentage ?? undefined;
     return message;
   },
 };
 
-function createBaseRegisterWorkflowResponse(): RegisterWorkflowResponse {
+function createBaseRegisterServingResponse(): RegisterServingResponse {
   return { status: 0, message: "" };
 }
 
-export const RegisterWorkflowResponse: MessageFns<RegisterWorkflowResponse> = {
-  encode(message: RegisterWorkflowResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const RegisterServingResponse: MessageFns<RegisterServingResponse> = {
+  encode(message: RegisterServingResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.status !== undefined && message.status !== 0) {
       writer.uint32(8).int32(message.status);
     }
@@ -2450,10 +1550,10 @@ export const RegisterWorkflowResponse: MessageFns<RegisterWorkflowResponse> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkflowResponse {
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterServingResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterWorkflowResponse();
+    const message = createBaseRegisterServingResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2482,14 +1582,14 @@ export const RegisterWorkflowResponse: MessageFns<RegisterWorkflowResponse> = {
     return message;
   },
 
-  fromJSON(object: any): RegisterWorkflowResponse {
+  fromJSON(object: any): RegisterServingResponse {
     return {
       status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
       message: isSet(object.message) ? globalThis.String(object.message) : "",
     };
   },
 
-  toJSON(message: RegisterWorkflowResponse): unknown {
+  toJSON(message: RegisterServingResponse): unknown {
     const obj: any = {};
     if (message.status !== undefined && message.status !== 0) {
       obj.status = registrationStatusToJSON(message.status);
@@ -2500,11 +1600,11 @@ export const RegisterWorkflowResponse: MessageFns<RegisterWorkflowResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RegisterWorkflowResponse>, I>>(base?: I): RegisterWorkflowResponse {
-    return RegisterWorkflowResponse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<RegisterServingResponse>, I>>(base?: I): RegisterServingResponse {
+    return RegisterServingResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RegisterWorkflowResponse>, I>>(object: I): RegisterWorkflowResponse {
-    const message = createBaseRegisterWorkflowResponse();
+  fromPartial<I extends Exact<DeepPartial<RegisterServingResponse>, I>>(object: I): RegisterServingResponse {
+    const message = createBaseRegisterServingResponse();
     message.status = object.status ?? 0;
     message.message = object.message ?? "";
     return message;
@@ -3987,54 +3087,31 @@ export const OrderByStatement: MessageFns<OrderByStatement> = {
 export type CoreService = typeof CoreService;
 export const CoreService = {
   /**
-   * Registers a codebase, where assets live. Codebases must exist in order
-   * for assets to be registered
+   * Registers a worker, along with all assets defined in the worker's codebase.
+   * This operation is idempotent on the worker name and git commit hash.
    */
-  registerCodebase: {
-    path: "/Core/RegisterCodebase" as const,
+  registerWorkerSnapshot: {
+    path: "/Core/RegisterWorkerSnapshot" as const,
     requestStream: false as const,
     responseStream: false as const,
-    requestSerialize: (value: RegisterCodebaseRequest): Buffer =>
-      Buffer.from(RegisterCodebaseRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): RegisterCodebaseRequest => RegisterCodebaseRequest.decode(value),
-    responseSerialize: (value: RegisterCodebaseResponse): Buffer =>
-      Buffer.from(RegisterCodebaseResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): RegisterCodebaseResponse => RegisterCodebaseResponse.decode(value),
+    requestSerialize: (value: RegisterWorkerRequest): Buffer =>
+      Buffer.from(RegisterWorkerRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RegisterWorkerRequest => RegisterWorkerRequest.decode(value),
+    responseSerialize: (value: RegisterWorkerResponse): Buffer =>
+      Buffer.from(RegisterWorkerResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): RegisterWorkerResponse => RegisterWorkerResponse.decode(value),
   },
-  /** Registers a data function available for calling */
-  registerDataFunction: {
-    path: "/Core/RegisterDataFunction" as const,
+  /** Notify existence */
+  registerServing: {
+    path: "/Core/RegisterServing" as const,
     requestStream: false as const,
     responseStream: false as const,
-    requestSerialize: (value: RegisterDataFunctionRequest): Buffer =>
-      Buffer.from(RegisterDataFunctionRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): RegisterDataFunctionRequest => RegisterDataFunctionRequest.decode(value),
-    responseSerialize: (value: RegisterDataFunctionResponse): Buffer =>
-      Buffer.from(RegisterDataFunctionResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): RegisterDataFunctionResponse => RegisterDataFunctionResponse.decode(value),
-  },
-  /** Registers a task */
-  registerTask: {
-    path: "/Core/RegisterTask" as const,
-    requestStream: false as const,
-    responseStream: false as const,
-    requestSerialize: (value: RegisterTaskRequest): Buffer => Buffer.from(RegisterTaskRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): RegisterTaskRequest => RegisterTaskRequest.decode(value),
-    responseSerialize: (value: RegisterTaskResponse): Buffer =>
-      Buffer.from(RegisterTaskResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): RegisterTaskResponse => RegisterTaskResponse.decode(value),
-  },
-  /** Registers a workflow */
-  registerWorkflow: {
-    path: "/Core/RegisterWorkflow" as const,
-    requestStream: false as const,
-    responseStream: false as const,
-    requestSerialize: (value: RegisterWorkflowRequest): Buffer =>
-      Buffer.from(RegisterWorkflowRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer): RegisterWorkflowRequest => RegisterWorkflowRequest.decode(value),
-    responseSerialize: (value: RegisterWorkflowResponse): Buffer =>
-      Buffer.from(RegisterWorkflowResponse.encode(value).finish()),
-    responseDeserialize: (value: Buffer): RegisterWorkflowResponse => RegisterWorkflowResponse.decode(value),
+    requestSerialize: (value: RegisterServingRequest): Buffer =>
+      Buffer.from(RegisterServingRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RegisterServingRequest => RegisterServingRequest.decode(value),
+    responseSerialize: (value: RegisterServingResponse): Buffer =>
+      Buffer.from(RegisterServingResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): RegisterServingResponse => RegisterServingResponse.decode(value),
   },
   /** Triggers a workflow */
   triggerWorkflow: {
@@ -4098,16 +3175,12 @@ export const CoreService = {
 
 export interface CoreServer extends UntypedServiceImplementation {
   /**
-   * Registers a codebase, where assets live. Codebases must exist in order
-   * for assets to be registered
+   * Registers a worker, along with all assets defined in the worker's codebase.
+   * This operation is idempotent on the worker name and git commit hash.
    */
-  registerCodebase: handleUnaryCall<RegisterCodebaseRequest, RegisterCodebaseResponse>;
-  /** Registers a data function available for calling */
-  registerDataFunction: handleUnaryCall<RegisterDataFunctionRequest, RegisterDataFunctionResponse>;
-  /** Registers a task */
-  registerTask: handleUnaryCall<RegisterTaskRequest, RegisterTaskResponse>;
-  /** Registers a workflow */
-  registerWorkflow: handleUnaryCall<RegisterWorkflowRequest, RegisterWorkflowResponse>;
+  registerWorkerSnapshot: handleUnaryCall<RegisterWorkerRequest, RegisterWorkerResponse>;
+  /** Notify existence */
+  registerServing: handleUnaryCall<RegisterServingRequest, RegisterServingResponse>;
   /** Triggers a workflow */
   triggerWorkflow: handleUnaryCall<TriggerWorkflowRequest, TriggerWorkflowResponse>;
   /** Register the completion result of the data function */
@@ -4125,71 +3198,39 @@ export interface CoreServer extends UntypedServiceImplementation {
 
 export interface CoreClient extends Client {
   /**
-   * Registers a codebase, where assets live. Codebases must exist in order
-   * for assets to be registered
+   * Registers a worker, along with all assets defined in the worker's codebase.
+   * This operation is idempotent on the worker name and git commit hash.
    */
-  registerCodebase(
-    request: RegisterCodebaseRequest,
-    callback: (error: ServiceError | null, response: RegisterCodebaseResponse) => void,
+  registerWorkerSnapshot(
+    request: RegisterWorkerRequest,
+    callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
   ): ClientUnaryCall;
-  registerCodebase(
-    request: RegisterCodebaseRequest,
+  registerWorkerSnapshot(
+    request: RegisterWorkerRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: RegisterCodebaseResponse) => void,
+    callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
   ): ClientUnaryCall;
-  registerCodebase(
-    request: RegisterCodebaseRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: RegisterCodebaseResponse) => void,
-  ): ClientUnaryCall;
-  /** Registers a data function available for calling */
-  registerDataFunction(
-    request: RegisterDataFunctionRequest,
-    callback: (error: ServiceError | null, response: RegisterDataFunctionResponse) => void,
-  ): ClientUnaryCall;
-  registerDataFunction(
-    request: RegisterDataFunctionRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: RegisterDataFunctionResponse) => void,
-  ): ClientUnaryCall;
-  registerDataFunction(
-    request: RegisterDataFunctionRequest,
+  registerWorkerSnapshot(
+    request: RegisterWorkerRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: RegisterDataFunctionResponse) => void,
+    callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
   ): ClientUnaryCall;
-  /** Registers a task */
-  registerTask(
-    request: RegisterTaskRequest,
-    callback: (error: ServiceError | null, response: RegisterTaskResponse) => void,
+  /** Notify existence */
+  registerServing(
+    request: RegisterServingRequest,
+    callback: (error: ServiceError | null, response: RegisterServingResponse) => void,
   ): ClientUnaryCall;
-  registerTask(
-    request: RegisterTaskRequest,
+  registerServing(
+    request: RegisterServingRequest,
     metadata: Metadata,
-    callback: (error: ServiceError | null, response: RegisterTaskResponse) => void,
+    callback: (error: ServiceError | null, response: RegisterServingResponse) => void,
   ): ClientUnaryCall;
-  registerTask(
-    request: RegisterTaskRequest,
-    metadata: Metadata,
-    options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: RegisterTaskResponse) => void,
-  ): ClientUnaryCall;
-  /** Registers a workflow */
-  registerWorkflow(
-    request: RegisterWorkflowRequest,
-    callback: (error: ServiceError | null, response: RegisterWorkflowResponse) => void,
-  ): ClientUnaryCall;
-  registerWorkflow(
-    request: RegisterWorkflowRequest,
-    metadata: Metadata,
-    callback: (error: ServiceError | null, response: RegisterWorkflowResponse) => void,
-  ): ClientUnaryCall;
-  registerWorkflow(
-    request: RegisterWorkflowRequest,
+  registerServing(
+    request: RegisterServingRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
-    callback: (error: ServiceError | null, response: RegisterWorkflowResponse) => void,
+    callback: (error: ServiceError | null, response: RegisterServingResponse) => void,
   ): ClientUnaryCall;
   /** Triggers a workflow */
   triggerWorkflow(

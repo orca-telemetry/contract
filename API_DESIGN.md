@@ -16,6 +16,9 @@ idempotent on git commit has and codebase name.
 
 * **WorkerName**: The name of the worker that implements the assets. Globally unique.
 * **GitCommitHash**: The current git commit of codebase.
+* **MD5**: An MD5 hash performed on the combination of DataFunctions, Tasks, and
+    workflows. Used to check integrity server side and as a lookup index for contacting
+    the worker when the worker notifies of it's readiness to serve.
 * **DataFunctions**: An array of data functions
 * **Tasks**: An array of tasks
 * **Workflows**: An array of workflows.
@@ -93,11 +96,32 @@ that define how a workflow runs:
 model of the execution parameters that should be provided at runtime.
 * **HaltOnFailure**: A flag that states whether parallel execution of tasks
 should be stopped if a task suffers a failure.
-* **ConnectionUrl**: The URL of the gRPC server that exposes the workflow. This
-must match the local or cloud implementation - it is what the core orchestrator
-'sees'
 
-### TriggerWorkflow
+## RegisterServingStatus
+
+This RPC notifies the core orchestrator of service status. It registers with an
+MD5 hash that that would have been indexed at snapshot registration time.
+
+### Request Message
+
+* **MD5**: The MD5 hash of the workers state, including data functions, tasks,
+    and workflows, and worker name. Does not factor in the git commit state.
+* **ConnectionUrl**: The connection URL of the worker. This must be the gRPC URL
+    that the core orchestrator must contact to request processing.
+* **ServingPercentage**: A percentage of traffic that should be served to this
+    worker. Only relevant if the same MD5 hash is provided but a different
+    connection URL. Useful for migrations where the deployment target is
+    changing. Default 100.
+
+### Response Message
+
+The main failure mode of this endpoint is if the worker has not registered
+prior.
+
+* **Status**: Successful | Failed
+* **Message**: Message on why it failed
+
+## TriggerWorkflow
 
 A service that initiates a single execution run of a defined workflow DAG,
 managing execution schedules, webhooks, or explicit user interventions.

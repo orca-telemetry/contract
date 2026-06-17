@@ -209,20 +209,16 @@ type DataFunction struct {
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Hash is the hash of the AST segment that defines the data function.
 	Hash string `protobuf:"bytes,2,opt,name=hash,proto3" json:"hash,omitempty"`
-	// GitCommitHash is the hash of the git commit at registration time.
-	GitCommitHash string `protobuf:"bytes,3,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
-	// CodebaseName is the codebase in which this data function is defined.
-	CodebaseName string `protobuf:"bytes,4,opt,name=codebaseName,proto3" json:"codebaseName,omitempty"`
 	// InputModel is a marshalled JSON schema describing the accepted input.
 	// This model must be satisfied by the execution model of the owning workflow.
-	InputModel string `protobuf:"bytes,5,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
+	InputModel string `protobuf:"bytes,3,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
 	// OutputModel is a marshalled JSON schema describing a single output record.
 	// The data function produces an array of this schema, streamed to the
 	// orchestrator for caching. Validated once at retrieval time.
-	OutputModel string `protobuf:"bytes,6,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
+	OutputModel string `protobuf:"bytes,4,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
 	// Settings governs the lifecycle and retention of data produced by this
 	// data function.
-	Settings      *DataFunctionSettings `protobuf:"bytes,7,opt,name=settings,proto3" json:"settings,omitempty"`
+	Settings      *DataFunctionSettings `protobuf:"bytes,5,opt,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -271,20 +267,6 @@ func (x *DataFunction) GetHash() string {
 	return ""
 }
 
-func (x *DataFunction) GetGitCommitHash() string {
-	if x != nil {
-		return x.GitCommitHash
-	}
-	return ""
-}
-
-func (x *DataFunction) GetCodebaseName() string {
-	if x != nil {
-		return x.CodebaseName
-	}
-	return ""
-}
-
 func (x *DataFunction) GetInputModel() string {
 	if x != nil {
 		return x.InputModel
@@ -315,26 +297,21 @@ type Task struct {
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// Description is a human-readable summary of the task's purpose.
 	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	// GitCommitHash is the hash of the git commit at registration time,
-	// inferred from the local .git folder if present.
-	GitCommitHash string `protobuf:"bytes,4,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
 	// ExecutionSettings governs execution timeouts, retries, backoff, and SLA deadlines.
-	ExecutionSettings *TaskExecutionSettings `protobuf:"bytes,5,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
+	ExecutionSettings *TaskExecutionSettings `protobuf:"bytes,4,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
 	// InputModel is a marshalled JSON schema (JSON Schema Standard) describing
 	// the task's accepted input. Validation and pointer extensions are not enforced.
-	InputModel string `protobuf:"bytes,6,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
+	InputModel string `protobuf:"bytes,5,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
 	// OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
 	// the task's output. Validation and pointer extensions are not enforced.
-	OutputModel string `protobuf:"bytes,7,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
+	OutputModel string `protobuf:"bytes,6,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
 	// RequiredDataFunctions lists all data functions this task depends on.
-	RequiredDataFunctions []string `protobuf:"bytes,8,rep,name=requiredDataFunctions,proto3" json:"requiredDataFunctions,omitempty"`
+	RequiredDataFunctions []string `protobuf:"bytes,7,rep,name=requiredDataFunctions,proto3" json:"requiredDataFunctions,omitempty"`
 	// RequiredPastResults lists prior task results that must be available
 	// before this task can execute.
-	RequiredPastResults []*RequiredPastResult `protobuf:"bytes,9,rep,name=requiredPastResults,proto3" json:"requiredPastResults,omitempty"`
-	// RepositoryName is the workspace repository this task belongs to.
-	RepositoryName string `protobuf:"bytes,10,opt,name=repositoryName,proto3" json:"repositoryName,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	RequiredPastResults []*RequiredPastResult `protobuf:"bytes,8,rep,name=requiredPastResults,proto3" json:"requiredPastResults,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *Task) Reset() {
@@ -388,13 +365,6 @@ func (x *Task) GetDescription() string {
 	return ""
 }
 
-func (x *Task) GetGitCommitHash() string {
-	if x != nil {
-		return x.GitCommitHash
-	}
-	return ""
-}
-
 func (x *Task) GetExecutionSettings() *TaskExecutionSettings {
 	if x != nil {
 		return x.ExecutionSettings
@@ -430,13 +400,6 @@ func (x *Task) GetRequiredPastResults() []*RequiredPastResult {
 	return nil
 }
 
-func (x *Task) GetRepositoryName() string {
-	if x != nil {
-		return x.RepositoryName
-	}
-	return ""
-}
-
 // Workflow defines a registered workflow, its task graph, and runtime settings.
 type Workflow struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -444,30 +407,25 @@ type Workflow struct {
 	WorkflowName string `protobuf:"bytes,1,opt,name=workflowName,proto3" json:"workflowName,omitempty"`
 	// Description is a human-readable explanation of the workflow's purpose.
 	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	// GitCommitHash is the version control commit hash matching the deployment
-	// workspace state at registration time.
-	GitCommitHash string `protobuf:"bytes,3,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
-	// RepositoryName is the repository in which this workflow is defined.
-	RepositoryName string `protobuf:"bytes,4,opt,name=repositoryName,proto3" json:"repositoryName,omitempty"`
 	// WorkflowHash is a hash of the workflow structure, factoring in tasks,
 	// dependencies, and execution models.
-	WorkflowHash string `protobuf:"bytes,5,opt,name=workflowHash,proto3" json:"workflowHash,omitempty"`
+	WorkflowHash string `protobuf:"bytes,3,opt,name=workflowHash,proto3" json:"workflowHash,omitempty"`
 	// Tasks is a list of structural identifiers linking to pre-registered tasks,
 	// including local stubs of cross-language definitions.
-	Tasks []string `protobuf:"bytes,6,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	Tasks []string `protobuf:"bytes,4,rep,name=tasks,proto3" json:"tasks,omitempty"`
 	// Edges defines the dependency relationships between tasks in this workflow.
-	Edges []string `protobuf:"bytes,7,rep,name=edges,proto3" json:"edges,omitempty"`
+	Edges []string `protobuf:"bytes,5,rep,name=edges,proto3" json:"edges,omitempty"`
 	// ExecutionSettings defines concurrency limits and task prioritisation.
-	ExecutionSettings *WorkflowExecutionSettings `protobuf:"bytes,8,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
+	ExecutionSettings *WorkflowExecutionSettings `protobuf:"bytes,6,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
 	// ExecutionParametersModel is a marshalled JSON schema describing the
 	// parameters that must be provided at workflow trigger time.
-	ExecutionParametersModel string `protobuf:"bytes,9,opt,name=executionParametersModel,proto3" json:"executionParametersModel,omitempty"`
+	ExecutionParametersModel string `protobuf:"bytes,7,opt,name=executionParametersModel,proto3" json:"executionParametersModel,omitempty"`
 	// HaltOnFailure instructs the orchestrator to stop parallel task execution
 	// if any task encounters a failure.
-	HaltOnFailure bool `protobuf:"varint,10,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
+	HaltOnFailure bool `protobuf:"varint,8,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
 	// ConnectionUrl is the gRPC server URL exposing this workflow. Must match
 	// the local or cloud implementation visible to the core orchestrator.
-	ConnectionUrl string `protobuf:"bytes,11,opt,name=connectionUrl,proto3" json:"connectionUrl,omitempty"`
+	ConnectionUrl string `protobuf:"bytes,9,opt,name=connectionUrl,proto3" json:"connectionUrl,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -512,20 +470,6 @@ func (x *Workflow) GetWorkflowName() string {
 func (x *Workflow) GetDescription() string {
 	if x != nil {
 		return x.Description
-	}
-	return ""
-}
-
-func (x *Workflow) GetGitCommitHash() string {
-	if x != nil {
-		return x.GitCommitHash
-	}
-	return ""
-}
-
-func (x *Workflow) GetRepositoryName() string {
-	if x != nil {
-		return x.RepositoryName
 	}
 	return ""
 }
@@ -580,30 +524,38 @@ func (x *Workflow) GetConnectionUrl() string {
 }
 
 // ============================================================
-// RegisterCodebase RPC
+// RegisterWorkerSnapshot RPC
 // ============================================================
-type RegisterCodebaseRequest struct {
+type RegisterWorkerRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Name is the globally unique name of the codebase.
-	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// GitCommitHash is the current git commit
+	GitCommitHash string `protobuf:"bytes,2,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
+	// Datafunctions is an array of data functions
+	DataFunctions []*DataFunction `protobuf:"bytes,3,rep,name=dataFunctions,proto3" json:"dataFunctions,omitempty"`
+	// Tasks is an array of tasks
+	Tasks []*Task `protobuf:"bytes,4,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	// Workflows is an array of workflows
+	Workflows     []*Workflow `protobuf:"bytes,5,rep,name=workflows,proto3" json:"workflows,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RegisterCodebaseRequest) Reset() {
-	*x = RegisterCodebaseRequest{}
+func (x *RegisterWorkerRequest) Reset() {
+	*x = RegisterWorkerRequest{}
 	mi := &file_core_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RegisterCodebaseRequest) String() string {
+func (x *RegisterWorkerRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RegisterCodebaseRequest) ProtoMessage() {}
+func (*RegisterWorkerRequest) ProtoMessage() {}
 
-func (x *RegisterCodebaseRequest) ProtoReflect() protoreflect.Message {
+func (x *RegisterWorkerRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_core_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -615,586 +567,72 @@ func (x *RegisterCodebaseRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RegisterCodebaseRequest.ProtoReflect.Descriptor instead.
-func (*RegisterCodebaseRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use RegisterWorkerRequest.ProtoReflect.Descriptor instead.
+func (*RegisterWorkerRequest) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *RegisterCodebaseRequest) GetName() string {
+func (x *RegisterWorkerRequest) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-// RegisterCodebaseResponse is the response message for the Registercodebase RPC.
-type RegisterCodebaseResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Status indicates whether registration succeeded or failed.
-	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
-	// Message provides detail on why registration failed, if applicable.
-	Message       string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RegisterCodebaseResponse) Reset() {
-	*x = RegisterCodebaseResponse{}
-	mi := &file_core_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RegisterCodebaseResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterCodebaseResponse) ProtoMessage() {}
-
-func (x *RegisterCodebaseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterCodebaseResponse.ProtoReflect.Descriptor instead.
-func (*RegisterCodebaseResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *RegisterCodebaseResponse) GetStatus() RegistrationStatus {
-	if x != nil {
-		return x.Status
-	}
-	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
-}
-
-func (x *RegisterCodebaseResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-// RegisterDataFunctionRequest is the request message for the RegisterDataFunction RPC.
-type RegisterDataFunctionRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Name is the globally unique name for this data function.
-	// A conflict error is raised if this name is already registered.
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Hash is the hash of the AST segment that defines this data function.
-	Hash string `protobuf:"bytes,2,opt,name=hash,proto3" json:"hash,omitempty"`
-	// GitCommitHash is the hash of the latest git commit.
-	GitCommitHash string `protobuf:"bytes,3,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
-	// RepositoryName is the repository in which this data function is defined.
-	RepositoryName string `protobuf:"bytes,4,opt,name=repositoryName,proto3" json:"repositoryName,omitempty"`
-	// InputModel is a marshalled JSON schema describing the accepted input.
-	// Must be satisfied by the execution model of the owning workflow's tasks.
-	InputModel string `protobuf:"bytes,5,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
-	// OutputModel is a marshalled JSON schema describing a single output record.
-	// The data function streams an array of this schema to the orchestrator.
-	// Validated once at retrieval time.
-	OutputModel string `protobuf:"bytes,6,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
-	// Settings governs data lifecycle behaviour such as TTL and execution timeout.
-	Settings      *DataFunctionSettings `protobuf:"bytes,7,opt,name=settings,proto3" json:"settings,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RegisterDataFunctionRequest) Reset() {
-	*x = RegisterDataFunctionRequest{}
-	mi := &file_core_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RegisterDataFunctionRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterDataFunctionRequest) ProtoMessage() {}
-
-func (x *RegisterDataFunctionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterDataFunctionRequest.ProtoReflect.Descriptor instead.
-func (*RegisterDataFunctionRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *RegisterDataFunctionRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *RegisterDataFunctionRequest) GetHash() string {
-	if x != nil {
-		return x.Hash
-	}
-	return ""
-}
-
-func (x *RegisterDataFunctionRequest) GetGitCommitHash() string {
+func (x *RegisterWorkerRequest) GetGitCommitHash() string {
 	if x != nil {
 		return x.GitCommitHash
 	}
 	return ""
 }
 
-func (x *RegisterDataFunctionRequest) GetRepositoryName() string {
+func (x *RegisterWorkerRequest) GetDataFunctions() []*DataFunction {
 	if x != nil {
-		return x.RepositoryName
-	}
-	return ""
-}
-
-func (x *RegisterDataFunctionRequest) GetInputModel() string {
-	if x != nil {
-		return x.InputModel
-	}
-	return ""
-}
-
-func (x *RegisterDataFunctionRequest) GetOutputModel() string {
-	if x != nil {
-		return x.OutputModel
-	}
-	return ""
-}
-
-func (x *RegisterDataFunctionRequest) GetSettings() *DataFunctionSettings {
-	if x != nil {
-		return x.Settings
+		return x.DataFunctions
 	}
 	return nil
 }
 
-// RegisterDataFunctionResponse is the response message for the RegisterDataFunction RPC.
-type RegisterDataFunctionResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Status indicates whether registration succeeded or failed.
-	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
-	// Message provides detail on why registration failed, if applicable.
-	Message       string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RegisterDataFunctionResponse) Reset() {
-	*x = RegisterDataFunctionResponse{}
-	mi := &file_core_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RegisterDataFunctionResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterDataFunctionResponse) ProtoMessage() {}
-
-func (x *RegisterDataFunctionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterDataFunctionResponse.ProtoReflect.Descriptor instead.
-func (*RegisterDataFunctionResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *RegisterDataFunctionResponse) GetStatus() RegistrationStatus {
-	if x != nil {
-		return x.Status
-	}
-	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
-}
-
-func (x *RegisterDataFunctionResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-// RegisterTaskRequest is the request message for the RegisterTask RPC.
-type RegisterTaskRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// TaskHash is the hash of the AST segment corresponding to the task function.
-	TaskHash string `protobuf:"bytes,1,opt,name=taskHash,proto3" json:"taskHash,omitempty"`
-	// Name is the unique name for this task.
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	// Description is a human-readable summary of the task's purpose.
-	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	// GitCommitHash is the hash of the current git commit, inferred from the
-	// local .git folder if present.
-	GitCommitHash string `protobuf:"bytes,4,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
-	// ExecutionSettings governs timeouts, retry behaviour, backoff strategy,
-	// and SLA deadlines for this task.
-	ExecutionSettings *TaskExecutionSettings `protobuf:"bytes,5,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
-	// InputModel is a marshalled JSON schema (JSON Schema Standard) describing
-	// the task's accepted input. Validation and pointer extensions are not enforced.
-	InputModel string `protobuf:"bytes,6,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
-	// OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
-	// the task's output. Validation and pointer extensions are not enforced.
-	OutputModel string `protobuf:"bytes,7,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
-	// RequiredDataFunctions is an array of data function names this task depends on.
-	RequiredDataFunctions []string `protobuf:"bytes,8,rep,name=requiredDataFunctions,proto3" json:"requiredDataFunctions,omitempty"`
-	// RequiredPastResults is an array of prior task results that must be
-	// available before this task can execute.
-	RequiredPastResults []*RequiredPastResult `protobuf:"bytes,9,rep,name=requiredPastResults,proto3" json:"requiredPastResults,omitempty"`
-	// RepositoryName is the workspace repository this task belongs to.
-	RepositoryName string `protobuf:"bytes,10,opt,name=repositoryName,proto3" json:"repositoryName,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *RegisterTaskRequest) Reset() {
-	*x = RegisterTaskRequest{}
-	mi := &file_core_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RegisterTaskRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterTaskRequest) ProtoMessage() {}
-
-func (x *RegisterTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterTaskRequest.ProtoReflect.Descriptor instead.
-func (*RegisterTaskRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *RegisterTaskRequest) GetTaskHash() string {
-	if x != nil {
-		return x.TaskHash
-	}
-	return ""
-}
-
-func (x *RegisterTaskRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *RegisterTaskRequest) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *RegisterTaskRequest) GetGitCommitHash() string {
-	if x != nil {
-		return x.GitCommitHash
-	}
-	return ""
-}
-
-func (x *RegisterTaskRequest) GetExecutionSettings() *TaskExecutionSettings {
-	if x != nil {
-		return x.ExecutionSettings
-	}
-	return nil
-}
-
-func (x *RegisterTaskRequest) GetInputModel() string {
-	if x != nil {
-		return x.InputModel
-	}
-	return ""
-}
-
-func (x *RegisterTaskRequest) GetOutputModel() string {
-	if x != nil {
-		return x.OutputModel
-	}
-	return ""
-}
-
-func (x *RegisterTaskRequest) GetRequiredDataFunctions() []string {
-	if x != nil {
-		return x.RequiredDataFunctions
-	}
-	return nil
-}
-
-func (x *RegisterTaskRequest) GetRequiredPastResults() []*RequiredPastResult {
-	if x != nil {
-		return x.RequiredPastResults
-	}
-	return nil
-}
-
-func (x *RegisterTaskRequest) GetRepositoryName() string {
-	if x != nil {
-		return x.RepositoryName
-	}
-	return ""
-}
-
-// RegisterTaskResponse is the response message for the RegisterTask RPC.
-type RegisterTaskResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Status indicates whether registration succeeded or failed.
-	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
-	// Message provides detail on why registration failed, if applicable.
-	Message       string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RegisterTaskResponse) Reset() {
-	*x = RegisterTaskResponse{}
-	mi := &file_core_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RegisterTaskResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterTaskResponse) ProtoMessage() {}
-
-func (x *RegisterTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterTaskResponse.ProtoReflect.Descriptor instead.
-func (*RegisterTaskResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *RegisterTaskResponse) GetStatus() RegistrationStatus {
-	if x != nil {
-		return x.Status
-	}
-	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
-}
-
-func (x *RegisterTaskResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
-// RegisterWorkflowRequest is the request message for the RegisterWorkflow RPC.
-type RegisterWorkflowRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// WorkflowName is a globally unique string identifier for this workflow.
-	WorkflowName string `protobuf:"bytes,1,opt,name=workflowName,proto3" json:"workflowName,omitempty"`
-	// Description is a human-readable explanation of the workflow's purpose.
-	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	// GitCommitHash is the version control commit hash matching the current
-	// deployment workspace state.
-	GitCommitHash string `protobuf:"bytes,3,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
-	// CodebaseName is the codebase in which this workflow is defined.
-	CodebaseName string `protobuf:"bytes,4,opt,name=codebaseName,proto3" json:"codebaseName,omitempty"`
-	// WorkflowHash is a hash of the workflow structure, including tasks,
-	// dependencies, and execution models.
-	WorkflowHash string `protobuf:"bytes,5,opt,name=workflowHash,proto3" json:"workflowHash,omitempty"`
-	// Tasks is a list of structural identifiers for pre-registered tasks,
-	// including local stubs for cross-language definitions.
-	Tasks []string `protobuf:"bytes,6,rep,name=tasks,proto3" json:"tasks,omitempty"`
-	// Edges defines dependencies between tasks in the workflow DAG.
-	Edges []string `protobuf:"bytes,7,rep,name=edges,proto3" json:"edges,omitempty"`
-	// ExecutionSettings defines concurrency limits and task priority configuration.
-	ExecutionSettings *WorkflowExecutionSettings `protobuf:"bytes,8,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
-	// ExecutionParametersModel is a marshalled JSON schema for the parameters
-	// that must be supplied when this workflow is triggered at runtime.
-	ExecutionParametersModel string `protobuf:"bytes,9,opt,name=executionParametersModel,proto3" json:"executionParametersModel,omitempty"`
-	// HaltOnFailure, when true, stops parallel task execution if any task fails.
-	HaltOnFailure bool `protobuf:"varint,10,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
-	// ConnectionUrl is the gRPC server URL exposing this workflow, as seen by
-	// the core orchestrator.
-	ConnectionUrl string `protobuf:"bytes,11,opt,name=connectionUrl,proto3" json:"connectionUrl,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RegisterWorkflowRequest) Reset() {
-	*x = RegisterWorkflowRequest{}
-	mi := &file_core_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RegisterWorkflowRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RegisterWorkflowRequest) ProtoMessage() {}
-
-func (x *RegisterWorkflowRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RegisterWorkflowRequest.ProtoReflect.Descriptor instead.
-func (*RegisterWorkflowRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *RegisterWorkflowRequest) GetWorkflowName() string {
-	if x != nil {
-		return x.WorkflowName
-	}
-	return ""
-}
-
-func (x *RegisterWorkflowRequest) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *RegisterWorkflowRequest) GetGitCommitHash() string {
-	if x != nil {
-		return x.GitCommitHash
-	}
-	return ""
-}
-
-func (x *RegisterWorkflowRequest) GetCodebaseName() string {
-	if x != nil {
-		return x.CodebaseName
-	}
-	return ""
-}
-
-func (x *RegisterWorkflowRequest) GetWorkflowHash() string {
-	if x != nil {
-		return x.WorkflowHash
-	}
-	return ""
-}
-
-func (x *RegisterWorkflowRequest) GetTasks() []string {
+func (x *RegisterWorkerRequest) GetTasks() []*Task {
 	if x != nil {
 		return x.Tasks
 	}
 	return nil
 }
 
-func (x *RegisterWorkflowRequest) GetEdges() []string {
+func (x *RegisterWorkerRequest) GetWorkflows() []*Workflow {
 	if x != nil {
-		return x.Edges
+		return x.Workflows
 	}
 	return nil
 }
 
-func (x *RegisterWorkflowRequest) GetExecutionSettings() *WorkflowExecutionSettings {
-	if x != nil {
-		return x.ExecutionSettings
-	}
-	return nil
-}
-
-func (x *RegisterWorkflowRequest) GetExecutionParametersModel() string {
-	if x != nil {
-		return x.ExecutionParametersModel
-	}
-	return ""
-}
-
-func (x *RegisterWorkflowRequest) GetHaltOnFailure() bool {
-	if x != nil {
-		return x.HaltOnFailure
-	}
-	return false
-}
-
-func (x *RegisterWorkflowRequest) GetConnectionUrl() string {
-	if x != nil {
-		return x.ConnectionUrl
-	}
-	return ""
-}
-
-// RegisterWorkflowResponse is the response message for the RegisterWorkflow RPC.
-type RegisterWorkflowResponse struct {
+// RegisterWorkerResponse is the response message for the Registercodebase RPC.
+type RegisterWorkerResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Status indicates whether registration succeeded or failed.
 	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
-	// Message provides detail on DAG validation errors (e.g. cyclic dependencies).
+	// Message provides detail on why registration failed, if applicable.
 	Message       string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RegisterWorkflowResponse) Reset() {
-	*x = RegisterWorkflowResponse{}
-	mi := &file_core_proto_msgTypes[10]
+func (x *RegisterWorkerResponse) Reset() {
+	*x = RegisterWorkerResponse{}
+	mi := &file_core_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RegisterWorkflowResponse) String() string {
+func (x *RegisterWorkerResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RegisterWorkflowResponse) ProtoMessage() {}
+func (*RegisterWorkerResponse) ProtoMessage() {}
 
-func (x *RegisterWorkflowResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[10]
+func (x *RegisterWorkerResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_core_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1205,19 +643,142 @@ func (x *RegisterWorkflowResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RegisterWorkflowResponse.ProtoReflect.Descriptor instead.
-func (*RegisterWorkflowResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{10}
+// Deprecated: Use RegisterWorkerResponse.ProtoReflect.Descriptor instead.
+func (*RegisterWorkerResponse) Descriptor() ([]byte, []int) {
+	return file_core_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *RegisterWorkflowResponse) GetStatus() RegistrationStatus {
+func (x *RegisterWorkerResponse) GetStatus() RegistrationStatus {
 	if x != nil {
 		return x.Status
 	}
 	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
 }
 
-func (x *RegisterWorkflowResponse) GetMessage() string {
+func (x *RegisterWorkerResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// ============================================================
+// RegisterServingStatus RPC
+// ============================================================
+// RegisterServingStatus message
+type RegisterServingRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// MD5 hash of the worker
+	Md5 string `protobuf:"bytes,1,opt,name=md5,proto3" json:"md5,omitempty"`
+	// Connection URL from the perspective of the core orchestrator
+	ConnectionUrl string `protobuf:"bytes,2,opt,name=connectionUrl,proto3" json:"connectionUrl,omitempty"`
+	// Serving percentage to apply when the MD5 exists but has a different
+	// connection URL
+	ServingPercentage *float32 `protobuf:"fixed32,3,opt,name=servingPercentage,proto3,oneof" json:"servingPercentage,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *RegisterServingRequest) Reset() {
+	*x = RegisterServingRequest{}
+	mi := &file_core_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegisterServingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterServingRequest) ProtoMessage() {}
+
+func (x *RegisterServingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_core_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterServingRequest.ProtoReflect.Descriptor instead.
+func (*RegisterServingRequest) Descriptor() ([]byte, []int) {
+	return file_core_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *RegisterServingRequest) GetMd5() string {
+	if x != nil {
+		return x.Md5
+	}
+	return ""
+}
+
+func (x *RegisterServingRequest) GetConnectionUrl() string {
+	if x != nil {
+		return x.ConnectionUrl
+	}
+	return ""
+}
+
+func (x *RegisterServingRequest) GetServingPercentage() float32 {
+	if x != nil && x.ServingPercentage != nil {
+		return *x.ServingPercentage
+	}
+	return 0
+}
+
+// RegisterServingResponse message
+type RegisterServingResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Status indicates whether registration succeeded or failed.
+	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
+	// Message provides detail on why registration failed, if applicable.
+	Message       string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RegisterServingResponse) Reset() {
+	*x = RegisterServingResponse{}
+	mi := &file_core_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegisterServingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterServingResponse) ProtoMessage() {}
+
+func (x *RegisterServingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_core_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterServingResponse.ProtoReflect.Descriptor instead.
+func (*RegisterServingResponse) Descriptor() ([]byte, []int) {
+	return file_core_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *RegisterServingResponse) GetStatus() RegistrationStatus {
+	if x != nil {
+		return x.Status
+	}
+	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
+}
+
+func (x *RegisterServingResponse) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
@@ -1242,7 +803,7 @@ type TriggerWorkflowRequest struct {
 
 func (x *TriggerWorkflowRequest) Reset() {
 	*x = TriggerWorkflowRequest{}
-	mi := &file_core_proto_msgTypes[11]
+	mi := &file_core_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1254,7 +815,7 @@ func (x *TriggerWorkflowRequest) String() string {
 func (*TriggerWorkflowRequest) ProtoMessage() {}
 
 func (x *TriggerWorkflowRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[11]
+	mi := &file_core_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1267,7 +828,7 @@ func (x *TriggerWorkflowRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TriggerWorkflowRequest.ProtoReflect.Descriptor instead.
 func (*TriggerWorkflowRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{11}
+	return file_core_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *TriggerWorkflowRequest) GetWorkflowName() string {
@@ -1314,7 +875,7 @@ type TriggerWorkflowResponse struct {
 
 func (x *TriggerWorkflowResponse) Reset() {
 	*x = TriggerWorkflowResponse{}
-	mi := &file_core_proto_msgTypes[12]
+	mi := &file_core_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1326,7 +887,7 @@ func (x *TriggerWorkflowResponse) String() string {
 func (*TriggerWorkflowResponse) ProtoMessage() {}
 
 func (x *TriggerWorkflowResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[12]
+	mi := &file_core_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1339,7 +900,7 @@ func (x *TriggerWorkflowResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TriggerWorkflowResponse.ProtoReflect.Descriptor instead.
 func (*TriggerWorkflowResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{12}
+	return file_core_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *TriggerWorkflowResponse) GetWorkflowRunId() string {
@@ -1380,7 +941,7 @@ type RegisterDataFunctionCompletionRequest struct {
 
 func (x *RegisterDataFunctionCompletionRequest) Reset() {
 	*x = RegisterDataFunctionCompletionRequest{}
-	mi := &file_core_proto_msgTypes[13]
+	mi := &file_core_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1392,7 +953,7 @@ func (x *RegisterDataFunctionCompletionRequest) String() string {
 func (*RegisterDataFunctionCompletionRequest) ProtoMessage() {}
 
 func (x *RegisterDataFunctionCompletionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[13]
+	mi := &file_core_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1405,7 +966,7 @@ func (x *RegisterDataFunctionCompletionRequest) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use RegisterDataFunctionCompletionRequest.ProtoReflect.Descriptor instead.
 func (*RegisterDataFunctionCompletionRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{13}
+	return file_core_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *RegisterDataFunctionCompletionRequest) GetWorkflowRunId() string {
@@ -1439,7 +1000,7 @@ type RegisterDataFunctionCompletionResponse struct {
 
 func (x *RegisterDataFunctionCompletionResponse) Reset() {
 	*x = RegisterDataFunctionCompletionResponse{}
-	mi := &file_core_proto_msgTypes[14]
+	mi := &file_core_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1451,7 +1012,7 @@ func (x *RegisterDataFunctionCompletionResponse) String() string {
 func (*RegisterDataFunctionCompletionResponse) ProtoMessage() {}
 
 func (x *RegisterDataFunctionCompletionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[14]
+	mi := &file_core_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1464,7 +1025,7 @@ func (x *RegisterDataFunctionCompletionResponse) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use RegisterDataFunctionCompletionResponse.ProtoReflect.Descriptor instead.
 func (*RegisterDataFunctionCompletionResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{14}
+	return file_core_proto_rawDescGZIP(), []int{10}
 }
 
 // RegisterTaskResultRequest is the request message for the RegisterTaskResult RPC.
@@ -1489,7 +1050,7 @@ type RegisterTaskResultRequest struct {
 
 func (x *RegisterTaskResultRequest) Reset() {
 	*x = RegisterTaskResultRequest{}
-	mi := &file_core_proto_msgTypes[15]
+	mi := &file_core_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1501,7 +1062,7 @@ func (x *RegisterTaskResultRequest) String() string {
 func (*RegisterTaskResultRequest) ProtoMessage() {}
 
 func (x *RegisterTaskResultRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[15]
+	mi := &file_core_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1514,7 +1075,7 @@ func (x *RegisterTaskResultRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterTaskResultRequest.ProtoReflect.Descriptor instead.
 func (*RegisterTaskResultRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{15}
+	return file_core_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *RegisterTaskResultRequest) GetWorkflowRunId() string {
@@ -1569,7 +1130,7 @@ type RegisterTaskResultResponse struct {
 
 func (x *RegisterTaskResultResponse) Reset() {
 	*x = RegisterTaskResultResponse{}
-	mi := &file_core_proto_msgTypes[16]
+	mi := &file_core_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1581,7 +1142,7 @@ func (x *RegisterTaskResultResponse) String() string {
 func (*RegisterTaskResultResponse) ProtoMessage() {}
 
 func (x *RegisterTaskResultResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[16]
+	mi := &file_core_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1594,7 +1155,7 @@ func (x *RegisterTaskResultResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterTaskResultResponse.ProtoReflect.Descriptor instead.
 func (*RegisterTaskResultResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{16}
+	return file_core_proto_rawDescGZIP(), []int{12}
 }
 
 // ExposeStateRequest is the request message for the ExposeState RPC.
@@ -1615,7 +1176,7 @@ type ExposeStateRequest struct {
 
 func (x *ExposeStateRequest) Reset() {
 	*x = ExposeStateRequest{}
-	mi := &file_core_proto_msgTypes[17]
+	mi := &file_core_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1627,7 +1188,7 @@ func (x *ExposeStateRequest) String() string {
 func (*ExposeStateRequest) ProtoMessage() {}
 
 func (x *ExposeStateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[17]
+	mi := &file_core_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1640,7 +1201,7 @@ func (x *ExposeStateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExposeStateRequest.ProtoReflect.Descriptor instead.
 func (*ExposeStateRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{17}
+	return file_core_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ExposeStateRequest) GetGitCommitHash() string {
@@ -1679,7 +1240,7 @@ type ExposeStateResponse struct {
 
 func (x *ExposeStateResponse) Reset() {
 	*x = ExposeStateResponse{}
-	mi := &file_core_proto_msgTypes[18]
+	mi := &file_core_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1691,7 +1252,7 @@ func (x *ExposeStateResponse) String() string {
 func (*ExposeStateResponse) ProtoMessage() {}
 
 func (x *ExposeStateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[18]
+	mi := &file_core_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1704,7 +1265,7 @@ func (x *ExposeStateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExposeStateResponse.ProtoReflect.Descriptor instead.
 func (*ExposeStateResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{18}
+	return file_core_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ExposeStateResponse) GetTasks() []*Task {
@@ -1755,7 +1316,7 @@ type QueryParams struct {
 
 func (x *QueryParams) Reset() {
 	*x = QueryParams{}
-	mi := &file_core_proto_msgTypes[19]
+	mi := &file_core_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1767,7 +1328,7 @@ func (x *QueryParams) String() string {
 func (*QueryParams) ProtoMessage() {}
 
 func (x *QueryParams) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[19]
+	mi := &file_core_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1780,7 +1341,7 @@ func (x *QueryParams) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryParams.ProtoReflect.Descriptor instead.
 func (*QueryParams) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{19}
+	return file_core_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *QueryParams) GetName() string {
@@ -1846,7 +1407,7 @@ type PastResults struct {
 
 func (x *PastResults) Reset() {
 	*x = PastResults{}
-	mi := &file_core_proto_msgTypes[20]
+	mi := &file_core_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1858,7 +1419,7 @@ func (x *PastResults) String() string {
 func (*PastResults) ProtoMessage() {}
 
 func (x *PastResults) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[20]
+	mi := &file_core_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1871,7 +1432,7 @@ func (x *PastResults) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PastResults.ProtoReflect.Descriptor instead.
 func (*PastResults) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{20}
+	return file_core_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *PastResults) GetResults() []*TaskResult {
@@ -1904,7 +1465,7 @@ type TaskResult struct {
 
 func (x *TaskResult) Reset() {
 	*x = TaskResult{}
-	mi := &file_core_proto_msgTypes[21]
+	mi := &file_core_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1916,7 +1477,7 @@ func (x *TaskResult) String() string {
 func (*TaskResult) ProtoMessage() {}
 
 func (x *TaskResult) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[21]
+	mi := &file_core_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1929,7 +1490,7 @@ func (x *TaskResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskResult.ProtoReflect.Descriptor instead.
 func (*TaskResult) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{21}
+	return file_core_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *TaskResult) GetName() string {
@@ -1964,7 +1525,7 @@ type FilterGroup struct {
 
 func (x *FilterGroup) Reset() {
 	*x = FilterGroup{}
-	mi := &file_core_proto_msgTypes[22]
+	mi := &file_core_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1976,7 +1537,7 @@ func (x *FilterGroup) String() string {
 func (*FilterGroup) ProtoMessage() {}
 
 func (x *FilterGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[22]
+	mi := &file_core_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1989,7 +1550,7 @@ func (x *FilterGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FilterGroup.ProtoReflect.Descriptor instead.
 func (*FilterGroup) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{22}
+	return file_core_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *FilterGroup) GetFilters() []*LeafFilter {
@@ -2021,7 +1582,7 @@ type LeafFilter struct {
 
 func (x *LeafFilter) Reset() {
 	*x = LeafFilter{}
-	mi := &file_core_proto_msgTypes[23]
+	mi := &file_core_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2033,7 +1594,7 @@ func (x *LeafFilter) String() string {
 func (*LeafFilter) ProtoMessage() {}
 
 func (x *LeafFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[23]
+	mi := &file_core_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2046,7 +1607,7 @@ func (x *LeafFilter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeafFilter.ProtoReflect.Descriptor instead.
 func (*LeafFilter) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{23}
+	return file_core_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *LeafFilter) GetKey() string {
@@ -2114,7 +1675,7 @@ type StringList struct {
 
 func (x *StringList) Reset() {
 	*x = StringList{}
-	mi := &file_core_proto_msgTypes[24]
+	mi := &file_core_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2126,7 +1687,7 @@ func (x *StringList) String() string {
 func (*StringList) ProtoMessage() {}
 
 func (x *StringList) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[24]
+	mi := &file_core_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2139,7 +1700,7 @@ func (x *StringList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StringList.ProtoReflect.Descriptor instead.
 func (*StringList) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{24}
+	return file_core_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *StringList) GetValues() []string {
@@ -2164,7 +1725,7 @@ type OrderByStatement struct {
 
 func (x *OrderByStatement) Reset() {
 	*x = OrderByStatement{}
-	mi := &file_core_proto_msgTypes[25]
+	mi := &file_core_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2176,7 +1737,7 @@ func (x *OrderByStatement) String() string {
 func (*OrderByStatement) ProtoMessage() {}
 
 func (x *OrderByStatement) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[25]
+	mi := &file_core_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2189,7 +1750,7 @@ func (x *OrderByStatement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderByStatement.ProtoReflect.Descriptor instead.
 func (*OrderByStatement) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{25}
+	return file_core_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *OrderByStatement) GetKey() string {
@@ -2218,93 +1779,51 @@ var File_core_proto protoreflect.FileDescriptor
 const file_core_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"core.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\fshared.proto\"\xf5\x01\n" +
+	"core.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\fshared.proto\"\xab\x01\n" +
 	"\fDataFunction\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
-	"\x04hash\x18\x02 \x01(\tR\x04hash\x12$\n" +
-	"\rgitCommitHash\x18\x03 \x01(\tR\rgitCommitHash\x12\"\n" +
-	"\fcodebaseName\x18\x04 \x01(\tR\fcodebaseName\x12\x1e\n" +
+	"\x04hash\x18\x02 \x01(\tR\x04hash\x12\x1e\n" +
 	"\n" +
-	"inputModel\x18\x05 \x01(\tR\n" +
+	"inputModel\x18\x03 \x01(\tR\n" +
 	"inputModel\x12 \n" +
-	"\voutputModel\x18\x06 \x01(\tR\voutputModel\x121\n" +
-	"\bsettings\x18\a \x01(\v2\x15.DataFunctionSettingsR\bsettings\"\xab\x03\n" +
+	"\voutputModel\x18\x04 \x01(\tR\voutputModel\x121\n" +
+	"\bsettings\x18\x05 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"\xdd\x02\n" +
 	"\x04Task\x12\x1a\n" +
 	"\btaskHash\x18\x01 \x01(\tR\btaskHash\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12$\n" +
-	"\rgitCommitHash\x18\x04 \x01(\tR\rgitCommitHash\x12D\n" +
-	"\x11executionSettings\x18\x05 \x01(\v2\x16.TaskExecutionSettingsR\x11executionSettings\x12\x1e\n" +
-	"\n" +
-	"inputModel\x18\x06 \x01(\tR\n" +
-	"inputModel\x12 \n" +
-	"\voutputModel\x18\a \x01(\tR\voutputModel\x124\n" +
-	"\x15requiredDataFunctions\x18\b \x03(\tR\x15requiredDataFunctions\x12E\n" +
-	"\x13requiredPastResults\x18\t \x03(\v2\x13.RequiredPastResultR\x13requiredPastResults\x12&\n" +
-	"\x0erepositoryName\x18\n" +
-	" \x01(\tR\x0erepositoryName\"\xc0\x03\n" +
-	"\bWorkflow\x12\"\n" +
-	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12$\n" +
-	"\rgitCommitHash\x18\x03 \x01(\tR\rgitCommitHash\x12&\n" +
-	"\x0erepositoryName\x18\x04 \x01(\tR\x0erepositoryName\x12\"\n" +
-	"\fworkflowHash\x18\x05 \x01(\tR\fworkflowHash\x12\x14\n" +
-	"\x05tasks\x18\x06 \x03(\tR\x05tasks\x12\x14\n" +
-	"\x05edges\x18\a \x03(\tR\x05edges\x12H\n" +
-	"\x11executionSettings\x18\b \x01(\v2\x1a.WorkflowExecutionSettingsR\x11executionSettings\x12:\n" +
-	"\x18executionParametersModel\x18\t \x01(\tR\x18executionParametersModel\x12$\n" +
-	"\rhaltOnFailure\x18\n" +
-	" \x01(\bR\rhaltOnFailure\x12$\n" +
-	"\rconnectionUrl\x18\v \x01(\tR\rconnectionUrl\"-\n" +
-	"\x17RegisterCodebaseRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\"a\n" +
-	"\x18RegisterCodebaseResponse\x12+\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\x88\x02\n" +
-	"\x1bRegisterDataFunctionRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
-	"\x04hash\x18\x02 \x01(\tR\x04hash\x12$\n" +
-	"\rgitCommitHash\x18\x03 \x01(\tR\rgitCommitHash\x12&\n" +
-	"\x0erepositoryName\x18\x04 \x01(\tR\x0erepositoryName\x12\x1e\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12D\n" +
+	"\x11executionSettings\x18\x04 \x01(\v2\x16.TaskExecutionSettingsR\x11executionSettings\x12\x1e\n" +
 	"\n" +
 	"inputModel\x18\x05 \x01(\tR\n" +
 	"inputModel\x12 \n" +
-	"\voutputModel\x18\x06 \x01(\tR\voutputModel\x121\n" +
-	"\bsettings\x18\a \x01(\v2\x15.DataFunctionSettingsR\bsettings\"e\n" +
-	"\x1cRegisterDataFunctionResponse\x12+\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\xba\x03\n" +
-	"\x13RegisterTaskRequest\x12\x1a\n" +
-	"\btaskHash\x18\x01 \x01(\tR\btaskHash\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12$\n" +
-	"\rgitCommitHash\x18\x04 \x01(\tR\rgitCommitHash\x12D\n" +
-	"\x11executionSettings\x18\x05 \x01(\v2\x16.TaskExecutionSettingsR\x11executionSettings\x12\x1e\n" +
-	"\n" +
-	"inputModel\x18\x06 \x01(\tR\n" +
-	"inputModel\x12 \n" +
-	"\voutputModel\x18\a \x01(\tR\voutputModel\x124\n" +
-	"\x15requiredDataFunctions\x18\b \x03(\tR\x15requiredDataFunctions\x12E\n" +
-	"\x13requiredPastResults\x18\t \x03(\v2\x13.RequiredPastResultR\x13requiredPastResults\x12&\n" +
-	"\x0erepositoryName\x18\n" +
-	" \x01(\tR\x0erepositoryName\"]\n" +
-	"\x14RegisterTaskResponse\x12+\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\xcb\x03\n" +
-	"\x17RegisterWorkflowRequest\x12\"\n" +
+	"\voutputModel\x18\x06 \x01(\tR\voutputModel\x124\n" +
+	"\x15requiredDataFunctions\x18\a \x03(\tR\x15requiredDataFunctions\x12E\n" +
+	"\x13requiredPastResults\x18\b \x03(\v2\x13.RequiredPastResultR\x13requiredPastResults\"\xf2\x02\n" +
+	"\bWorkflow\x12\"\n" +
 	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12$\n" +
-	"\rgitCommitHash\x18\x03 \x01(\tR\rgitCommitHash\x12\"\n" +
-	"\fcodebaseName\x18\x04 \x01(\tR\fcodebaseName\x12\"\n" +
-	"\fworkflowHash\x18\x05 \x01(\tR\fworkflowHash\x12\x14\n" +
-	"\x05tasks\x18\x06 \x03(\tR\x05tasks\x12\x14\n" +
-	"\x05edges\x18\a \x03(\tR\x05edges\x12H\n" +
-	"\x11executionSettings\x18\b \x01(\v2\x1a.WorkflowExecutionSettingsR\x11executionSettings\x12:\n" +
-	"\x18executionParametersModel\x18\t \x01(\tR\x18executionParametersModel\x12$\n" +
-	"\rhaltOnFailure\x18\n" +
-	" \x01(\bR\rhaltOnFailure\x12$\n" +
-	"\rconnectionUrl\x18\v \x01(\tR\rconnectionUrl\"a\n" +
-	"\x18RegisterWorkflowResponse\x12+\n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\"\n" +
+	"\fworkflowHash\x18\x03 \x01(\tR\fworkflowHash\x12\x14\n" +
+	"\x05tasks\x18\x04 \x03(\tR\x05tasks\x12\x14\n" +
+	"\x05edges\x18\x05 \x03(\tR\x05edges\x12H\n" +
+	"\x11executionSettings\x18\x06 \x01(\v2\x1a.WorkflowExecutionSettingsR\x11executionSettings\x12:\n" +
+	"\x18executionParametersModel\x18\a \x01(\tR\x18executionParametersModel\x12$\n" +
+	"\rhaltOnFailure\x18\b \x01(\bR\rhaltOnFailure\x12$\n" +
+	"\rconnectionUrl\x18\t \x01(\tR\rconnectionUrl\"\xcc\x01\n" +
+	"\x15RegisterWorkerRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12$\n" +
+	"\rgitCommitHash\x18\x02 \x01(\tR\rgitCommitHash\x123\n" +
+	"\rdataFunctions\x18\x03 \x03(\v2\r.DataFunctionR\rdataFunctions\x12\x1b\n" +
+	"\x05tasks\x18\x04 \x03(\v2\x05.TaskR\x05tasks\x12'\n" +
+	"\tworkflows\x18\x05 \x03(\v2\t.WorkflowR\tworkflows\"_\n" +
+	"\x16RegisterWorkerResponse\x12+\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\x99\x01\n" +
+	"\x16RegisterServingRequest\x12\x10\n" +
+	"\x03md5\x18\x01 \x01(\tR\x03md5\x12$\n" +
+	"\rconnectionUrl\x18\x02 \x01(\tR\rconnectionUrl\x121\n" +
+	"\x11servingPercentage\x18\x03 \x01(\x02H\x00R\x11servingPercentage\x88\x01\x01B\x14\n" +
+	"\x12_servingPercentage\"`\n" +
+	"\x17RegisterServingResponse\x12+\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"\xf7\x01\n" +
 	"\x16TriggerWorkflowRequest\x12\"\n" +
@@ -2408,12 +1927,10 @@ const file_core_proto_rawDesc = "" +
 	"\rSortDirection\x12\x1e\n" +
 	"\x1aSORT_DIRECTION_UNSPECIFIED\x10\x00\x12\a\n" +
 	"\x03ASC\x10\x01\x12\b\n" +
-	"\x04DESC\x10\x022\x99\x05\n" +
-	"\x04Core\x12G\n" +
-	"\x10RegisterCodebase\x12\x18.RegisterCodebaseRequest\x1a\x19.RegisterCodebaseResponse\x12S\n" +
-	"\x14RegisterDataFunction\x12\x1c.RegisterDataFunctionRequest\x1a\x1d.RegisterDataFunctionResponse\x12;\n" +
-	"\fRegisterTask\x12\x14.RegisterTaskRequest\x1a\x15.RegisterTaskResponse\x12G\n" +
-	"\x10RegisterWorkflow\x12\x18.RegisterWorkflowRequest\x1a\x19.RegisterWorkflowResponse\x12D\n" +
+	"\x04DESC\x10\x022\x86\x04\n" +
+	"\x04Core\x12I\n" +
+	"\x16RegisterWorkerSnapshot\x12\x16.RegisterWorkerRequest\x1a\x17.RegisterWorkerResponse\x12D\n" +
+	"\x0fRegisterServing\x12\x17.RegisterServingRequest\x1a\x18.RegisterServingResponse\x12D\n" +
 	"\x0fTriggerWorkflow\x12\x17.TriggerWorkflowRequest\x1a\x18.TriggerWorkflowResponse\x12m\n" +
 	"\x1aRegisterDataFunctionResult\x12&.RegisterDataFunctionCompletionRequest\x1a'.RegisterDataFunctionCompletionResponse\x12M\n" +
 	"\x12RegisterTaskResult\x12\x1a.RegisterTaskResultRequest\x1a\x1b.RegisterTaskResultResponse\x128\n" +
@@ -2433,7 +1950,7 @@ func file_core_proto_rawDescGZIP() []byte {
 }
 
 var file_core_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_core_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
+var file_core_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_core_proto_goTypes = []any{
 	(Comparator)(0),                                // 0: Comparator
 	(DataSource)(0),                                // 1: DataSource
@@ -2441,95 +1958,84 @@ var file_core_proto_goTypes = []any{
 	(*DataFunction)(nil),                           // 3: DataFunction
 	(*Task)(nil),                                   // 4: Task
 	(*Workflow)(nil),                               // 5: Workflow
-	(*RegisterCodebaseRequest)(nil),                // 6: RegisterCodebaseRequest
-	(*RegisterCodebaseResponse)(nil),               // 7: RegisterCodebaseResponse
-	(*RegisterDataFunctionRequest)(nil),            // 8: RegisterDataFunctionRequest
-	(*RegisterDataFunctionResponse)(nil),           // 9: RegisterDataFunctionResponse
-	(*RegisterTaskRequest)(nil),                    // 10: RegisterTaskRequest
-	(*RegisterTaskResponse)(nil),                   // 11: RegisterTaskResponse
-	(*RegisterWorkflowRequest)(nil),                // 12: RegisterWorkflowRequest
-	(*RegisterWorkflowResponse)(nil),               // 13: RegisterWorkflowResponse
-	(*TriggerWorkflowRequest)(nil),                 // 14: TriggerWorkflowRequest
-	(*TriggerWorkflowResponse)(nil),                // 15: TriggerWorkflowResponse
-	(*RegisterDataFunctionCompletionRequest)(nil),  // 16: RegisterDataFunctionCompletionRequest
-	(*RegisterDataFunctionCompletionResponse)(nil), // 17: RegisterDataFunctionCompletionResponse
-	(*RegisterTaskResultRequest)(nil),              // 18: RegisterTaskResultRequest
-	(*RegisterTaskResultResponse)(nil),             // 19: RegisterTaskResultResponse
-	(*ExposeStateRequest)(nil),                     // 20: ExposeStateRequest
-	(*ExposeStateResponse)(nil),                    // 21: ExposeStateResponse
-	(*QueryParams)(nil),                            // 22: QueryParams
-	(*PastResults)(nil),                            // 23: PastResults
-	(*TaskResult)(nil),                             // 24: TaskResult
-	(*FilterGroup)(nil),                            // 25: FilterGroup
-	(*LeafFilter)(nil),                             // 26: LeafFilter
-	(*StringList)(nil),                             // 27: StringList
-	(*OrderByStatement)(nil),                       // 28: OrderByStatement
-	(*DataFunctionSettings)(nil),                   // 29: DataFunctionSettings
-	(*TaskExecutionSettings)(nil),                  // 30: TaskExecutionSettings
-	(*RequiredPastResult)(nil),                     // 31: RequiredPastResult
-	(*WorkflowExecutionSettings)(nil),              // 32: WorkflowExecutionSettings
-	(RegistrationStatus)(0),                        // 33: RegistrationStatus
-	(*timestamppb.Timestamp)(nil),                  // 34: google.protobuf.Timestamp
-	(TriggerSource)(0),                             // 35: TriggerSource
-	(TriggerStatus)(0),                             // 36: TriggerStatus
-	(ExecutionStatus)(0),                           // 37: ExecutionStatus
-	(*ComputeMetrics)(nil),                         // 38: ComputeMetrics
+	(*RegisterWorkerRequest)(nil),                  // 6: RegisterWorkerRequest
+	(*RegisterWorkerResponse)(nil),                 // 7: RegisterWorkerResponse
+	(*RegisterServingRequest)(nil),                 // 8: RegisterServingRequest
+	(*RegisterServingResponse)(nil),                // 9: RegisterServingResponse
+	(*TriggerWorkflowRequest)(nil),                 // 10: TriggerWorkflowRequest
+	(*TriggerWorkflowResponse)(nil),                // 11: TriggerWorkflowResponse
+	(*RegisterDataFunctionCompletionRequest)(nil),  // 12: RegisterDataFunctionCompletionRequest
+	(*RegisterDataFunctionCompletionResponse)(nil), // 13: RegisterDataFunctionCompletionResponse
+	(*RegisterTaskResultRequest)(nil),              // 14: RegisterTaskResultRequest
+	(*RegisterTaskResultResponse)(nil),             // 15: RegisterTaskResultResponse
+	(*ExposeStateRequest)(nil),                     // 16: ExposeStateRequest
+	(*ExposeStateResponse)(nil),                    // 17: ExposeStateResponse
+	(*QueryParams)(nil),                            // 18: QueryParams
+	(*PastResults)(nil),                            // 19: PastResults
+	(*TaskResult)(nil),                             // 20: TaskResult
+	(*FilterGroup)(nil),                            // 21: FilterGroup
+	(*LeafFilter)(nil),                             // 22: LeafFilter
+	(*StringList)(nil),                             // 23: StringList
+	(*OrderByStatement)(nil),                       // 24: OrderByStatement
+	(*DataFunctionSettings)(nil),                   // 25: DataFunctionSettings
+	(*TaskExecutionSettings)(nil),                  // 26: TaskExecutionSettings
+	(*RequiredPastResult)(nil),                     // 27: RequiredPastResult
+	(*WorkflowExecutionSettings)(nil),              // 28: WorkflowExecutionSettings
+	(RegistrationStatus)(0),                        // 29: RegistrationStatus
+	(*timestamppb.Timestamp)(nil),                  // 30: google.protobuf.Timestamp
+	(TriggerSource)(0),                             // 31: TriggerSource
+	(TriggerStatus)(0),                             // 32: TriggerStatus
+	(ExecutionStatus)(0),                           // 33: ExecutionStatus
+	(*ComputeMetrics)(nil),                         // 34: ComputeMetrics
 }
 var file_core_proto_depIdxs = []int32{
-	29, // 0: DataFunction.settings:type_name -> DataFunctionSettings
-	30, // 1: Task.executionSettings:type_name -> TaskExecutionSettings
-	31, // 2: Task.requiredPastResults:type_name -> RequiredPastResult
-	32, // 3: Workflow.executionSettings:type_name -> WorkflowExecutionSettings
-	33, // 4: RegisterCodebaseResponse.status:type_name -> RegistrationStatus
-	29, // 5: RegisterDataFunctionRequest.settings:type_name -> DataFunctionSettings
-	33, // 6: RegisterDataFunctionResponse.status:type_name -> RegistrationStatus
-	30, // 7: RegisterTaskRequest.executionSettings:type_name -> TaskExecutionSettings
-	31, // 8: RegisterTaskRequest.requiredPastResults:type_name -> RequiredPastResult
-	33, // 9: RegisterTaskResponse.status:type_name -> RegistrationStatus
-	32, // 10: RegisterWorkflowRequest.executionSettings:type_name -> WorkflowExecutionSettings
-	33, // 11: RegisterWorkflowResponse.status:type_name -> RegistrationStatus
-	34, // 12: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
-	35, // 13: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
-	36, // 14: TriggerWorkflowResponse.status:type_name -> TriggerStatus
-	37, // 15: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
-	37, // 16: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
-	38, // 17: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
-	34, // 18: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
-	4,  // 19: ExposeStateResponse.tasks:type_name -> Task
-	5,  // 20: ExposeStateResponse.workflows:type_name -> Workflow
-	3,  // 21: ExposeStateResponse.dataFunctions:type_name -> DataFunction
-	25, // 22: QueryParams.execution_parameter_filters:type_name -> FilterGroup
-	25, // 23: QueryParams.result_filters:type_name -> FilterGroup
-	28, // 24: QueryParams.order_by:type_name -> OrderByStatement
-	24, // 25: PastResults.results:type_name -> TaskResult
-	26, // 26: FilterGroup.filters:type_name -> LeafFilter
-	0,  // 27: LeafFilter.comparator:type_name -> Comparator
-	27, // 28: LeafFilter.values:type_name -> StringList
-	1,  // 29: OrderByStatement.source:type_name -> DataSource
-	2,  // 30: OrderByStatement.direction:type_name -> SortDirection
-	6,  // 31: Core.RegisterCodebase:input_type -> RegisterCodebaseRequest
-	8,  // 32: Core.RegisterDataFunction:input_type -> RegisterDataFunctionRequest
-	10, // 33: Core.RegisterTask:input_type -> RegisterTaskRequest
-	12, // 34: Core.RegisterWorkflow:input_type -> RegisterWorkflowRequest
-	14, // 35: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
-	16, // 36: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
-	18, // 37: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
-	20, // 38: Core.ExposeState:input_type -> ExposeStateRequest
-	22, // 39: Core.QueryTaskResult:input_type -> QueryParams
-	7,  // 40: Core.RegisterCodebase:output_type -> RegisterCodebaseResponse
-	9,  // 41: Core.RegisterDataFunction:output_type -> RegisterDataFunctionResponse
-	11, // 42: Core.RegisterTask:output_type -> RegisterTaskResponse
-	13, // 43: Core.RegisterWorkflow:output_type -> RegisterWorkflowResponse
-	15, // 44: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
-	17, // 45: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
-	19, // 46: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
-	21, // 47: Core.ExposeState:output_type -> ExposeStateResponse
-	23, // 48: Core.QueryTaskResult:output_type -> PastResults
-	40, // [40:49] is the sub-list for method output_type
-	31, // [31:40] is the sub-list for method input_type
-	31, // [31:31] is the sub-list for extension type_name
-	31, // [31:31] is the sub-list for extension extendee
-	0,  // [0:31] is the sub-list for field type_name
+	25, // 0: DataFunction.settings:type_name -> DataFunctionSettings
+	26, // 1: Task.executionSettings:type_name -> TaskExecutionSettings
+	27, // 2: Task.requiredPastResults:type_name -> RequiredPastResult
+	28, // 3: Workflow.executionSettings:type_name -> WorkflowExecutionSettings
+	3,  // 4: RegisterWorkerRequest.dataFunctions:type_name -> DataFunction
+	4,  // 5: RegisterWorkerRequest.tasks:type_name -> Task
+	5,  // 6: RegisterWorkerRequest.workflows:type_name -> Workflow
+	29, // 7: RegisterWorkerResponse.status:type_name -> RegistrationStatus
+	29, // 8: RegisterServingResponse.status:type_name -> RegistrationStatus
+	30, // 9: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
+	31, // 10: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
+	32, // 11: TriggerWorkflowResponse.status:type_name -> TriggerStatus
+	33, // 12: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
+	33, // 13: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
+	34, // 14: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
+	30, // 15: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
+	4,  // 16: ExposeStateResponse.tasks:type_name -> Task
+	5,  // 17: ExposeStateResponse.workflows:type_name -> Workflow
+	3,  // 18: ExposeStateResponse.dataFunctions:type_name -> DataFunction
+	21, // 19: QueryParams.execution_parameter_filters:type_name -> FilterGroup
+	21, // 20: QueryParams.result_filters:type_name -> FilterGroup
+	24, // 21: QueryParams.order_by:type_name -> OrderByStatement
+	20, // 22: PastResults.results:type_name -> TaskResult
+	22, // 23: FilterGroup.filters:type_name -> LeafFilter
+	0,  // 24: LeafFilter.comparator:type_name -> Comparator
+	23, // 25: LeafFilter.values:type_name -> StringList
+	1,  // 26: OrderByStatement.source:type_name -> DataSource
+	2,  // 27: OrderByStatement.direction:type_name -> SortDirection
+	6,  // 28: Core.RegisterWorkerSnapshot:input_type -> RegisterWorkerRequest
+	8,  // 29: Core.RegisterServing:input_type -> RegisterServingRequest
+	10, // 30: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
+	12, // 31: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
+	14, // 32: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
+	16, // 33: Core.ExposeState:input_type -> ExposeStateRequest
+	18, // 34: Core.QueryTaskResult:input_type -> QueryParams
+	7,  // 35: Core.RegisterWorkerSnapshot:output_type -> RegisterWorkerResponse
+	9,  // 36: Core.RegisterServing:output_type -> RegisterServingResponse
+	11, // 37: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
+	13, // 38: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
+	15, // 39: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
+	17, // 40: Core.ExposeState:output_type -> ExposeStateResponse
+	19, // 41: Core.QueryTaskResult:output_type -> PastResults
+	35, // [35:42] is the sub-list for method output_type
+	28, // [28:35] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_core_proto_init() }
@@ -2538,11 +2044,12 @@ func file_core_proto_init() {
 		return
 	}
 	file_shared_proto_init()
-	file_core_proto_msgTypes[11].OneofWrappers = []any{}
-	file_core_proto_msgTypes[17].OneofWrappers = []any{}
-	file_core_proto_msgTypes[19].OneofWrappers = []any{}
-	file_core_proto_msgTypes[20].OneofWrappers = []any{}
-	file_core_proto_msgTypes[23].OneofWrappers = []any{
+	file_core_proto_msgTypes[5].OneofWrappers = []any{}
+	file_core_proto_msgTypes[7].OneofWrappers = []any{}
+	file_core_proto_msgTypes[13].OneofWrappers = []any{}
+	file_core_proto_msgTypes[15].OneofWrappers = []any{}
+	file_core_proto_msgTypes[16].OneofWrappers = []any{}
+	file_core_proto_msgTypes[19].OneofWrappers = []any{
 		(*LeafFilter_Value)(nil),
 		(*LeafFilter_Values)(nil),
 	}
@@ -2552,7 +2059,7 @@ func file_core_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_core_proto_rawDesc), len(file_core_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   26,
+			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

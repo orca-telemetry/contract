@@ -39,25 +39,15 @@ class CoreStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.RegisterCodebase = channel.unary_unary(
-                '/Core/RegisterCodebase',
-                request_serializer=core__pb2.RegisterCodebaseRequest.SerializeToString,
-                response_deserializer=core__pb2.RegisterCodebaseResponse.FromString,
+        self.RegisterWorkerSnapshot = channel.unary_unary(
+                '/Core/RegisterWorkerSnapshot',
+                request_serializer=core__pb2.RegisterWorkerRequest.SerializeToString,
+                response_deserializer=core__pb2.RegisterWorkerResponse.FromString,
                 _registered_method=True)
-        self.RegisterDataFunction = channel.unary_unary(
-                '/Core/RegisterDataFunction',
-                request_serializer=core__pb2.RegisterDataFunctionRequest.SerializeToString,
-                response_deserializer=core__pb2.RegisterDataFunctionResponse.FromString,
-                _registered_method=True)
-        self.RegisterTask = channel.unary_unary(
-                '/Core/RegisterTask',
-                request_serializer=core__pb2.RegisterTaskRequest.SerializeToString,
-                response_deserializer=core__pb2.RegisterTaskResponse.FromString,
-                _registered_method=True)
-        self.RegisterWorkflow = channel.unary_unary(
-                '/Core/RegisterWorkflow',
-                request_serializer=core__pb2.RegisterWorkflowRequest.SerializeToString,
-                response_deserializer=core__pb2.RegisterWorkflowResponse.FromString,
+        self.RegisterServing = channel.unary_unary(
+                '/Core/RegisterServing',
+                request_serializer=core__pb2.RegisterServingRequest.SerializeToString,
+                response_deserializer=core__pb2.RegisterServingResponse.FromString,
                 _registered_method=True)
         self.TriggerWorkflow = channel.unary_unary(
                 '/Core/TriggerWorkflow',
@@ -94,30 +84,16 @@ class CoreServicer(object):
     - Tracks DAG execution state and handles distributed failure modes
     """
 
-    def RegisterCodebase(self, request, context):
-        """Registers a codebase, where assets live. Codebases must exist in order
-        for assets to be registered
+    def RegisterWorkerSnapshot(self, request, context):
+        """Registers a worker, along with all assets defined in the worker's codebase.
+        This operation is idempotent on the worker name and git commit hash.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def RegisterDataFunction(self, request, context):
-        """Registers a data function available for calling
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def RegisterTask(self, request, context):
-        """Registers a task
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def RegisterWorkflow(self, request, context):
-        """Registers a workflow
+    def RegisterServing(self, request, context):
+        """Notify existence
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -161,25 +137,15 @@ class CoreServicer(object):
 
 def add_CoreServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'RegisterCodebase': grpc.unary_unary_rpc_method_handler(
-                    servicer.RegisterCodebase,
-                    request_deserializer=core__pb2.RegisterCodebaseRequest.FromString,
-                    response_serializer=core__pb2.RegisterCodebaseResponse.SerializeToString,
+            'RegisterWorkerSnapshot': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterWorkerSnapshot,
+                    request_deserializer=core__pb2.RegisterWorkerRequest.FromString,
+                    response_serializer=core__pb2.RegisterWorkerResponse.SerializeToString,
             ),
-            'RegisterDataFunction': grpc.unary_unary_rpc_method_handler(
-                    servicer.RegisterDataFunction,
-                    request_deserializer=core__pb2.RegisterDataFunctionRequest.FromString,
-                    response_serializer=core__pb2.RegisterDataFunctionResponse.SerializeToString,
-            ),
-            'RegisterTask': grpc.unary_unary_rpc_method_handler(
-                    servicer.RegisterTask,
-                    request_deserializer=core__pb2.RegisterTaskRequest.FromString,
-                    response_serializer=core__pb2.RegisterTaskResponse.SerializeToString,
-            ),
-            'RegisterWorkflow': grpc.unary_unary_rpc_method_handler(
-                    servicer.RegisterWorkflow,
-                    request_deserializer=core__pb2.RegisterWorkflowRequest.FromString,
-                    response_serializer=core__pb2.RegisterWorkflowResponse.SerializeToString,
+            'RegisterServing': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterServing,
+                    request_deserializer=core__pb2.RegisterServingRequest.FromString,
+                    response_serializer=core__pb2.RegisterServingResponse.SerializeToString,
             ),
             'TriggerWorkflow': grpc.unary_unary_rpc_method_handler(
                     servicer.TriggerWorkflow,
@@ -223,7 +189,7 @@ class Core(object):
     """
 
     @staticmethod
-    def RegisterCodebase(request,
+    def RegisterWorkerSnapshot(request,
             target,
             options=(),
             channel_credentials=None,
@@ -236,9 +202,9 @@ class Core(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Core/RegisterCodebase',
-            core__pb2.RegisterCodebaseRequest.SerializeToString,
-            core__pb2.RegisterCodebaseResponse.FromString,
+            '/Core/RegisterWorkerSnapshot',
+            core__pb2.RegisterWorkerRequest.SerializeToString,
+            core__pb2.RegisterWorkerResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -250,7 +216,7 @@ class Core(object):
             _registered_method=True)
 
     @staticmethod
-    def RegisterDataFunction(request,
+    def RegisterServing(request,
             target,
             options=(),
             channel_credentials=None,
@@ -263,63 +229,9 @@ class Core(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/Core/RegisterDataFunction',
-            core__pb2.RegisterDataFunctionRequest.SerializeToString,
-            core__pb2.RegisterDataFunctionResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def RegisterTask(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/Core/RegisterTask',
-            core__pb2.RegisterTaskRequest.SerializeToString,
-            core__pb2.RegisterTaskResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def RegisterWorkflow(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/Core/RegisterWorkflow',
-            core__pb2.RegisterWorkflowRequest.SerializeToString,
-            core__pb2.RegisterWorkflowResponse.FromString,
+            '/Core/RegisterServing',
+            core__pb2.RegisterServingRequest.SerializeToString,
+            core__pb2.RegisterServingResponse.FromString,
             options,
             channel_credentials,
             insecure,

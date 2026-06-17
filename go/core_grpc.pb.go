@@ -19,10 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Core_RegisterCodebase_FullMethodName           = "/Core/RegisterCodebase"
-	Core_RegisterDataFunction_FullMethodName       = "/Core/RegisterDataFunction"
-	Core_RegisterTask_FullMethodName               = "/Core/RegisterTask"
-	Core_RegisterWorkflow_FullMethodName           = "/Core/RegisterWorkflow"
+	Core_RegisterWorkerSnapshot_FullMethodName     = "/Core/RegisterWorkerSnapshot"
+	Core_RegisterServing_FullMethodName            = "/Core/RegisterServing"
 	Core_TriggerWorkflow_FullMethodName            = "/Core/TriggerWorkflow"
 	Core_RegisterDataFunctionResult_FullMethodName = "/Core/RegisterDataFunctionResult"
 	Core_RegisterTaskResult_FullMethodName         = "/Core/RegisterTaskResult"
@@ -40,15 +38,11 @@ const (
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 type CoreClient interface {
-	// Registers a codebase, where assets live. Codebases must exist in order
-	// for assets to be registered
-	RegisterCodebase(ctx context.Context, in *RegisterCodebaseRequest, opts ...grpc.CallOption) (*RegisterCodebaseResponse, error)
-	// Registers a data function available for calling
-	RegisterDataFunction(ctx context.Context, in *RegisterDataFunctionRequest, opts ...grpc.CallOption) (*RegisterDataFunctionResponse, error)
-	// Registers a task
-	RegisterTask(ctx context.Context, in *RegisterTaskRequest, opts ...grpc.CallOption) (*RegisterTaskResponse, error)
-	// Registers a workflow
-	RegisterWorkflow(ctx context.Context, in *RegisterWorkflowRequest, opts ...grpc.CallOption) (*RegisterWorkflowResponse, error)
+	// Registers a worker, along with all assets defined in the worker's codebase.
+	// This operation is idempotent on the worker name and git commit hash.
+	RegisterWorkerSnapshot(ctx context.Context, in *RegisterWorkerRequest, opts ...grpc.CallOption) (*RegisterWorkerResponse, error)
+	// Notify existence
+	RegisterServing(ctx context.Context, in *RegisterServingRequest, opts ...grpc.CallOption) (*RegisterServingResponse, error)
 	// Triggers a workflow
 	TriggerWorkflow(ctx context.Context, in *TriggerWorkflowRequest, opts ...grpc.CallOption) (*TriggerWorkflowResponse, error)
 	// Register the completion result of the data function
@@ -69,40 +63,20 @@ func NewCoreClient(cc grpc.ClientConnInterface) CoreClient {
 	return &coreClient{cc}
 }
 
-func (c *coreClient) RegisterCodebase(ctx context.Context, in *RegisterCodebaseRequest, opts ...grpc.CallOption) (*RegisterCodebaseResponse, error) {
+func (c *coreClient) RegisterWorkerSnapshot(ctx context.Context, in *RegisterWorkerRequest, opts ...grpc.CallOption) (*RegisterWorkerResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RegisterCodebaseResponse)
-	err := c.cc.Invoke(ctx, Core_RegisterCodebase_FullMethodName, in, out, cOpts...)
+	out := new(RegisterWorkerResponse)
+	err := c.cc.Invoke(ctx, Core_RegisterWorkerSnapshot_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *coreClient) RegisterDataFunction(ctx context.Context, in *RegisterDataFunctionRequest, opts ...grpc.CallOption) (*RegisterDataFunctionResponse, error) {
+func (c *coreClient) RegisterServing(ctx context.Context, in *RegisterServingRequest, opts ...grpc.CallOption) (*RegisterServingResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RegisterDataFunctionResponse)
-	err := c.cc.Invoke(ctx, Core_RegisterDataFunction_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *coreClient) RegisterTask(ctx context.Context, in *RegisterTaskRequest, opts ...grpc.CallOption) (*RegisterTaskResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RegisterTaskResponse)
-	err := c.cc.Invoke(ctx, Core_RegisterTask_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *coreClient) RegisterWorkflow(ctx context.Context, in *RegisterWorkflowRequest, opts ...grpc.CallOption) (*RegisterWorkflowResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RegisterWorkflowResponse)
-	err := c.cc.Invoke(ctx, Core_RegisterWorkflow_FullMethodName, in, out, cOpts...)
+	out := new(RegisterServingResponse)
+	err := c.cc.Invoke(ctx, Core_RegisterServing_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -178,15 +152,11 @@ type Core_QueryTaskResultClient = grpc.ServerStreamingClient[PastResults]
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 type CoreServer interface {
-	// Registers a codebase, where assets live. Codebases must exist in order
-	// for assets to be registered
-	RegisterCodebase(context.Context, *RegisterCodebaseRequest) (*RegisterCodebaseResponse, error)
-	// Registers a data function available for calling
-	RegisterDataFunction(context.Context, *RegisterDataFunctionRequest) (*RegisterDataFunctionResponse, error)
-	// Registers a task
-	RegisterTask(context.Context, *RegisterTaskRequest) (*RegisterTaskResponse, error)
-	// Registers a workflow
-	RegisterWorkflow(context.Context, *RegisterWorkflowRequest) (*RegisterWorkflowResponse, error)
+	// Registers a worker, along with all assets defined in the worker's codebase.
+	// This operation is idempotent on the worker name and git commit hash.
+	RegisterWorkerSnapshot(context.Context, *RegisterWorkerRequest) (*RegisterWorkerResponse, error)
+	// Notify existence
+	RegisterServing(context.Context, *RegisterServingRequest) (*RegisterServingResponse, error)
 	// Triggers a workflow
 	TriggerWorkflow(context.Context, *TriggerWorkflowRequest) (*TriggerWorkflowResponse, error)
 	// Register the completion result of the data function
@@ -207,17 +177,11 @@ type CoreServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCoreServer struct{}
 
-func (UnimplementedCoreServer) RegisterCodebase(context.Context, *RegisterCodebaseRequest) (*RegisterCodebaseResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RegisterCodebase not implemented")
+func (UnimplementedCoreServer) RegisterWorkerSnapshot(context.Context, *RegisterWorkerRequest) (*RegisterWorkerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RegisterWorkerSnapshot not implemented")
 }
-func (UnimplementedCoreServer) RegisterDataFunction(context.Context, *RegisterDataFunctionRequest) (*RegisterDataFunctionResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RegisterDataFunction not implemented")
-}
-func (UnimplementedCoreServer) RegisterTask(context.Context, *RegisterTaskRequest) (*RegisterTaskResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RegisterTask not implemented")
-}
-func (UnimplementedCoreServer) RegisterWorkflow(context.Context, *RegisterWorkflowRequest) (*RegisterWorkflowResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method RegisterWorkflow not implemented")
+func (UnimplementedCoreServer) RegisterServing(context.Context, *RegisterServingRequest) (*RegisterServingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RegisterServing not implemented")
 }
 func (UnimplementedCoreServer) TriggerWorkflow(context.Context, *TriggerWorkflowRequest) (*TriggerWorkflowResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method TriggerWorkflow not implemented")
@@ -255,74 +219,38 @@ func RegisterCoreServer(s grpc.ServiceRegistrar, srv CoreServer) {
 	s.RegisterService(&Core_ServiceDesc, srv)
 }
 
-func _Core_RegisterCodebase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterCodebaseRequest)
+func _Core_RegisterWorkerSnapshot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterWorkerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CoreServer).RegisterCodebase(ctx, in)
+		return srv.(CoreServer).RegisterWorkerSnapshot(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Core_RegisterCodebase_FullMethodName,
+		FullMethod: Core_RegisterWorkerSnapshot_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoreServer).RegisterCodebase(ctx, req.(*RegisterCodebaseRequest))
+		return srv.(CoreServer).RegisterWorkerSnapshot(ctx, req.(*RegisterWorkerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Core_RegisterDataFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterDataFunctionRequest)
+func _Core_RegisterServing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterServingRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CoreServer).RegisterDataFunction(ctx, in)
+		return srv.(CoreServer).RegisterServing(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Core_RegisterDataFunction_FullMethodName,
+		FullMethod: Core_RegisterServing_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoreServer).RegisterDataFunction(ctx, req.(*RegisterDataFunctionRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Core_RegisterTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterTaskRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CoreServer).RegisterTask(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Core_RegisterTask_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoreServer).RegisterTask(ctx, req.(*RegisterTaskRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Core_RegisterWorkflow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegisterWorkflowRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CoreServer).RegisterWorkflow(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Core_RegisterWorkflow_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoreServer).RegisterWorkflow(ctx, req.(*RegisterWorkflowRequest))
+		return srv.(CoreServer).RegisterServing(ctx, req.(*RegisterServingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -418,20 +346,12 @@ var Core_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CoreServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RegisterCodebase",
-			Handler:    _Core_RegisterCodebase_Handler,
+			MethodName: "RegisterWorkerSnapshot",
+			Handler:    _Core_RegisterWorkerSnapshot_Handler,
 		},
 		{
-			MethodName: "RegisterDataFunction",
-			Handler:    _Core_RegisterDataFunction_Handler,
-		},
-		{
-			MethodName: "RegisterTask",
-			Handler:    _Core_RegisterTask_Handler,
-		},
-		{
-			MethodName: "RegisterWorkflow",
-			Handler:    _Core_RegisterWorkflow_Handler,
+			MethodName: "RegisterServing",
+			Handler:    _Core_RegisterServing_Handler,
 		},
 		{
 			MethodName: "TriggerWorkflow",

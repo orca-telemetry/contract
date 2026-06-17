@@ -11,9 +11,12 @@ import "shared.proto";
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 service Core {
-  // Registers a codebase, along with all assets defined in the codebase.
-  // This operation is idempotent on the codebase name and git commit hash.
-  rpc RegisterCodebaseSnapshot(RegisterCodebaseRequest) returns (RegisterCodebaseResponse);
+  // Registers a worker, along with all assets defined in the worker's codebase.
+  // This operation is idempotent on the worker name and git commit hash.
+  rpc RegisterWorkerSnapshot(RegisterWorkerRequest) returns (RegisterWorkerResponse);
+
+  // Notify existence
+  rpc RegisterServing(RegisterServingRequest) returns (RegisterServingResponse);
 
   // Triggers a workflow
   rpc TriggerWorkflow(TriggerWorkflowRequest) returns (TriggerWorkflowResponse);
@@ -124,9 +127,9 @@ message Workflow {
 }
 
 // ============================================================
-// RegisterCodebaseSnapshot RPC
+// RegisterWorkerSnapshot RPC
 // ============================================================
-message RegisterCodebaseSnapshot {
+message RegisterWorkerRequest {
   // Name is the globally unique name of the codebase.
   string name = 1;
 
@@ -143,8 +146,33 @@ message RegisterCodebaseSnapshot {
   repeated Workflow workflows = 5;
 };
 
-// RegisterCodebaseResponse is the response message for the Registercodebase RPC.
-message RegisterCodebaseResponse {
+// RegisterWorkerResponse is the response message for the Registercodebase RPC.
+message RegisterWorkerResponse {
+  // Status indicates whether registration succeeded or failed.
+  RegistrationStatus status = 1;
+
+  // Message provides detail on why registration failed, if applicable.
+  string message = 2;
+}
+
+// ============================================================
+// RegisterServingStatus RPC
+// ============================================================
+// RegisterServingStatus message
+message RegisterServingRequest {
+  // MD5 hash of the worker
+  string md5 = 1;
+
+  // Connection URL from the perspective of the core orchestrator
+  string connectionUrl = 2;
+
+  // Serving percentage to apply when the MD5 exists but has a different
+  // connection URL
+  optional float servingPercentage = 3;
+};
+
+// RegisterServingResponse message
+message RegisterServingResponse{
   // Status indicates whether registration succeeded or failed.
   RegistrationStatus status = 1;
 
