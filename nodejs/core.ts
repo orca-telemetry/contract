@@ -249,8 +249,8 @@ export interface DataFunction {
   gitCommitHash?:
     | string
     | undefined;
-  /** RepositoryName is the repository in which this data function is defined. */
-  repositoryName?:
+  /** CodebaseName is the codebase in which this data function is defined. */
+  codebaseName?:
     | string
     | undefined;
   /**
@@ -393,6 +393,26 @@ export interface Workflow {
   connectionUrl?: string | undefined;
 }
 
+/**
+ * ============================================================
+ * RegisterCodebase RPC
+ * ============================================================
+ */
+export interface RegisterCodebaseRequest {
+  /** Name is the globally unique name of the codebase. */
+  name?: string | undefined;
+}
+
+/** RegisterCodebaseResponse is the response message for the Registercodebase RPC. */
+export interface RegisterCodebaseResponse {
+  /** Status indicates whether registration succeeded or failed. */
+  status?:
+    | RegistrationStatus
+    | undefined;
+  /** Message provides detail on why registration failed, if applicable. */
+  message?: string | undefined;
+}
+
 /** RegisterDataFunctionRequest is the request message for the RegisterDataFunction RPC. */
 export interface RegisterDataFunctionRequest {
   /**
@@ -527,8 +547,8 @@ export interface RegisterWorkflowRequest {
   gitCommitHash?:
     | string
     | undefined;
-  /** RepositoryName is the repository in which this workflow is defined. */
-  repositoryName?:
+  /** CodebaseName is the codebase in which this workflow is defined. */
+  codebaseName?:
     | string
     | undefined;
   /**
@@ -699,10 +719,10 @@ export interface ExposeStateRequest {
     | Date
     | undefined;
   /**
-   * Repository, if provided, filters out all assets (Tasks, Workflows,
-   * DataFunctions, etc.) registered under this repository from the response.
+   * Codebase, if provided, filters out all assets (Tasks, Workflows,
+   * DataFunctions, etc.) registered under this codebase from the response.
    */
-  repository?: string | undefined;
+  codebase?: string | undefined;
 }
 
 /** ExposeStateResponse is the response message for the ExposeState RPC. */
@@ -840,7 +860,7 @@ function createBaseDataFunction(): DataFunction {
     name: "",
     hash: "",
     gitCommitHash: "",
-    repositoryName: "",
+    codebaseName: "",
     inputModel: "",
     outputModel: "",
     settings: undefined,
@@ -858,8 +878,8 @@ export const DataFunction: MessageFns<DataFunction> = {
     if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
       writer.uint32(26).string(message.gitCommitHash);
     }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      writer.uint32(34).string(message.repositoryName);
+    if (message.codebaseName !== undefined && message.codebaseName !== "") {
+      writer.uint32(34).string(message.codebaseName);
     }
     if (message.inputModel !== undefined && message.inputModel !== "") {
       writer.uint32(42).string(message.inputModel);
@@ -909,7 +929,7 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.repositoryName = reader.string();
+          message.codebaseName = reader.string();
           continue;
         }
         case 5: {
@@ -950,7 +970,7 @@ export const DataFunction: MessageFns<DataFunction> = {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       hash: isSet(object.hash) ? globalThis.String(object.hash) : "",
       gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
-      repositoryName: isSet(object.repositoryName) ? globalThis.String(object.repositoryName) : "",
+      codebaseName: isSet(object.codebaseName) ? globalThis.String(object.codebaseName) : "",
       inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
       outputModel: isSet(object.outputModel) ? globalThis.String(object.outputModel) : "",
       settings: isSet(object.settings) ? DataFunctionSettings.fromJSON(object.settings) : undefined,
@@ -968,8 +988,8 @@ export const DataFunction: MessageFns<DataFunction> = {
     if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
       obj.gitCommitHash = message.gitCommitHash;
     }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      obj.repositoryName = message.repositoryName;
+    if (message.codebaseName !== undefined && message.codebaseName !== "") {
+      obj.codebaseName = message.codebaseName;
     }
     if (message.inputModel !== undefined && message.inputModel !== "") {
       obj.inputModel = message.inputModel;
@@ -991,7 +1011,7 @@ export const DataFunction: MessageFns<DataFunction> = {
     message.name = object.name ?? "";
     message.hash = object.hash ?? "";
     message.gitCommitHash = object.gitCommitHash ?? "";
-    message.repositoryName = object.repositoryName ?? "";
+    message.codebaseName = object.codebaseName ?? "";
     message.inputModel = object.inputModel ?? "";
     message.outputModel = object.outputModel ?? "";
     message.settings = (object.settings !== undefined && object.settings !== null)
@@ -1478,6 +1498,140 @@ export const Workflow: MessageFns<Workflow> = {
     message.executionParametersModel = object.executionParametersModel ?? "";
     message.haltOnFailure = object.haltOnFailure ?? false;
     message.connectionUrl = object.connectionUrl ?? "";
+    return message;
+  },
+};
+
+function createBaseRegisterCodebaseRequest(): RegisterCodebaseRequest {
+  return { name: "" };
+}
+
+export const RegisterCodebaseRequest: MessageFns<RegisterCodebaseRequest> = {
+  encode(message: RegisterCodebaseRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.name !== undefined && message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterCodebaseRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegisterCodebaseRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RegisterCodebaseRequest {
+    return { name: isSet(object.name) ? globalThis.String(object.name) : "" };
+  },
+
+  toJSON(message: RegisterCodebaseRequest): unknown {
+    const obj: any = {};
+    if (message.name !== undefined && message.name !== "") {
+      obj.name = message.name;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RegisterCodebaseRequest>, I>>(base?: I): RegisterCodebaseRequest {
+    return RegisterCodebaseRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RegisterCodebaseRequest>, I>>(object: I): RegisterCodebaseRequest {
+    const message = createBaseRegisterCodebaseRequest();
+    message.name = object.name ?? "";
+    return message;
+  },
+};
+
+function createBaseRegisterCodebaseResponse(): RegisterCodebaseResponse {
+  return { status: 0, message: "" };
+}
+
+export const RegisterCodebaseResponse: MessageFns<RegisterCodebaseResponse> = {
+  encode(message: RegisterCodebaseResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== undefined && message.status !== 0) {
+      writer.uint32(8).int32(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      writer.uint32(18).string(message.message);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterCodebaseResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegisterCodebaseResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RegisterCodebaseResponse {
+    return {
+      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+    };
+  },
+
+  toJSON(message: RegisterCodebaseResponse): unknown {
+    const obj: any = {};
+    if (message.status !== undefined && message.status !== 0) {
+      obj.status = registrationStatusToJSON(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      obj.message = message.message;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RegisterCodebaseResponse>, I>>(base?: I): RegisterCodebaseResponse {
+    return RegisterCodebaseResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RegisterCodebaseResponse>, I>>(object: I): RegisterCodebaseResponse {
+    const message = createBaseRegisterCodebaseResponse();
+    message.status = object.status ?? 0;
+    message.message = object.message ?? "";
     return message;
   },
 };
@@ -2038,7 +2192,7 @@ function createBaseRegisterWorkflowRequest(): RegisterWorkflowRequest {
     workflowName: "",
     description: "",
     gitCommitHash: "",
-    repositoryName: "",
+    codebaseName: "",
     workflowHash: "",
     tasks: [],
     edges: [],
@@ -2060,8 +2214,8 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
     if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
       writer.uint32(26).string(message.gitCommitHash);
     }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      writer.uint32(34).string(message.repositoryName);
+    if (message.codebaseName !== undefined && message.codebaseName !== "") {
+      writer.uint32(34).string(message.codebaseName);
     }
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
       writer.uint32(42).string(message.workflowHash);
@@ -2127,7 +2281,7 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
             break;
           }
 
-          message.repositoryName = reader.string();
+          message.codebaseName = reader.string();
           continue;
         }
         case 5: {
@@ -2206,7 +2360,7 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
       workflowName: isSet(object.workflowName) ? globalThis.String(object.workflowName) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
-      repositoryName: isSet(object.repositoryName) ? globalThis.String(object.repositoryName) : "",
+      codebaseName: isSet(object.codebaseName) ? globalThis.String(object.codebaseName) : "",
       workflowHash: isSet(object.workflowHash) ? globalThis.String(object.workflowHash) : "",
       tasks: globalThis.Array.isArray(object?.tasks) ? object.tasks.map((e: any) => globalThis.String(e)) : [],
       edges: globalThis.Array.isArray(object?.edges) ? object.edges.map((e: any) => globalThis.String(e)) : [],
@@ -2232,8 +2386,8 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
     if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
       obj.gitCommitHash = message.gitCommitHash;
     }
-    if (message.repositoryName !== undefined && message.repositoryName !== "") {
-      obj.repositoryName = message.repositoryName;
+    if (message.codebaseName !== undefined && message.codebaseName !== "") {
+      obj.codebaseName = message.codebaseName;
     }
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
       obj.workflowHash = message.workflowHash;
@@ -2267,7 +2421,7 @@ export const RegisterWorkflowRequest: MessageFns<RegisterWorkflowRequest> = {
     message.workflowName = object.workflowName ?? "";
     message.description = object.description ?? "";
     message.gitCommitHash = object.gitCommitHash ?? "";
-    message.repositoryName = object.repositoryName ?? "";
+    message.codebaseName = object.codebaseName ?? "";
     message.workflowHash = object.workflowHash ?? "";
     message.tasks = object.tasks?.map((e) => e) || [];
     message.edges = object.edges?.map((e) => e) || [];
@@ -2886,7 +3040,7 @@ export const RegisterTaskResultResponse: MessageFns<RegisterTaskResultResponse> 
 };
 
 function createBaseExposeStateRequest(): ExposeStateRequest {
-  return { gitCommitHash: undefined, timestamp: undefined, repository: undefined };
+  return { gitCommitHash: undefined, timestamp: undefined, codebase: undefined };
 }
 
 export const ExposeStateRequest: MessageFns<ExposeStateRequest> = {
@@ -2897,8 +3051,8 @@ export const ExposeStateRequest: MessageFns<ExposeStateRequest> = {
     if (message.timestamp !== undefined) {
       Timestamp.encode(toTimestamp(message.timestamp), writer.uint32(18).fork()).join();
     }
-    if (message.repository !== undefined) {
-      writer.uint32(26).string(message.repository);
+    if (message.codebase !== undefined) {
+      writer.uint32(26).string(message.codebase);
     }
     return writer;
   },
@@ -2931,7 +3085,7 @@ export const ExposeStateRequest: MessageFns<ExposeStateRequest> = {
             break;
           }
 
-          message.repository = reader.string();
+          message.codebase = reader.string();
           continue;
         }
       }
@@ -2947,7 +3101,7 @@ export const ExposeStateRequest: MessageFns<ExposeStateRequest> = {
     return {
       gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : undefined,
       timestamp: isSet(object.timestamp) ? fromJsonTimestamp(object.timestamp) : undefined,
-      repository: isSet(object.repository) ? globalThis.String(object.repository) : undefined,
+      codebase: isSet(object.codebase) ? globalThis.String(object.codebase) : undefined,
     };
   },
 
@@ -2959,8 +3113,8 @@ export const ExposeStateRequest: MessageFns<ExposeStateRequest> = {
     if (message.timestamp !== undefined) {
       obj.timestamp = message.timestamp.toISOString();
     }
-    if (message.repository !== undefined) {
-      obj.repository = message.repository;
+    if (message.codebase !== undefined) {
+      obj.codebase = message.codebase;
     }
     return obj;
   },
@@ -2972,7 +3126,7 @@ export const ExposeStateRequest: MessageFns<ExposeStateRequest> = {
     const message = createBaseExposeStateRequest();
     message.gitCommitHash = object.gitCommitHash ?? undefined;
     message.timestamp = object.timestamp ?? undefined;
-    message.repository = object.repository ?? undefined;
+    message.codebase = object.codebase ?? undefined;
     return message;
   },
 };
@@ -3832,6 +3986,21 @@ export const OrderByStatement: MessageFns<OrderByStatement> = {
  */
 export type CoreService = typeof CoreService;
 export const CoreService = {
+  /**
+   * Registers a codebase, where assets live. Codebases must exist in order
+   * for assets to be registered
+   */
+  registerCodebase: {
+    path: "/Core/RegisterCodebase" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: RegisterCodebaseRequest): Buffer =>
+      Buffer.from(RegisterCodebaseRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RegisterCodebaseRequest => RegisterCodebaseRequest.decode(value),
+    responseSerialize: (value: RegisterCodebaseResponse): Buffer =>
+      Buffer.from(RegisterCodebaseResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): RegisterCodebaseResponse => RegisterCodebaseResponse.decode(value),
+  },
   /** Registers a data function available for calling */
   registerDataFunction: {
     path: "/Core/RegisterDataFunction" as const,
@@ -3928,6 +4097,11 @@ export const CoreService = {
 } as const;
 
 export interface CoreServer extends UntypedServiceImplementation {
+  /**
+   * Registers a codebase, where assets live. Codebases must exist in order
+   * for assets to be registered
+   */
+  registerCodebase: handleUnaryCall<RegisterCodebaseRequest, RegisterCodebaseResponse>;
   /** Registers a data function available for calling */
   registerDataFunction: handleUnaryCall<RegisterDataFunctionRequest, RegisterDataFunctionResponse>;
   /** Registers a task */
@@ -3950,6 +4124,25 @@ export interface CoreServer extends UntypedServiceImplementation {
 }
 
 export interface CoreClient extends Client {
+  /**
+   * Registers a codebase, where assets live. Codebases must exist in order
+   * for assets to be registered
+   */
+  registerCodebase(
+    request: RegisterCodebaseRequest,
+    callback: (error: ServiceError | null, response: RegisterCodebaseResponse) => void,
+  ): ClientUnaryCall;
+  registerCodebase(
+    request: RegisterCodebaseRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: RegisterCodebaseResponse) => void,
+  ): ClientUnaryCall;
+  registerCodebase(
+    request: RegisterCodebaseRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: RegisterCodebaseResponse) => void,
+  ): ClientUnaryCall;
   /** Registers a data function available for calling */
   registerDataFunction(
     request: RegisterDataFunctionRequest,

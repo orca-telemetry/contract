@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	Core_RegisterCodebase_FullMethodName           = "/Core/RegisterCodebase"
 	Core_RegisterDataFunction_FullMethodName       = "/Core/RegisterDataFunction"
 	Core_RegisterTask_FullMethodName               = "/Core/RegisterTask"
 	Core_RegisterWorkflow_FullMethodName           = "/Core/RegisterWorkflow"
@@ -39,6 +40,9 @@ const (
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 type CoreClient interface {
+	// Registers a codebase, where assets live. Codebases must exist in order
+	// for assets to be registered
+	RegisterCodebase(ctx context.Context, in *RegisterCodebaseRequest, opts ...grpc.CallOption) (*RegisterCodebaseResponse, error)
 	// Registers a data function available for calling
 	RegisterDataFunction(ctx context.Context, in *RegisterDataFunctionRequest, opts ...grpc.CallOption) (*RegisterDataFunctionResponse, error)
 	// Registers a task
@@ -63,6 +67,16 @@ type coreClient struct {
 
 func NewCoreClient(cc grpc.ClientConnInterface) CoreClient {
 	return &coreClient{cc}
+}
+
+func (c *coreClient) RegisterCodebase(ctx context.Context, in *RegisterCodebaseRequest, opts ...grpc.CallOption) (*RegisterCodebaseResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RegisterCodebaseResponse)
+	err := c.cc.Invoke(ctx, Core_RegisterCodebase_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *coreClient) RegisterDataFunction(ctx context.Context, in *RegisterDataFunctionRequest, opts ...grpc.CallOption) (*RegisterDataFunctionResponse, error) {
@@ -164,6 +178,9 @@ type Core_QueryTaskResultClient = grpc.ServerStreamingClient[PastResults]
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 type CoreServer interface {
+	// Registers a codebase, where assets live. Codebases must exist in order
+	// for assets to be registered
+	RegisterCodebase(context.Context, *RegisterCodebaseRequest) (*RegisterCodebaseResponse, error)
 	// Registers a data function available for calling
 	RegisterDataFunction(context.Context, *RegisterDataFunctionRequest) (*RegisterDataFunctionResponse, error)
 	// Registers a task
@@ -190,6 +207,9 @@ type CoreServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCoreServer struct{}
 
+func (UnimplementedCoreServer) RegisterCodebase(context.Context, *RegisterCodebaseRequest) (*RegisterCodebaseResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RegisterCodebase not implemented")
+}
 func (UnimplementedCoreServer) RegisterDataFunction(context.Context, *RegisterDataFunctionRequest) (*RegisterDataFunctionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RegisterDataFunction not implemented")
 }
@@ -233,6 +253,24 @@ func RegisterCoreServer(s grpc.ServiceRegistrar, srv CoreServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&Core_ServiceDesc, srv)
+}
+
+func _Core_RegisterCodebase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterCodebaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoreServer).RegisterCodebase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Core_RegisterCodebase_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoreServer).RegisterCodebase(ctx, req.(*RegisterCodebaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Core_RegisterDataFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -379,6 +417,10 @@ var Core_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "Core",
 	HandlerType: (*CoreServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegisterCodebase",
+			Handler:    _Core_RegisterCodebase_Handler,
+		},
 		{
 			MethodName: "RegisterDataFunction",
 			Handler:    _Core_RegisterDataFunction_Handler,

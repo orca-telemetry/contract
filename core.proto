@@ -11,6 +11,10 @@ import "shared.proto";
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 service Core {
+  // Registers a codebase, where assets live. Codebases must exist in order
+  // for assets to be registered
+  rpc RegisterCodebase(RegisterCodebaseRequest) returns (RegisterCodebaseResponse);
+
   // Registers a data function available for calling
   rpc RegisterDataFunction(RegisterDataFunctionRequest) returns (RegisterDataFunctionResponse);
 
@@ -51,8 +55,8 @@ message DataFunction {
   // GitCommitHash is the hash of the git commit at registration time.
   string gitCommitHash = 3;
 
-  // RepositoryName is the repository in which this data function is defined.
-  string repositoryName = 4;
+  // CodebaseName is the codebase in which this data function is defined.
+  string codebaseName = 4;
 
   // InputModel is a marshalled JSON schema describing the accepted input.
   // This model must be satisfied by the execution model of the owning workflow.
@@ -145,6 +149,23 @@ message Workflow {
   // ConnectionUrl is the gRPC server URL exposing this workflow. Must match
   // the local or cloud implementation visible to the core orchestrator.
   string connectionUrl = 11;
+}
+
+// ============================================================
+// RegisterCodebase RPC
+// ============================================================
+message RegisterCodebaseRequest {
+  // Name is the globally unique name of the codebase.
+  string name = 1;
+};
+
+// RegisterCodebaseResponse is the response message for the Registercodebase RPC.
+message RegisterCodebaseResponse {
+  // Status indicates whether registration succeeded or failed.
+  RegistrationStatus status = 1;
+
+  // Message provides detail on why registration failed, if applicable.
+  string message = 2;
 }
 
 // ============================================================
@@ -255,8 +276,8 @@ message RegisterWorkflowRequest {
   // deployment workspace state.
   string gitCommitHash = 3;
 
-  // RepositoryName is the repository in which this workflow is defined.
-  string repositoryName = 4;
+  // CodebaseName is the codebase in which this workflow is defined.
+  string codebaseName = 4;
 
   // WorkflowHash is a hash of the workflow structure, including tasks,
   // dependencies, and execution models.
@@ -392,9 +413,9 @@ message ExposeStateRequest {
   // Ignored if GitCommitHash is set.
   optional google.protobuf.Timestamp timestamp = 2;
 
-  // Repository, if provided, filters out all assets (Tasks, Workflows,
-  // DataFunctions, etc.) registered under this repository from the response.
-  optional string repository = 3;
+  // Codebase, if provided, filters out all assets (Tasks, Workflows,
+  // DataFunctions, etc.) registered under this codebase from the response.
+  optional string codebase = 3;
 }
 
 // ExposeStateResponse is the response message for the ExposeState RPC.

@@ -39,6 +39,11 @@ class CoreStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.RegisterCodebase = channel.unary_unary(
+                '/Core/RegisterCodebase',
+                request_serializer=core__pb2.RegisterCodebaseRequest.SerializeToString,
+                response_deserializer=core__pb2.RegisterCodebaseResponse.FromString,
+                _registered_method=True)
         self.RegisterDataFunction = channel.unary_unary(
                 '/Core/RegisterDataFunction',
                 request_serializer=core__pb2.RegisterDataFunctionRequest.SerializeToString,
@@ -88,6 +93,14 @@ class CoreServicer(object):
     - Coordinates algorithm execution across distributed processors
     - Tracks DAG execution state and handles distributed failure modes
     """
+
+    def RegisterCodebase(self, request, context):
+        """Registers a codebase, where assets live. Codebases must exist in order
+        for assets to be registered
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def RegisterDataFunction(self, request, context):
         """Registers a data function available for calling
@@ -148,6 +161,11 @@ class CoreServicer(object):
 
 def add_CoreServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'RegisterCodebase': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterCodebase,
+                    request_deserializer=core__pb2.RegisterCodebaseRequest.FromString,
+                    response_serializer=core__pb2.RegisterCodebaseResponse.SerializeToString,
+            ),
             'RegisterDataFunction': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterDataFunction,
                     request_deserializer=core__pb2.RegisterDataFunctionRequest.FromString,
@@ -203,6 +221,33 @@ class Core(object):
     - Coordinates algorithm execution across distributed processors
     - Tracks DAG execution state and handles distributed failure modes
     """
+
+    @staticmethod
+    def RegisterCodebase(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Core/RegisterCodebase',
+            core__pb2.RegisterCodebaseRequest.SerializeToString,
+            core__pb2.RegisterCodebaseResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
     @staticmethod
     def RegisterDataFunction(request,

@@ -56,22 +56,22 @@ ASC: SortDirection
 DESC: SortDirection
 
 class DataFunction(_message.Message):
-    __slots__ = ("name", "hash", "gitCommitHash", "repositoryName", "inputModel", "outputModel", "settings")
+    __slots__ = ("name", "hash", "gitCommitHash", "codebaseName", "inputModel", "outputModel", "settings")
     NAME_FIELD_NUMBER: _ClassVar[int]
     HASH_FIELD_NUMBER: _ClassVar[int]
     GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
-    REPOSITORYNAME_FIELD_NUMBER: _ClassVar[int]
+    CODEBASENAME_FIELD_NUMBER: _ClassVar[int]
     INPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     OUTPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
     name: str
     hash: str
     gitCommitHash: str
-    repositoryName: str
+    codebaseName: str
     inputModel: str
     outputModel: str
     settings: _shared_pb2.DataFunctionSettings
-    def __init__(self, name: _Optional[str] = ..., hash: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., repositoryName: _Optional[str] = ..., inputModel: _Optional[str] = ..., outputModel: _Optional[str] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., hash: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., codebaseName: _Optional[str] = ..., inputModel: _Optional[str] = ..., outputModel: _Optional[str] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
 
 class Task(_message.Message):
     __slots__ = ("taskHash", "name", "description", "gitCommitHash", "executionSettings", "inputModel", "outputModel", "requiredDataFunctions", "requiredPastResults", "repositoryName")
@@ -122,6 +122,20 @@ class Workflow(_message.Message):
     haltOnFailure: bool
     connectionUrl: str
     def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., repositoryName: _Optional[str] = ..., workflowHash: _Optional[str] = ..., tasks: _Optional[_Iterable[str]] = ..., edges: _Optional[_Iterable[str]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., executionParametersModel: _Optional[str] = ..., haltOnFailure: bool = ..., connectionUrl: _Optional[str] = ...) -> None: ...
+
+class RegisterCodebaseRequest(_message.Message):
+    __slots__ = ("name",)
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    def __init__(self, name: _Optional[str] = ...) -> None: ...
+
+class RegisterCodebaseResponse(_message.Message):
+    __slots__ = ("status", "message")
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    status: _shared_pb2.RegistrationStatus
+    message: str
+    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ...) -> None: ...
 
 class RegisterDataFunctionRequest(_message.Message):
     __slots__ = ("name", "hash", "gitCommitHash", "repositoryName", "inputModel", "outputModel", "settings")
@@ -182,11 +196,11 @@ class RegisterTaskResponse(_message.Message):
     def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ...) -> None: ...
 
 class RegisterWorkflowRequest(_message.Message):
-    __slots__ = ("workflowName", "description", "gitCommitHash", "repositoryName", "workflowHash", "tasks", "edges", "executionSettings", "executionParametersModel", "haltOnFailure", "connectionUrl")
+    __slots__ = ("workflowName", "description", "gitCommitHash", "codebaseName", "workflowHash", "tasks", "edges", "executionSettings", "executionParametersModel", "haltOnFailure", "connectionUrl")
     WORKFLOWNAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
-    REPOSITORYNAME_FIELD_NUMBER: _ClassVar[int]
+    CODEBASENAME_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWHASH_FIELD_NUMBER: _ClassVar[int]
     TASKS_FIELD_NUMBER: _ClassVar[int]
     EDGES_FIELD_NUMBER: _ClassVar[int]
@@ -197,7 +211,7 @@ class RegisterWorkflowRequest(_message.Message):
     workflowName: str
     description: str
     gitCommitHash: str
-    repositoryName: str
+    codebaseName: str
     workflowHash: str
     tasks: _containers.RepeatedScalarFieldContainer[str]
     edges: _containers.RepeatedScalarFieldContainer[str]
@@ -205,7 +219,7 @@ class RegisterWorkflowRequest(_message.Message):
     executionParametersModel: str
     haltOnFailure: bool
     connectionUrl: str
-    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., repositoryName: _Optional[str] = ..., workflowHash: _Optional[str] = ..., tasks: _Optional[_Iterable[str]] = ..., edges: _Optional[_Iterable[str]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., executionParametersModel: _Optional[str] = ..., haltOnFailure: bool = ..., connectionUrl: _Optional[str] = ...) -> None: ...
+    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., codebaseName: _Optional[str] = ..., workflowHash: _Optional[str] = ..., tasks: _Optional[_Iterable[str]] = ..., edges: _Optional[_Iterable[str]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., executionParametersModel: _Optional[str] = ..., haltOnFailure: bool = ..., connectionUrl: _Optional[str] = ...) -> None: ...
 
 class RegisterWorkflowResponse(_message.Message):
     __slots__ = ("status", "message")
@@ -272,14 +286,14 @@ class RegisterTaskResultResponse(_message.Message):
     def __init__(self) -> None: ...
 
 class ExposeStateRequest(_message.Message):
-    __slots__ = ("gitCommitHash", "timestamp", "repository")
+    __slots__ = ("gitCommitHash", "timestamp", "codebase")
     GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
     TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
-    REPOSITORY_FIELD_NUMBER: _ClassVar[int]
+    CODEBASE_FIELD_NUMBER: _ClassVar[int]
     gitCommitHash: str
     timestamp: _timestamp_pb2.Timestamp
-    repository: str
-    def __init__(self, gitCommitHash: _Optional[str] = ..., timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., repository: _Optional[str] = ...) -> None: ...
+    codebase: str
+    def __init__(self, gitCommitHash: _Optional[str] = ..., timestamp: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., codebase: _Optional[str] = ...) -> None: ...
 
 class ExposeStateResponse(_message.Message):
     __slots__ = ("tasks", "workflows", "dataFunctions")
