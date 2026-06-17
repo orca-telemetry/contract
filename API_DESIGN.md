@@ -57,7 +57,7 @@ such as:
 * **ExecutionSettings**: settings governing the execution:
   * **ExecutionTimeout**: the timeout that should be applied to executing the
   task
-  * **RetryCount:&#x20;**&#x68;ow many times the task should be retried on
+  * **RetryCount**: How many times the task should be retried on
   failure
   * **BackoffStrategy**: linear | exponential
   * **Deadline**: A deadline that is used as an SLA value. If this deadline is
@@ -70,12 +70,6 @@ Standard. The validation and pointers extension of the json schema are not
 enforced at registration time or runtime, though may be supported
 * **RequiredDataFunctions**: An array of all of the required data functions that
 this task requires.
-* **RequiredPastResults**: An array of past results that are required by this
-task to execute:
-  * **TaskName**: The name of the task
-  * **ExecutionParams**: The parameters that executed the workflow the task is
-  triggered by
-  * **TaskResult**: Result of the tasks execution
 
 #### Workflow
 * **WorkflowName**: A unique string identifier for the workflow. This is a

@@ -307,11 +307,8 @@ type Task struct {
 	OutputModel string `protobuf:"bytes,6,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
 	// RequiredDataFunctions lists all data functions this task depends on.
 	RequiredDataFunctions []string `protobuf:"bytes,7,rep,name=requiredDataFunctions,proto3" json:"requiredDataFunctions,omitempty"`
-	// RequiredPastResults lists prior task results that must be available
-	// before this task can execute.
-	RequiredPastResults []*RequiredPastResult `protobuf:"bytes,8,rep,name=requiredPastResults,proto3" json:"requiredPastResults,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *Task) Reset() {
@@ -389,13 +386,6 @@ func (x *Task) GetOutputModel() string {
 func (x *Task) GetRequiredDataFunctions() []string {
 	if x != nil {
 		return x.RequiredDataFunctions
-	}
-	return nil
-}
-
-func (x *Task) GetRequiredPastResults() []*RequiredPastResult {
-	if x != nil {
-		return x.RequiredPastResults
 	}
 	return nil
 }
@@ -1787,7 +1777,7 @@ const file_core_proto_rawDesc = "" +
 	"inputModel\x18\x03 \x01(\tR\n" +
 	"inputModel\x12 \n" +
 	"\voutputModel\x18\x04 \x01(\tR\voutputModel\x121\n" +
-	"\bsettings\x18\x05 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"\xdd\x02\n" +
+	"\bsettings\x18\x05 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"\x96\x02\n" +
 	"\x04Task\x12\x1a\n" +
 	"\btaskHash\x18\x01 \x01(\tR\btaskHash\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -1797,8 +1787,7 @@ const file_core_proto_rawDesc = "" +
 	"inputModel\x18\x05 \x01(\tR\n" +
 	"inputModel\x12 \n" +
 	"\voutputModel\x18\x06 \x01(\tR\voutputModel\x124\n" +
-	"\x15requiredDataFunctions\x18\a \x03(\tR\x15requiredDataFunctions\x12E\n" +
-	"\x13requiredPastResults\x18\b \x03(\v2\x13.RequiredPastResultR\x13requiredPastResults\"\xf2\x02\n" +
+	"\x15requiredDataFunctions\x18\a \x03(\tR\x15requiredDataFunctions\"\xf2\x02\n" +
 	"\bWorkflow\x12\"\n" +
 	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\"\n" +
@@ -1979,63 +1968,61 @@ var file_core_proto_goTypes = []any{
 	(*OrderByStatement)(nil),                       // 24: OrderByStatement
 	(*DataFunctionSettings)(nil),                   // 25: DataFunctionSettings
 	(*TaskExecutionSettings)(nil),                  // 26: TaskExecutionSettings
-	(*RequiredPastResult)(nil),                     // 27: RequiredPastResult
-	(*WorkflowExecutionSettings)(nil),              // 28: WorkflowExecutionSettings
-	(RegistrationStatus)(0),                        // 29: RegistrationStatus
-	(*timestamppb.Timestamp)(nil),                  // 30: google.protobuf.Timestamp
-	(TriggerSource)(0),                             // 31: TriggerSource
-	(TriggerStatus)(0),                             // 32: TriggerStatus
-	(ExecutionStatus)(0),                           // 33: ExecutionStatus
-	(*ComputeMetrics)(nil),                         // 34: ComputeMetrics
+	(*WorkflowExecutionSettings)(nil),              // 27: WorkflowExecutionSettings
+	(RegistrationStatus)(0),                        // 28: RegistrationStatus
+	(*timestamppb.Timestamp)(nil),                  // 29: google.protobuf.Timestamp
+	(TriggerSource)(0),                             // 30: TriggerSource
+	(TriggerStatus)(0),                             // 31: TriggerStatus
+	(ExecutionStatus)(0),                           // 32: ExecutionStatus
+	(*ComputeMetrics)(nil),                         // 33: ComputeMetrics
 }
 var file_core_proto_depIdxs = []int32{
 	25, // 0: DataFunction.settings:type_name -> DataFunctionSettings
 	26, // 1: Task.executionSettings:type_name -> TaskExecutionSettings
-	27, // 2: Task.requiredPastResults:type_name -> RequiredPastResult
-	28, // 3: Workflow.executionSettings:type_name -> WorkflowExecutionSettings
-	3,  // 4: RegisterWorkerRequest.dataFunctions:type_name -> DataFunction
-	4,  // 5: RegisterWorkerRequest.tasks:type_name -> Task
-	5,  // 6: RegisterWorkerRequest.workflows:type_name -> Workflow
-	29, // 7: RegisterWorkerResponse.status:type_name -> RegistrationStatus
-	29, // 8: RegisterServingResponse.status:type_name -> RegistrationStatus
-	30, // 9: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
-	31, // 10: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
-	32, // 11: TriggerWorkflowResponse.status:type_name -> TriggerStatus
-	33, // 12: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
-	33, // 13: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
-	34, // 14: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
-	30, // 15: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
-	4,  // 16: ExposeStateResponse.tasks:type_name -> Task
-	5,  // 17: ExposeStateResponse.workflows:type_name -> Workflow
-	3,  // 18: ExposeStateResponse.dataFunctions:type_name -> DataFunction
-	21, // 19: QueryParams.execution_parameter_filters:type_name -> FilterGroup
-	21, // 20: QueryParams.result_filters:type_name -> FilterGroup
-	24, // 21: QueryParams.order_by:type_name -> OrderByStatement
-	20, // 22: PastResults.results:type_name -> TaskResult
-	22, // 23: FilterGroup.filters:type_name -> LeafFilter
-	0,  // 24: LeafFilter.comparator:type_name -> Comparator
-	23, // 25: LeafFilter.values:type_name -> StringList
-	1,  // 26: OrderByStatement.source:type_name -> DataSource
-	2,  // 27: OrderByStatement.direction:type_name -> SortDirection
-	6,  // 28: Core.RegisterWorkerSnapshot:input_type -> RegisterWorkerRequest
-	8,  // 29: Core.RegisterServing:input_type -> RegisterServingRequest
-	10, // 30: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
-	12, // 31: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
-	14, // 32: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
-	16, // 33: Core.ExposeState:input_type -> ExposeStateRequest
-	18, // 34: Core.QueryTaskResult:input_type -> QueryParams
-	7,  // 35: Core.RegisterWorkerSnapshot:output_type -> RegisterWorkerResponse
-	9,  // 36: Core.RegisterServing:output_type -> RegisterServingResponse
-	11, // 37: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
-	13, // 38: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
-	15, // 39: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
-	17, // 40: Core.ExposeState:output_type -> ExposeStateResponse
-	19, // 41: Core.QueryTaskResult:output_type -> PastResults
-	35, // [35:42] is the sub-list for method output_type
-	28, // [28:35] is the sub-list for method input_type
-	28, // [28:28] is the sub-list for extension type_name
-	28, // [28:28] is the sub-list for extension extendee
-	0,  // [0:28] is the sub-list for field type_name
+	27, // 2: Workflow.executionSettings:type_name -> WorkflowExecutionSettings
+	3,  // 3: RegisterWorkerRequest.dataFunctions:type_name -> DataFunction
+	4,  // 4: RegisterWorkerRequest.tasks:type_name -> Task
+	5,  // 5: RegisterWorkerRequest.workflows:type_name -> Workflow
+	28, // 6: RegisterWorkerResponse.status:type_name -> RegistrationStatus
+	28, // 7: RegisterServingResponse.status:type_name -> RegistrationStatus
+	29, // 8: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
+	30, // 9: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
+	31, // 10: TriggerWorkflowResponse.status:type_name -> TriggerStatus
+	32, // 11: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
+	32, // 12: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
+	33, // 13: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
+	29, // 14: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
+	4,  // 15: ExposeStateResponse.tasks:type_name -> Task
+	5,  // 16: ExposeStateResponse.workflows:type_name -> Workflow
+	3,  // 17: ExposeStateResponse.dataFunctions:type_name -> DataFunction
+	21, // 18: QueryParams.execution_parameter_filters:type_name -> FilterGroup
+	21, // 19: QueryParams.result_filters:type_name -> FilterGroup
+	24, // 20: QueryParams.order_by:type_name -> OrderByStatement
+	20, // 21: PastResults.results:type_name -> TaskResult
+	22, // 22: FilterGroup.filters:type_name -> LeafFilter
+	0,  // 23: LeafFilter.comparator:type_name -> Comparator
+	23, // 24: LeafFilter.values:type_name -> StringList
+	1,  // 25: OrderByStatement.source:type_name -> DataSource
+	2,  // 26: OrderByStatement.direction:type_name -> SortDirection
+	6,  // 27: Core.RegisterWorkerSnapshot:input_type -> RegisterWorkerRequest
+	8,  // 28: Core.RegisterServing:input_type -> RegisterServingRequest
+	10, // 29: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
+	12, // 30: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
+	14, // 31: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
+	16, // 32: Core.ExposeState:input_type -> ExposeStateRequest
+	18, // 33: Core.QueryTaskResult:input_type -> QueryParams
+	7,  // 34: Core.RegisterWorkerSnapshot:output_type -> RegisterWorkerResponse
+	9,  // 35: Core.RegisterServing:output_type -> RegisterServingResponse
+	11, // 36: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
+	13, // 37: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
+	15, // 38: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
+	17, // 39: Core.ExposeState:output_type -> ExposeStateResponse
+	19, // 40: Core.QueryTaskResult:output_type -> PastResults
+	34, // [34:41] is the sub-list for method output_type
+	27, // [27:34] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_core_proto_init() }

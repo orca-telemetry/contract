@@ -30,7 +30,6 @@ import {
   RegistrationStatus,
   registrationStatusFromJSON,
   registrationStatusToJSON,
-  RequiredPastResult,
   TaskExecutionSettings,
   TriggerSource,
   triggerSourceFromJSON,
@@ -300,14 +299,7 @@ export interface Task {
     | string
     | undefined;
   /** RequiredDataFunctions lists all data functions this task depends on. */
-  requiredDataFunctions?:
-    | string[]
-    | undefined;
-  /**
-   * RequiredPastResults lists prior task results that must be available
-   * before this task can execute.
-   */
-  requiredPastResults?: RequiredPastResult[] | undefined;
+  requiredDataFunctions?: string[] | undefined;
 }
 
 /** Workflow defines a registered workflow, its task graph, and runtime settings. */
@@ -820,7 +812,6 @@ function createBaseTask(): Task {
     inputModel: "",
     outputModel: "",
     requiredDataFunctions: [],
-    requiredPastResults: [],
   };
 }
 
@@ -847,11 +838,6 @@ export const Task: MessageFns<Task> = {
     if (message.requiredDataFunctions !== undefined && message.requiredDataFunctions.length !== 0) {
       for (const v of message.requiredDataFunctions) {
         writer.uint32(58).string(v!);
-      }
-    }
-    if (message.requiredPastResults !== undefined && message.requiredPastResults.length !== 0) {
-      for (const v of message.requiredPastResults) {
-        RequiredPastResult.encode(v!, writer.uint32(66).fork()).join();
       }
     }
     return writer;
@@ -923,17 +909,6 @@ export const Task: MessageFns<Task> = {
           }
           continue;
         }
-        case 8: {
-          if (tag !== 66) {
-            break;
-          }
-
-          const el = RequiredPastResult.decode(reader, reader.uint32());
-          if (el !== undefined) {
-            message.requiredPastResults!.push(el);
-          }
-          continue;
-        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -955,9 +930,6 @@ export const Task: MessageFns<Task> = {
       outputModel: isSet(object.outputModel) ? globalThis.String(object.outputModel) : "",
       requiredDataFunctions: globalThis.Array.isArray(object?.requiredDataFunctions)
         ? object.requiredDataFunctions.map((e: any) => globalThis.String(e))
-        : [],
-      requiredPastResults: globalThis.Array.isArray(object?.requiredPastResults)
-        ? object.requiredPastResults.map((e: any) => RequiredPastResult.fromJSON(e))
         : [],
     };
   },
@@ -985,9 +957,6 @@ export const Task: MessageFns<Task> = {
     if (message.requiredDataFunctions?.length) {
       obj.requiredDataFunctions = message.requiredDataFunctions;
     }
-    if (message.requiredPastResults?.length) {
-      obj.requiredPastResults = message.requiredPastResults.map((e) => RequiredPastResult.toJSON(e));
-    }
     return obj;
   },
 
@@ -1005,7 +974,6 @@ export const Task: MessageFns<Task> = {
     message.inputModel = object.inputModel ?? "";
     message.outputModel = object.outputModel ?? "";
     message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => e) || [];
-    message.requiredPastResults = object.requiredPastResults?.map((e) => RequiredPastResult.fromPartial(e)) || [];
     return message;
   },
 };

@@ -70,7 +70,7 @@ class DataFunction(_message.Message):
     def __init__(self, name: _Optional[str] = ..., hash: _Optional[str] = ..., inputModel: _Optional[str] = ..., outputModel: _Optional[str] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
 
 class Task(_message.Message):
-    __slots__ = ("taskHash", "name", "description", "executionSettings", "inputModel", "outputModel", "requiredDataFunctions", "requiredPastResults")
+    __slots__ = ("taskHash", "name", "description", "executionSettings", "inputModel", "outputModel", "requiredDataFunctions")
     TASKHASH_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
@@ -78,7 +78,6 @@ class Task(_message.Message):
     INPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     OUTPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     REQUIREDDATAFUNCTIONS_FIELD_NUMBER: _ClassVar[int]
-    REQUIREDPASTRESULTS_FIELD_NUMBER: _ClassVar[int]
     taskHash: str
     name: str
     description: str
@@ -86,8 +85,7 @@ class Task(_message.Message):
     inputModel: str
     outputModel: str
     requiredDataFunctions: _containers.RepeatedScalarFieldContainer[str]
-    requiredPastResults: _containers.RepeatedCompositeFieldContainer[_shared_pb2.RequiredPastResult]
-    def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[str] = ..., outputModel: _Optional[str] = ..., requiredDataFunctions: _Optional[_Iterable[str]] = ..., requiredPastResults: _Optional[_Iterable[_Union[_shared_pb2.RequiredPastResult, _Mapping]]] = ...) -> None: ...
+    def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[str] = ..., outputModel: _Optional[str] = ..., requiredDataFunctions: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class Workflow(_message.Message):
     __slots__ = ("workflowName", "description", "workflowHash", "tasks", "edges", "executionSettings", "executionParametersModel", "haltOnFailure", "connectionUrl")

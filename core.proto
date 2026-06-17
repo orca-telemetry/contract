@@ -84,11 +84,6 @@ message Task {
 
   // RequiredDataFunctions lists all data functions this task depends on.
   repeated string requiredDataFunctions = 7;
-
-  // RequiredPastResults lists prior task results that must be available
-  // before this task can execute.
-  repeated RequiredPastResult requiredPastResults = 8;
-
 }
 
 // Workflow defines a registered workflow, its task graph, and runtime settings.
