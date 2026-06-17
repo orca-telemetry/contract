@@ -4,21 +4,35 @@
 
 These are all the remote procedure calls that should sit under the core service.
 
-## RegisterDataFunction
+## RegisterCodebaseSnapshot
 
-This is a service that registers a function that produces some data. This data
-is stored ephemerally ready to be accessed by tasks.
+This service takes a snapshot of the codebase and registers all the assets
+stored within it.
 
-**gRPC Mode**: Unary request/response
+All datafunctions, tasks, and workflows are registered via this RPC. The call is
+idempotent on git commit has and codebase name.
 
 ### Request Message
 
+* **WorkerName**: The name of the worker that implements the assets. Globally unique.
+* **GitCommitHash**: The current git commit of codebase.
+* **DataFunctions**: An array of data functions
+* **Tasks**: An array of tasks
+* **Workflows**: An array of workflows.
+
+### Response Message
+* **Status**: Success | Failure 
+* **Message**: A message detailing the failure (if at all)
+
+### Models
+
+The RPC validates the asset in dependency order: Data functions -> Tasks ->
+Workflows. The data models for each are defined below:
+
+#### DataFunction
 * **Name**: A globally unique name for the data function, if
 conflicting name is detected on the server, a conflict is raised 
 * **Hash**: A hash of the AST segment that defines the data function
-* **GitCommitHash**: The hash of the latest git commit
-* **RepositoryName**: The name of the repository that the data function is
-defined in.
 * **InputModel**:**&#x20;**&#x41; marshalled JSON schema of the accepted input
 model. This model must be satisfied by the execution model of the workflow that
 owns the task.
@@ -32,25 +46,11 @@ such as:
   on it. >0 = live time in seconds
   * **Timeout**: A timeout for the lifecyle of the data function
 
-### Response Message
-
-* **Status**: Successful | Failed
-* **Message**:**&#x20;**&#x41; message as to why the data function registration
-failed
-
-## RegisterTask
-
-An RPC that allows the registration of a task with the core orchestrator.
-
-**gRPC** **Mode**: Unary request/response
-
-### Request Message
+#### Task
 
 * **TaskHash**: the hash of the AST segment corresponding to the task function
 * **Name**: the task name
 * **Description**: the task description
-* **GitCommitHash**:**&#x20;**&#x74;he hash of the current git command (inferred
-directly from the local .git folder if present)
 * **ExecutionSettings**: settings governing the execution:
   * **ExecutionTimeout**: the timeout that should be applied to executing the
   task
@@ -73,29 +73,11 @@ task to execute:
   * **ExecutionParams**: The parameters that executed the workflow the task is
   triggered by
   * **TaskResult**: Result of the tasks execution
-* **RepositoryName**: The name of the workspace that the task belongs to.
 
-### Response Message
-
-* **Status**: Successful | Failed
-* **Message**: A message as to why the task registration failed
-
-## RegisterWorkflow
-
-A service that allows the creation of a workflow referencing previously
-registered tasks.
-
-**gRPC Mode**: Unary request/response
-
-### Request Message
-
+#### Workflow
 * **WorkflowName**: A unique string identifier for the workflow. This is a
 globally unique definition of the workflow.
 * **Description**: A textual explanation of the workflow's purpose.
-* **GitCommitHash**: The current version control commit hash matching the
-deployment workspace state.
-* **RepositoryName**: The name of the repository that the workflow is defined
-in.
 * **WorkflowHash**: A hash of the workflow structure, factoring in the tasks,
 dependencies, and execution models.
 * **Tasks**: A list of structural identifiers linking to independent,
@@ -114,11 +96,6 @@ should be stopped if a task suffers a failure.
 * **ConnectionUrl**: The URL of the gRPC server that exposes the workflow. This
 must match the local or cloud implementation - it is what the core orchestrator
 'sees'
-
-### Response Message
-
-* **Status**: Successful | Failed
-* **Message**: Details of the DAG validation errors (e.g. cyclic dependencies)
 
 ### TriggerWorkflow
 

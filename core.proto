@@ -11,18 +11,9 @@ import "shared.proto";
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 service Core {
-  // Registers a codebase, where assets live. Codebases must exist in order
-  // for assets to be registered
-  rpc RegisterCodebase(RegisterCodebaseRequest) returns (RegisterCodebaseResponse);
-
-  // Registers a data function available for calling
-  rpc RegisterDataFunction(RegisterDataFunctionRequest) returns (RegisterDataFunctionResponse);
-
-  // Registers a task
-  rpc RegisterTask(RegisterTaskRequest) returns (RegisterTaskResponse);
-
-  // Registers a workflow
-  rpc RegisterWorkflow(RegisterWorkflowRequest) returns (RegisterWorkflowResponse);
+  // Registers a codebase, along with all assets defined in the codebase.
+  // This operation is idempotent on the codebase name and git commit hash.
+  rpc RegisterCodebaseSnapshot(RegisterCodebaseRequest) returns (RegisterCodebaseResponse);
 
   // Triggers a workflow
   rpc TriggerWorkflow(TriggerWorkflowRequest) returns (TriggerWorkflowResponse);
@@ -52,24 +43,18 @@ message DataFunction {
   // Hash is the hash of the AST segment that defines the data function.
   string hash = 2;
 
-  // GitCommitHash is the hash of the git commit at registration time.
-  string gitCommitHash = 3;
-
-  // CodebaseName is the codebase in which this data function is defined.
-  string codebaseName = 4;
-
   // InputModel is a marshalled JSON schema describing the accepted input.
   // This model must be satisfied by the execution model of the owning workflow.
-  string inputModel = 5;
+  string inputModel = 3;
 
   // OutputModel is a marshalled JSON schema describing a single output record.
   // The data function produces an array of this schema, streamed to the
   // orchestrator for caching. Validated once at retrieval time.
-  string outputModel = 6;
+  string outputModel = 4;
 
   // Settings governs the lifecycle and retention of data produced by this
   // data function.
-  DataFunctionSettings settings = 7;
+  DataFunctionSettings settings = 5;
 }
 
 // Task defines a registered task and its execution configuration.
@@ -83,30 +68,24 @@ message Task {
   // Description is a human-readable summary of the task's purpose.
   string description = 3;
 
-  // GitCommitHash is the hash of the git commit at registration time,
-  // inferred from the local .git folder if present.
-  string gitCommitHash = 4;
-
   // ExecutionSettings governs execution timeouts, retries, backoff, and SLA deadlines.
-  TaskExecutionSettings executionSettings = 5;
+  TaskExecutionSettings executionSettings = 4;
 
   // InputModel is a marshalled JSON schema (JSON Schema Standard) describing
   // the task's accepted input. Validation and pointer extensions are not enforced.
-  string inputModel = 6;
+  string inputModel = 5;
 
   // OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
   // the task's output. Validation and pointer extensions are not enforced.
-  string outputModel = 7;
+  string outputModel = 6;
 
   // RequiredDataFunctions lists all data functions this task depends on.
-  repeated string requiredDataFunctions = 8;
+  repeated string requiredDataFunctions = 7;
 
   // RequiredPastResults lists prior task results that must be available
   // before this task can execute.
-  repeated RequiredPastResult requiredPastResults = 9;
+  repeated RequiredPastResult requiredPastResults = 8;
 
-  // RepositoryName is the workspace repository this task belongs to.
-  string repositoryName = 10;
 }
 
 // Workflow defines a registered workflow, its task graph, and runtime settings.
@@ -117,46 +96,51 @@ message Workflow {
   // Description is a human-readable explanation of the workflow's purpose.
   string description = 2;
 
-  // GitCommitHash is the version control commit hash matching the deployment
-  // workspace state at registration time.
-  string gitCommitHash = 3;
-
-  // RepositoryName is the repository in which this workflow is defined.
-  string repositoryName = 4;
-
   // WorkflowHash is a hash of the workflow structure, factoring in tasks,
   // dependencies, and execution models.
-  string workflowHash = 5;
+  string workflowHash = 3;
 
   // Tasks is a list of structural identifiers linking to pre-registered tasks,
   // including local stubs of cross-language definitions.
-  repeated string tasks = 6;
+  repeated string tasks = 4;
 
   // Edges defines the dependency relationships between tasks in this workflow.
-  repeated string edges = 7;
+  repeated string edges = 5;
 
   // ExecutionSettings defines concurrency limits and task prioritisation.
-  WorkflowExecutionSettings executionSettings = 8;
+  WorkflowExecutionSettings executionSettings = 6;
 
   // ExecutionParametersModel is a marshalled JSON schema describing the
   // parameters that must be provided at workflow trigger time.
-  string executionParametersModel = 9;
+  string executionParametersModel = 7;
 
   // HaltOnFailure instructs the orchestrator to stop parallel task execution
   // if any task encounters a failure.
-  bool haltOnFailure = 10;
+  bool haltOnFailure = 8;
 
   // ConnectionUrl is the gRPC server URL exposing this workflow. Must match
   // the local or cloud implementation visible to the core orchestrator.
-  string connectionUrl = 11;
+  string connectionUrl = 9;
 }
 
 // ============================================================
-// RegisterCodebase RPC
+// RegisterCodebaseSnapshot RPC
 // ============================================================
-message RegisterCodebaseRequest {
+message RegisterCodebaseSnapshot {
   // Name is the globally unique name of the codebase.
   string name = 1;
+
+  // GitCommitHash is the current git commit
+  string gitCommitHash = 2;
+
+  // Datafunctions is an array of data functions
+  repeated DataFunction dataFunctions = 3;
+
+  // Tasks is an array of tasks
+  repeated Task tasks = 4;
+
+  // Workflows is an array of workflows
+  repeated Workflow workflows = 5;
 };
 
 // RegisterCodebaseResponse is the response message for the Registercodebase RPC.
@@ -165,152 +149,6 @@ message RegisterCodebaseResponse {
   RegistrationStatus status = 1;
 
   // Message provides detail on why registration failed, if applicable.
-  string message = 2;
-}
-
-// ============================================================
-// RegisterDataFunction RPC
-// ============================================================
-
-// RegisterDataFunctionRequest is the request message for the RegisterDataFunction RPC.
-message RegisterDataFunctionRequest {
-  // Name is the globally unique name for this data function.
-  // A conflict error is raised if this name is already registered.
-  string name = 1;
-
-  // Hash is the hash of the AST segment that defines this data function.
-  string hash = 2;
-
-  // GitCommitHash is the hash of the latest git commit.
-  string gitCommitHash = 3;
-
-  // RepositoryName is the repository in which this data function is defined.
-  string repositoryName = 4;
-
-  // InputModel is a marshalled JSON schema describing the accepted input.
-  // Must be satisfied by the execution model of the owning workflow's tasks.
-  string inputModel = 5;
-
-  // OutputModel is a marshalled JSON schema describing a single output record.
-  // The data function streams an array of this schema to the orchestrator.
-  // Validated once at retrieval time.
-  string outputModel = 6;
-
-  // Settings governs data lifecycle behaviour such as TTL and execution timeout.
-  DataFunctionSettings settings = 7;
-}
-
-// RegisterDataFunctionResponse is the response message for the RegisterDataFunction RPC.
-message RegisterDataFunctionResponse {
-  // Status indicates whether registration succeeded or failed.
-  RegistrationStatus status = 1;
-
-  // Message provides detail on why registration failed, if applicable.
-  string message = 2;
-}
-
-// ============================================================
-// RegisterTask RPC
-// ============================================================
-
-// RegisterTaskRequest is the request message for the RegisterTask RPC.
-message RegisterTaskRequest {
-  // TaskHash is the hash of the AST segment corresponding to the task function.
-  string taskHash = 1;
-
-  // Name is the unique name for this task.
-  string name = 2;
-
-  // Description is a human-readable summary of the task's purpose.
-  string description = 3;
-
-  // GitCommitHash is the hash of the current git commit, inferred from the
-  // local .git folder if present.
-  string gitCommitHash = 4;
-
-  // ExecutionSettings governs timeouts, retry behaviour, backoff strategy,
-  // and SLA deadlines for this task.
-  TaskExecutionSettings executionSettings = 5;
-
-  // InputModel is a marshalled JSON schema (JSON Schema Standard) describing
-  // the task's accepted input. Validation and pointer extensions are not enforced.
-  string inputModel = 6;
-
-  // OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
-  // the task's output. Validation and pointer extensions are not enforced.
-  string outputModel = 7;
-
-  // RequiredDataFunctions is an array of data function names this task depends on.
-  repeated string requiredDataFunctions = 8;
-
-  // RequiredPastResults is an array of prior task results that must be
-  // available before this task can execute.
-  repeated RequiredPastResult requiredPastResults = 9;
-
-  // RepositoryName is the workspace repository this task belongs to.
-  string repositoryName = 10;
-}
-
-// RegisterTaskResponse is the response message for the RegisterTask RPC.
-message RegisterTaskResponse {
-  // Status indicates whether registration succeeded or failed.
-  RegistrationStatus status = 1;
-
-  // Message provides detail on why registration failed, if applicable.
-  string message = 2;
-}
-
-// ============================================================
-// RegisterWorkflow RPC
-// ============================================================
-
-// RegisterWorkflowRequest is the request message for the RegisterWorkflow RPC.
-message RegisterWorkflowRequest {
-  // WorkflowName is a globally unique string identifier for this workflow.
-  string workflowName = 1;
-
-  // Description is a human-readable explanation of the workflow's purpose.
-  string description = 2;
-
-  // GitCommitHash is the version control commit hash matching the current
-  // deployment workspace state.
-  string gitCommitHash = 3;
-
-  // CodebaseName is the codebase in which this workflow is defined.
-  string codebaseName = 4;
-
-  // WorkflowHash is a hash of the workflow structure, including tasks,
-  // dependencies, and execution models.
-  string workflowHash = 5;
-
-  // Tasks is a list of structural identifiers for pre-registered tasks,
-  // including local stubs for cross-language definitions.
-  repeated string tasks = 6;
-
-  // Edges defines dependencies between tasks in the workflow DAG.
-  repeated string edges = 7;
-
-  // ExecutionSettings defines concurrency limits and task priority configuration.
-  WorkflowExecutionSettings executionSettings = 8;
-
-  // ExecutionParametersModel is a marshalled JSON schema for the parameters
-  // that must be supplied when this workflow is triggered at runtime.
-  string executionParametersModel = 9;
-
-  // HaltOnFailure, when true, stops parallel task execution if any task fails.
-  bool haltOnFailure = 10;
-
-  // ConnectionUrl is the gRPC server URL exposing this workflow, as seen by
-  // the core orchestrator.
-  string connectionUrl = 11;
-}
-
-// RegisterWorkflowResponse is the response message for the RegisterWorkflow RPC.
-message RegisterWorkflowResponse {
-  // Status indicates whether registration succeeded or failed.
-  RegistrationStatus status = 1;
-
-  // Message provides detail on DAG validation errors (e.g. cyclic dependencies).
   string message = 2;
 }
 
