@@ -1,4 +1,3 @@
-
 build:
 	protoc \
 		--go_out=go \

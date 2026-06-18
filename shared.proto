@@ -1,0 +1,114 @@
+
+syntax = "proto3";
+
+option go_package = "github.com/orca-telemetry/contract/go";
+
+// ============================================================
+// Shared Enums
+// ============================================================
+
+// TriggerSource denotes the origin of a workflow trigger event.
+enum TriggerSource {
+  TRIGGER_SOURCE_UNSPECIFIED = 0;
+  TRIGGER_SOURCE_CRON = 1;
+  TRIGGER_SOURCE_WEBHOOK = 2;
+  TRIGGER_SOURCE_UI = 3;
+  TRIGGER_SOURCE_CLI = 4;
+}
+
+// RegistrationStatus is the result of a registration RPC.
+enum RegistrationStatus {
+  REGISTRATION_STATUS_UNSPECIFIED = 0;
+  REGISTRATION_STATUS_SUCCESSFUL = 1;
+  REGISTRATION_STATUS_FAILED = 2;
+}
+
+// TriggerStatus is the result of a workflow trigger RPC.
+enum TriggerStatus {
+  TRIGGER_STATUS_UNSPECIFIED = 0;
+  TRIGGER_STATUS_ACCEPTED = 1;
+  TRIGGER_STATUS_REJECTED = 2;
+}
+
+// ExecutionStatus is the result of a task or data function execution.
+enum ExecutionStatus {
+  EXECUTION_STATUS_UNSPECIFIED = 0;
+  EXECUTION_STATUS_SUCCESSFUL = 1;
+  EXECUTION_STATUS_FAILED = 2;
+}
+
+// BackoffStrategy defines the retry backoff behaviour for a task.
+enum BackoffStrategy {
+  BACKOFF_STRATEGY_UNSPECIFIED = 0;
+  BACKOFF_STRATEGY_LINEAR = 1;
+  BACKOFF_STRATEGY_EXPONENTIAL = 2;
+}
+
+// ============================================================
+// Shared / Embedded Messages
+// ============================================================
+
+// DataFunctionSettings holds configuration that governs the lifecycle of
+// data produced by a data function.
+message DataFunctionSettings {
+  // TTL controls how long produced data is retained.
+  // 0 = clean up immediately after DAG execution of all dependent tasks completes.
+  // >0 = retention duration in seconds.
+  int64 ttl = 1;
+
+  // Timeout is the maximum duration (in seconds) allowed for the data
+  // function's full lifecycle.
+  int64 timeout = 2;
+}
+
+// TaskExecutionSettings governs how a task is executed and retried.
+message TaskExecutionSettings {
+  // ExecutionTimeout is the maximum duration (in seconds) allowed for a
+  // single task execution attempt.
+  int64 executionTimeout = 1;
+
+  // RetryCount is the number of times the task should be retried on failure.
+  int32 retryCount = 2;
+
+  // BackoffStrategy defines whether retries use linear or exponential backoff.
+  BackoffStrategy backoffStrategy = 3;
+
+  // Deadline is an SLA value in seconds. If execution exceeds this deadline,
+  // an alert is raised against this task's execution status.
+  int64 deadline = 4;
+}
+
+// RequiredPastResult describes a prior task result that must be available
+// before the owning task can execute.
+message RequiredPastResult {
+  // TaskName is the name of the task whose prior result is required.
+  string taskName = 1;
+
+  // ExecutionParams is the marshalled JSON of the execution parameters
+  // used when the referenced workflow was triggered.
+  string executionParams = 2;
+
+  // TaskResult is the expected result value of the referenced task execution.
+  string taskResult = 3;
+}
+
+// WorkflowExecutionSettings defines pipeline-level concurrency and
+// prioritisation configuration.
+message WorkflowExecutionSettings {
+  // PriorityQueue lists tasks that should be prioritised over others
+  // during parallel execution.
+  repeated string priorityQueue = 1;
+
+  // ConcurrencyLimit caps the number of tasks that may execute in
+  // parallel at any point in time.
+  int32 concurrencyLimit = 2;
+}
+
+// ComputeMetrics captures resource consumption for a single task execution.
+message ComputeMetrics {
+  // CpuSeconds is the total CPU time consumed, measured in CPU-seconds.
+  double cpuSeconds = 1;
+
+  // MemoryGiBSeconds is the total memory consumed, measured in GiB-seconds.
+  double memoryGiBSeconds = 2;
+}
