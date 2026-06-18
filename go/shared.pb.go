@@ -4,7 +4,7 @@
 // 	protoc        v4.25.9
 // source: shared.proto
 
-package _go
+package v2
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -640,7 +640,7 @@ const file_shared_proto_rawDesc = "" +
 	"\x0fBackoffStrategy\x12 \n" +
 	"\x1cBACKOFF_STRATEGY_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17BACKOFF_STRATEGY_LINEAR\x10\x01\x12 \n" +
-	"\x1cBACKOFF_STRATEGY_EXPONENTIAL\x10\x02B'Z%github.com/orca-telemetry/contract/gob\x06proto3"
+	"\x1cBACKOFF_STRATEGY_EXPONENTIAL\x10\x02B*Z(github.com/orca-telemetry/contract/go/v2b\x06proto3"
 
 var (
 	file_shared_proto_rawDescOnce sync.Once

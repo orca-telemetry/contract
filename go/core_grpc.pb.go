@@ -4,7 +4,7 @@
 // - protoc             v4.25.9
 // source: core.proto
 
-package _go
+package v2
 
 import (
 	context "context"

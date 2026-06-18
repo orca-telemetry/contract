@@ -4,7 +4,7 @@
 // 	protoc        v4.25.9
 // source: core.proto
 
-package _go
+package v2
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -2017,7 +2017,7 @@ const file_core_proto_rawDesc = "" +
 	"\x1aRegisterDataFunctionResult\x12&.RegisterDataFunctionCompletionRequest\x1a'.RegisterDataFunctionCompletionResponse\x12M\n" +
 	"\x12RegisterTaskResult\x12\x1a.RegisterTaskResultRequest\x1a\x1b.RegisterTaskResultResponse\x128\n" +
 	"\vExposeState\x12\x13.ExposeStateRequest\x1a\x14.ExposeStateResponse\x12/\n" +
-	"\x0fQueryTaskResult\x12\f.QueryParams\x1a\f.PastResults0\x01B'Z%github.com/orca-telemetry/contract/gob\x06proto3"
+	"\x0fQueryTaskResult\x12\f.QueryParams\x1a\f.PastResults0\x01B*Z(github.com/orca-telemetry/contract/go/v2b\x06proto3"
 
 var (
 	file_core_proto_rawDescOnce sync.Once
