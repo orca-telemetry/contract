@@ -145,7 +145,6 @@ message RegisterWorkerRequest {
   // GitCommitHash is the current git commit
   string gitCommitHash = 2;
 
-
   // Datafunctions is an array of data functions
   repeated DataFunction dataFunctions = 3;
 
@@ -155,8 +154,8 @@ message RegisterWorkerRequest {
   // Workflows is an array of workflows
   repeated Workflow workflows = 5;
 
-  // The external connection URL of the worker
-  string url = 6;
+  // An MD5 hash of the tasks and data functions
+  string taskDfMd5Hash = 6;
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.

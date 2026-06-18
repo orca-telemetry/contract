@@ -396,8 +396,8 @@ export interface RegisterWorkerRequest {
   workflows?:
     | Workflow[]
     | undefined;
-  /** The external connection URL of the worker */
-  url?: string | undefined;
+  /** An MD5 hash of the tasks and data functions */
+  taskDfMd5Hash?: string | undefined;
 }
 
 /** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
@@ -1308,7 +1308,7 @@ export const Workflow: MessageFns<Workflow> = {
 };
 
 function createBaseRegisterWorkerRequest(): RegisterWorkerRequest {
-  return { name: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [], url: "" };
+  return { name: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [], taskDfMd5Hash: "" };
 }
 
 export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
@@ -1334,8 +1334,8 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
         Workflow.encode(v!, writer.uint32(42).fork()).join();
       }
     }
-    if (message.url !== undefined && message.url !== "") {
-      writer.uint32(50).string(message.url);
+    if (message.taskDfMd5Hash !== undefined && message.taskDfMd5Hash !== "") {
+      writer.uint32(50).string(message.taskDfMd5Hash);
     }
     return writer;
   },
@@ -1401,7 +1401,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
             break;
           }
 
-          message.url = reader.string();
+          message.taskDfMd5Hash = reader.string();
           continue;
         }
       }
@@ -1424,7 +1424,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
       workflows: globalThis.Array.isArray(object?.workflows)
         ? object.workflows.map((e: any) => Workflow.fromJSON(e))
         : [],
-      url: isSet(object.url) ? globalThis.String(object.url) : "",
+      taskDfMd5Hash: isSet(object.taskDfMd5Hash) ? globalThis.String(object.taskDfMd5Hash) : "",
     };
   },
 
@@ -1445,8 +1445,8 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
     if (message.workflows?.length) {
       obj.workflows = message.workflows.map((e) => Workflow.toJSON(e));
     }
-    if (message.url !== undefined && message.url !== "") {
-      obj.url = message.url;
+    if (message.taskDfMd5Hash !== undefined && message.taskDfMd5Hash !== "") {
+      obj.taskDfMd5Hash = message.taskDfMd5Hash;
     }
     return obj;
   },
@@ -1461,7 +1461,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
     message.dataFunctions = object.dataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
     message.tasks = object.tasks?.map((e) => Task.fromPartial(e)) || [];
     message.workflows = object.workflows?.map((e) => Workflow.fromPartial(e)) || [];
-    message.url = object.url ?? "";
+    message.taskDfMd5Hash = object.taskDfMd5Hash ?? "";
     return message;
   },
 };

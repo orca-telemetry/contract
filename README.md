@@ -20,9 +20,9 @@ idempotent on git commit has and codebase name.
 * **WorkerName**: The name of the worker that implements the assets. Globally unique.
 * **GitCommitHash**: The current git commit of codebase.
 * **DataFunctions**: An array of data functions
+* **TaskDfMD5Hash**: A organised MD5 hash of the data functions and tasks.
 * **Tasks**: An array of tasks
 * **Workflows**: An array of workflows
-* **URL**: A connection URL that should be used to contact this worker.
 
 ### Response Message
 * **Status**: Success | Failure 

@@ -600,8 +600,8 @@ type RegisterWorkerRequest struct {
 	Tasks []*Task `protobuf:"bytes,4,rep,name=tasks,proto3" json:"tasks,omitempty"`
 	// Workflows is an array of workflows
 	Workflows []*Workflow `protobuf:"bytes,5,rep,name=workflows,proto3" json:"workflows,omitempty"`
-	// The external connection URL of the worker
-	Url           string `protobuf:"bytes,6,opt,name=url,proto3" json:"url,omitempty"`
+	// An MD5 hash of the tasks and data functions
+	TaskDfMd5Hash string `protobuf:"bytes,6,opt,name=taskDfMd5Hash,proto3" json:"taskDfMd5Hash,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -671,9 +671,9 @@ func (x *RegisterWorkerRequest) GetWorkflows() []*Workflow {
 	return nil
 }
 
-func (x *RegisterWorkerRequest) GetUrl() string {
+func (x *RegisterWorkerRequest) GetTaskDfMd5Hash() string {
 	if x != nil {
-		return x.Url
+		return x.TaskDfMd5Hash
 	}
 	return ""
 }
@@ -1888,14 +1888,14 @@ const file_core_proto_rawDesc = "" +
 	"\n" +
 	"inputModel\x18\x06 \x01(\tR\n" +
 	"inputModel\x12$\n" +
-	"\rhaltOnFailure\x18\a \x01(\bR\rhaltOnFailure\"\xde\x01\n" +
+	"\rhaltOnFailure\x18\a \x01(\bR\rhaltOnFailure\"\xf2\x01\n" +
 	"\x15RegisterWorkerRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12$\n" +
 	"\rgitCommitHash\x18\x02 \x01(\tR\rgitCommitHash\x123\n" +
 	"\rdataFunctions\x18\x03 \x03(\v2\r.DataFunctionR\rdataFunctions\x12\x1b\n" +
 	"\x05tasks\x18\x04 \x03(\v2\x05.TaskR\x05tasks\x12'\n" +
-	"\tworkflows\x18\x05 \x03(\v2\t.WorkflowR\tworkflows\x12\x10\n" +
-	"\x03url\x18\x06 \x01(\tR\x03url\"_\n" +
+	"\tworkflows\x18\x05 \x03(\v2\t.WorkflowR\tworkflows\x12$\n" +
+	"\rtaskDfMd5Hash\x18\x06 \x01(\tR\rtaskDfMd5Hash\"_\n" +
 	"\x16RegisterWorkerResponse\x12+\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"p\n" +
