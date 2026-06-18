@@ -139,11 +139,12 @@ message Workflow {
 // RegisterWorkerSnapshot RPC
 // ============================================================
 message RegisterWorkerRequest {
-  // Name is the globally unique name of the codebase.
+  // Name is the globally unique name of the worker.
   string name = 1;
 
   // GitCommitHash is the current git commit
   string gitCommitHash = 2;
+
 
   // Datafunctions is an array of data functions
   repeated DataFunction dataFunctions = 3;
@@ -172,15 +173,14 @@ message RegisterWorkerResponse {
 // ============================================================
 // RegisterServingStatus message
 message RegisterServingRequest {
-  // MD5 hash of the worker
-  string md5 = 1;
+  // Name of the worker
+  string name = 1;
 
   // Connection URL from the perspective of the core orchestrator
   string connectionUrl = 2;
 
-  // Serving percentage to apply when the MD5 exists but has a different
-  // connection URL
-  optional float servingPercentage = 3;
+  // Explicit flag stating whether the worker is serving
+  bool isServing = 3;
 };
 
 // RegisterServingResponse message

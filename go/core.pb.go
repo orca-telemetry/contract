@@ -590,7 +590,7 @@ func (x *Workflow) GetHaltOnFailure() bool {
 // ============================================================
 type RegisterWorkerRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Name is the globally unique name of the codebase.
+	// Name is the globally unique name of the worker.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// GitCommitHash is the current git commit
 	GitCommitHash string `protobuf:"bytes,2,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
@@ -739,15 +739,14 @@ func (x *RegisterWorkerResponse) GetMessage() string {
 // RegisterServingStatus message
 type RegisterServingRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// MD5 hash of the worker
-	Md5 string `protobuf:"bytes,1,opt,name=md5,proto3" json:"md5,omitempty"`
+	// Name of the worker
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Connection URL from the perspective of the core orchestrator
 	ConnectionUrl string `protobuf:"bytes,2,opt,name=connectionUrl,proto3" json:"connectionUrl,omitempty"`
-	// Serving percentage to apply when the MD5 exists but has a different
-	// connection URL
-	ServingPercentage *float32 `protobuf:"fixed32,3,opt,name=servingPercentage,proto3,oneof" json:"servingPercentage,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// Explicit flag stating whether the worker is serving
+	IsServing     bool `protobuf:"varint,3,opt,name=isServing,proto3" json:"isServing,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RegisterServingRequest) Reset() {
@@ -780,9 +779,9 @@ func (*RegisterServingRequest) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *RegisterServingRequest) GetMd5() string {
+func (x *RegisterServingRequest) GetName() string {
 	if x != nil {
-		return x.Md5
+		return x.Name
 	}
 	return ""
 }
@@ -794,11 +793,11 @@ func (x *RegisterServingRequest) GetConnectionUrl() string {
 	return ""
 }
 
-func (x *RegisterServingRequest) GetServingPercentage() float32 {
-	if x != nil && x.ServingPercentage != nil {
-		return *x.ServingPercentage
+func (x *RegisterServingRequest) GetIsServing() bool {
+	if x != nil {
+		return x.IsServing
 	}
-	return 0
+	return false
 }
 
 // RegisterServingResponse message
@@ -1899,12 +1898,11 @@ const file_core_proto_rawDesc = "" +
 	"\x03url\x18\x06 \x01(\tR\x03url\"_\n" +
 	"\x16RegisterWorkerResponse\x12+\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\x99\x01\n" +
-	"\x16RegisterServingRequest\x12\x10\n" +
-	"\x03md5\x18\x01 \x01(\tR\x03md5\x12$\n" +
-	"\rconnectionUrl\x18\x02 \x01(\tR\rconnectionUrl\x121\n" +
-	"\x11servingPercentage\x18\x03 \x01(\x02H\x00R\x11servingPercentage\x88\x01\x01B\x14\n" +
-	"\x12_servingPercentage\"`\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"p\n" +
+	"\x16RegisterServingRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12$\n" +
+	"\rconnectionUrl\x18\x02 \x01(\tR\rconnectionUrl\x12\x1c\n" +
+	"\tisServing\x18\x03 \x01(\bR\tisServing\"`\n" +
 	"\x17RegisterServingResponse\x12+\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"\xf7\x01\n" +
@@ -2126,7 +2124,6 @@ func file_core_proto_init() {
 		return
 	}
 	file_shared_proto_init()
-	file_core_proto_msgTypes[6].OneofWrappers = []any{}
 	file_core_proto_msgTypes[8].OneofWrappers = []any{}
 	file_core_proto_msgTypes[14].OneofWrappers = []any{}
 	file_core_proto_msgTypes[16].OneofWrappers = []any{}

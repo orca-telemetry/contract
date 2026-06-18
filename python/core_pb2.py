@@ -26,7 +26,7 @@ from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__
 import shared_pb2 as shared__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ncore.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x0cshared.proto\"|\n\x0c\x44\x61taFunction\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x12\n\ninputModel\x18\x03 \x01(\t\x12\x13\n\x0boutputModel\x18\x04 \x01(\t\x12\'\n\x08settings\x18\x05 \x01(\x0b\x32\x15.DataFunctionSettings\"\xb6\x01\n\x04Task\x12\x10\n\x08taskHash\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x31\n\x11\x65xecutionSettings\x18\x04 \x01(\x0b\x32\x16.TaskExecutionSettings\x12\x12\n\ninputModel\x18\x05 \x01(\t\x12\x13\n\x0boutputModel\x18\x06 \x01(\t\x12\x1d\n\x15requiredDataFunctions\x18\x07 \x03(\t\"\x90\x01\n\x0cWorkflowEdge\x12\x14\n\x0c\x66romTaskName\x18\x01 \x01(\t\x12\x14\n\x0c\x66romTaskHash\x18\x02 \x01(\t\x12\x16\n\x0e\x66romTaskWorker\x18\x03 \x01(\t\x12\x12\n\ntoTaskName\x18\x04 \x01(\t\x12\x12\n\ntoTaskHash\x18\x05 \x01(\t\x12\x14\n\x0ctoTaskWorker\x18\x06 \x01(\t\"\xcb\x01\n\x08Workflow\x12\x14\n\x0cworkflowName\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x14\n\x0cworkflowHash\x18\x03 \x01(\t\x12\x1c\n\x05\x65\x64ges\x18\x04 \x03(\x0b\x32\r.WorkflowEdge\x12\x35\n\x11\x65xecutionSettings\x18\x05 \x01(\x0b\x32\x1a.WorkflowExecutionSettings\x12\x12\n\ninputModel\x18\x06 \x01(\t\x12\x15\n\rhaltOnFailure\x18\x07 \x01(\x08\"\xa3\x01\n\x15RegisterWorkerRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rgitCommitHash\x18\x02 \x01(\t\x12$\n\rdataFunctions\x18\x03 \x03(\x0b\x32\r.DataFunction\x12\x14\n\x05tasks\x18\x04 \x03(\x0b\x32\x05.Task\x12\x1c\n\tworkflows\x18\x05 \x03(\x0b\x32\t.Workflow\x12\x0b\n\x03url\x18\x06 \x01(\t\"N\n\x16RegisterWorkerResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.RegistrationStatus\x12\x0f\n\x07message\x18\x02 \x01(\t\"r\n\x16RegisterServingRequest\x12\x0b\n\x03md5\x18\x01 \x01(\t\x12\x15\n\rconnectionUrl\x18\x02 \x01(\t\x12\x1e\n\x11servingPercentage\x18\x03 \x01(\x02H\x00\x88\x01\x01\x42\x14\n\x12_servingPercentage\"O\n\x17RegisterServingResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.RegistrationStatus\x12\x0f\n\x07message\x18\x02 \x01(\t\"\xb8\x01\n\x16TriggerWorkflowRequest\x12\x14\n\x0cworkflowName\x18\x01 \x01(\t\x12\x34\n\x0blogicalDate\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampH\x00\x88\x01\x01\x12\x1b\n\x13\x65xecutionParameters\x18\x03 \x01(\t\x12%\n\rtriggerSource\x18\x04 \x01(\x0e\x32\x0e.TriggerSourceB\x0e\n\x0c_logicalDate\"a\n\x17TriggerWorkflowResponse\x12\x15\n\rworkflowRunId\x18\x01 \x01(\t\x12\x1e\n\x06status\x18\x02 \x01(\x0e\x32\x0e.TriggerStatus\x12\x0f\n\x07message\x18\x03 \x01(\t\"q\n%RegisterDataFunctionCompletionRequest\x12\x15\n\rworkflowRunId\x18\x01 \x01(\t\x12 \n\x06status\x18\x02 \x01(\x0e\x32\x10.ExecutionStatus\x12\x0f\n\x07message\x18\x03 \x01(\t\"(\n&RegisterDataFunctionCompletionResponse\"\xb0\x01\n\x19RegisterTaskResultRequest\x12\x15\n\rworkflowRunId\x18\x01 \x01(\t\x12\x10\n\x08taskName\x18\x02 \x01(\t\x12\x0e\n\x06result\x18\x03 \x01(\t\x12 \n\x06status\x18\x04 \x01(\x0e\x32\x10.ExecutionStatus\x12\x0f\n\x07message\x18\x05 \x01(\t\x12\'\n\x0e\x63omputeMetrics\x18\x06 \x01(\x0b\x32\x0f.ComputeMetrics\"\x1c\n\x1aRegisterTaskResultResponse\"\xa8\x01\n\x12\x45xposeStateRequest\x12\x1a\n\rgitCommitHash\x18\x01 \x01(\tH\x00\x88\x01\x01\x12\x32\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampH\x01\x88\x01\x01\x12\x15\n\x08\x63odebase\x18\x03 \x01(\tH\x02\x88\x01\x01\x42\x10\n\x0e_gitCommitHashB\x0c\n\n_timestampB\x0b\n\t_codebase\"o\n\x13\x45xposeStateResponse\x12\x14\n\x05tasks\x18\x01 \x03(\x0b\x32\x05.Task\x12\x1c\n\tworkflows\x18\x02 \x03(\x0b\x32\t.Workflow\x12$\n\rdataFunctions\x18\x03 \x03(\x0b\x32\r.DataFunction\"\xeb\x01\n\x0bQueryParams\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x1b\x65xecution_parameter_filters\x18\x02 \x03(\x0b\x32\x0c.FilterGroup\x12$\n\x0eresult_filters\x18\x03 \x03(\x0b\x32\x0c.FilterGroup\x12#\n\x08order_by\x18\x04 \x03(\x0b\x32\x11.OrderByStatement\x12\x15\n\rresult_fields\x18\x05 \x03(\t\x12\x11\n\tpage_size\x18\x06 \x01(\x05\x12\x17\n\npage_token\x18\x07 \x01(\tH\x00\x88\x01\x01\x42\r\n\x0b_page_token\"]\n\x0bPastResults\x12\x1c\n\x07results\x18\x01 \x03(\x0b\x32\x0b.TaskResult\x12\x1c\n\x0fnext_page_token\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x12\n\x10_next_page_token\"H\n\nTaskResult\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1c\n\x14\x65xecution_parameters\x18\x02 \x01(\t\x12\x0e\n\x06result\x18\x03 \x01(\t\"+\n\x0b\x46ilterGroup\x12\x1c\n\x07\x66ilters\x18\x01 \x03(\x0b\x32\x0b.LeafFilter\"y\n\nLeafFilter\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\ncomparator\x18\x02 \x01(\x0e\x32\x0b.Comparator\x12\x0f\n\x05value\x18\x03 \x01(\tH\x00\x12\x1d\n\x06values\x18\x04 \x01(\x0b\x32\x0b.StringListH\x00\x42\r\n\x0bvalue_oneof\"\x1c\n\nStringList\x12\x0e\n\x06values\x18\x01 \x03(\t\"_\n\x10OrderByStatement\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x06source\x18\x02 \x01(\x0e\x32\x0b.DataSource\x12!\n\tdirection\x18\x03 \x01(\x0e\x32\x0e.SortDirection*\xa5\x01\n\nComparator\x12\x1a\n\x16\x43OMPARATOR_UNSPECIFIED\x10\x00\x12\x06\n\x02\x45Q\x10\x01\x12\x07\n\x03NEQ\x10\x02\x12\x06\n\x02GT\x10\x03\x12\x07\n\x03GTE\x10\x04\x12\x06\n\x02LT\x10\x05\x12\x07\n\x03LTE\x10\x06\x12\x06\n\x02IN\x10\x07\x12\n\n\x06NOT_IN\x10\x08\x12\n\n\x06\x45XISTS\x10\t\x12\x0e\n\nNOT_EXISTS\x10\n\x12\x0c\n\x08\x43ONTAINS\x10\x0b\x12\n\n\x06PREFIX\x10\x0c*O\n\nDataSource\x12\x1b\n\x17\x44\x41TA_SOURCE_UNSPECIFIED\x10\x00\x12\n\n\x06RESULT\x10\x01\x12\x18\n\x14\x45XECUTION_PARAMETERS\x10\x02*B\n\rSortDirection\x12\x1e\n\x1aSORT_DIRECTION_UNSPECIFIED\x10\x00\x12\x07\n\x03\x41SC\x10\x01\x12\x08\n\x04\x44\x45SC\x10\x02\x32\x86\x04\n\x04\x43ore\x12I\n\x16RegisterWorkerSnapshot\x12\x16.RegisterWorkerRequest\x1a\x17.RegisterWorkerResponse\x12\x44\n\x0fRegisterServing\x12\x17.RegisterServingRequest\x1a\x18.RegisterServingResponse\x12\x44\n\x0fTriggerWorkflow\x12\x17.TriggerWorkflowRequest\x1a\x18.TriggerWorkflowResponse\x12m\n\x1aRegisterDataFunctionResult\x12&.RegisterDataFunctionCompletionRequest\x1a\'.RegisterDataFunctionCompletionResponse\x12M\n\x12RegisterTaskResult\x12\x1a.RegisterTaskResultRequest\x1a\x1b.RegisterTaskResultResponse\x12\x38\n\x0b\x45xposeState\x12\x13.ExposeStateRequest\x1a\x14.ExposeStateResponse\x12/\n\x0fQueryTaskResult\x12\x0c.QueryParams\x1a\x0c.PastResults0\x01\x42*Z(github.com/orca-telemetry/contract/go/v2b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ncore.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x0cshared.proto\"|\n\x0c\x44\x61taFunction\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04hash\x18\x02 \x01(\t\x12\x12\n\ninputModel\x18\x03 \x01(\t\x12\x13\n\x0boutputModel\x18\x04 \x01(\t\x12\'\n\x08settings\x18\x05 \x01(\x0b\x32\x15.DataFunctionSettings\"\xb6\x01\n\x04Task\x12\x10\n\x08taskHash\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x31\n\x11\x65xecutionSettings\x18\x04 \x01(\x0b\x32\x16.TaskExecutionSettings\x12\x12\n\ninputModel\x18\x05 \x01(\t\x12\x13\n\x0boutputModel\x18\x06 \x01(\t\x12\x1d\n\x15requiredDataFunctions\x18\x07 \x03(\t\"\x90\x01\n\x0cWorkflowEdge\x12\x14\n\x0c\x66romTaskName\x18\x01 \x01(\t\x12\x14\n\x0c\x66romTaskHash\x18\x02 \x01(\t\x12\x16\n\x0e\x66romTaskWorker\x18\x03 \x01(\t\x12\x12\n\ntoTaskName\x18\x04 \x01(\t\x12\x12\n\ntoTaskHash\x18\x05 \x01(\t\x12\x14\n\x0ctoTaskWorker\x18\x06 \x01(\t\"\xcb\x01\n\x08Workflow\x12\x14\n\x0cworkflowName\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x14\n\x0cworkflowHash\x18\x03 \x01(\t\x12\x1c\n\x05\x65\x64ges\x18\x04 \x03(\x0b\x32\r.WorkflowEdge\x12\x35\n\x11\x65xecutionSettings\x18\x05 \x01(\x0b\x32\x1a.WorkflowExecutionSettings\x12\x12\n\ninputModel\x18\x06 \x01(\t\x12\x15\n\rhaltOnFailure\x18\x07 \x01(\x08\"\xa3\x01\n\x15RegisterWorkerRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rgitCommitHash\x18\x02 \x01(\t\x12$\n\rdataFunctions\x18\x03 \x03(\x0b\x32\r.DataFunction\x12\x14\n\x05tasks\x18\x04 \x03(\x0b\x32\x05.Task\x12\x1c\n\tworkflows\x18\x05 \x03(\x0b\x32\t.Workflow\x12\x0b\n\x03url\x18\x06 \x01(\t\"N\n\x16RegisterWorkerResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.RegistrationStatus\x12\x0f\n\x07message\x18\x02 \x01(\t\"P\n\x16RegisterServingRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rconnectionUrl\x18\x02 \x01(\t\x12\x11\n\tisServing\x18\x03 \x01(\x08\"O\n\x17RegisterServingResponse\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.RegistrationStatus\x12\x0f\n\x07message\x18\x02 \x01(\t\"\xb8\x01\n\x16TriggerWorkflowRequest\x12\x14\n\x0cworkflowName\x18\x01 \x01(\t\x12\x34\n\x0blogicalDate\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampH\x00\x88\x01\x01\x12\x1b\n\x13\x65xecutionParameters\x18\x03 \x01(\t\x12%\n\rtriggerSource\x18\x04 \x01(\x0e\x32\x0e.TriggerSourceB\x0e\n\x0c_logicalDate\"a\n\x17TriggerWorkflowResponse\x12\x15\n\rworkflowRunId\x18\x01 \x01(\t\x12\x1e\n\x06status\x18\x02 \x01(\x0e\x32\x0e.TriggerStatus\x12\x0f\n\x07message\x18\x03 \x01(\t\"q\n%RegisterDataFunctionCompletionRequest\x12\x15\n\rworkflowRunId\x18\x01 \x01(\t\x12 \n\x06status\x18\x02 \x01(\x0e\x32\x10.ExecutionStatus\x12\x0f\n\x07message\x18\x03 \x01(\t\"(\n&RegisterDataFunctionCompletionResponse\"\xb0\x01\n\x19RegisterTaskResultRequest\x12\x15\n\rworkflowRunId\x18\x01 \x01(\t\x12\x10\n\x08taskName\x18\x02 \x01(\t\x12\x0e\n\x06result\x18\x03 \x01(\t\x12 \n\x06status\x18\x04 \x01(\x0e\x32\x10.ExecutionStatus\x12\x0f\n\x07message\x18\x05 \x01(\t\x12\'\n\x0e\x63omputeMetrics\x18\x06 \x01(\x0b\x32\x0f.ComputeMetrics\"\x1c\n\x1aRegisterTaskResultResponse\"\xa8\x01\n\x12\x45xposeStateRequest\x12\x1a\n\rgitCommitHash\x18\x01 \x01(\tH\x00\x88\x01\x01\x12\x32\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampH\x01\x88\x01\x01\x12\x15\n\x08\x63odebase\x18\x03 \x01(\tH\x02\x88\x01\x01\x42\x10\n\x0e_gitCommitHashB\x0c\n\n_timestampB\x0b\n\t_codebase\"o\n\x13\x45xposeStateResponse\x12\x14\n\x05tasks\x18\x01 \x03(\x0b\x32\x05.Task\x12\x1c\n\tworkflows\x18\x02 \x03(\x0b\x32\t.Workflow\x12$\n\rdataFunctions\x18\x03 \x03(\x0b\x32\r.DataFunction\"\xeb\x01\n\x0bQueryParams\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x1b\x65xecution_parameter_filters\x18\x02 \x03(\x0b\x32\x0c.FilterGroup\x12$\n\x0eresult_filters\x18\x03 \x03(\x0b\x32\x0c.FilterGroup\x12#\n\x08order_by\x18\x04 \x03(\x0b\x32\x11.OrderByStatement\x12\x15\n\rresult_fields\x18\x05 \x03(\t\x12\x11\n\tpage_size\x18\x06 \x01(\x05\x12\x17\n\npage_token\x18\x07 \x01(\tH\x00\x88\x01\x01\x42\r\n\x0b_page_token\"]\n\x0bPastResults\x12\x1c\n\x07results\x18\x01 \x03(\x0b\x32\x0b.TaskResult\x12\x1c\n\x0fnext_page_token\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x12\n\x10_next_page_token\"H\n\nTaskResult\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1c\n\x14\x65xecution_parameters\x18\x02 \x01(\t\x12\x0e\n\x06result\x18\x03 \x01(\t\"+\n\x0b\x46ilterGroup\x12\x1c\n\x07\x66ilters\x18\x01 \x03(\x0b\x32\x0b.LeafFilter\"y\n\nLeafFilter\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1f\n\ncomparator\x18\x02 \x01(\x0e\x32\x0b.Comparator\x12\x0f\n\x05value\x18\x03 \x01(\tH\x00\x12\x1d\n\x06values\x18\x04 \x01(\x0b\x32\x0b.StringListH\x00\x42\r\n\x0bvalue_oneof\"\x1c\n\nStringList\x12\x0e\n\x06values\x18\x01 \x03(\t\"_\n\x10OrderByStatement\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x06source\x18\x02 \x01(\x0e\x32\x0b.DataSource\x12!\n\tdirection\x18\x03 \x01(\x0e\x32\x0e.SortDirection*\xa5\x01\n\nComparator\x12\x1a\n\x16\x43OMPARATOR_UNSPECIFIED\x10\x00\x12\x06\n\x02\x45Q\x10\x01\x12\x07\n\x03NEQ\x10\x02\x12\x06\n\x02GT\x10\x03\x12\x07\n\x03GTE\x10\x04\x12\x06\n\x02LT\x10\x05\x12\x07\n\x03LTE\x10\x06\x12\x06\n\x02IN\x10\x07\x12\n\n\x06NOT_IN\x10\x08\x12\n\n\x06\x45XISTS\x10\t\x12\x0e\n\nNOT_EXISTS\x10\n\x12\x0c\n\x08\x43ONTAINS\x10\x0b\x12\n\n\x06PREFIX\x10\x0c*O\n\nDataSource\x12\x1b\n\x17\x44\x41TA_SOURCE_UNSPECIFIED\x10\x00\x12\n\n\x06RESULT\x10\x01\x12\x18\n\x14\x45XECUTION_PARAMETERS\x10\x02*B\n\rSortDirection\x12\x1e\n\x1aSORT_DIRECTION_UNSPECIFIED\x10\x00\x12\x07\n\x03\x41SC\x10\x01\x12\x08\n\x04\x44\x45SC\x10\x02\x32\x86\x04\n\x04\x43ore\x12I\n\x16RegisterWorkerSnapshot\x12\x16.RegisterWorkerRequest\x1a\x17.RegisterWorkerResponse\x12\x44\n\x0fRegisterServing\x12\x17.RegisterServingRequest\x1a\x18.RegisterServingResponse\x12\x44\n\x0fTriggerWorkflow\x12\x17.TriggerWorkflowRequest\x1a\x18.TriggerWorkflowResponse\x12m\n\x1aRegisterDataFunctionResult\x12&.RegisterDataFunctionCompletionRequest\x1a\'.RegisterDataFunctionCompletionResponse\x12M\n\x12RegisterTaskResult\x12\x1a.RegisterTaskResultRequest\x1a\x1b.RegisterTaskResultResponse\x12\x38\n\x0b\x45xposeState\x12\x13.ExposeStateRequest\x1a\x14.ExposeStateResponse\x12/\n\x0fQueryTaskResult\x12\x0c.QueryParams\x1a\x0c.PastResults0\x01\x42*Z(github.com/orca-telemetry/contract/go/v2b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,12 +34,12 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'core_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z(github.com/orca-telemetry/contract/go/v2'
-  _globals['_COMPARATOR']._serialized_start=2807
-  _globals['_COMPARATOR']._serialized_end=2972
-  _globals['_DATASOURCE']._serialized_start=2974
-  _globals['_DATASOURCE']._serialized_end=3053
-  _globals['_SORTDIRECTION']._serialized_start=3055
-  _globals['_SORTDIRECTION']._serialized_end=3121
+  _globals['_COMPARATOR']._serialized_start=2773
+  _globals['_COMPARATOR']._serialized_end=2938
+  _globals['_DATASOURCE']._serialized_start=2940
+  _globals['_DATASOURCE']._serialized_end=3019
+  _globals['_SORTDIRECTION']._serialized_start=3021
+  _globals['_SORTDIRECTION']._serialized_end=3087
   _globals['_DATAFUNCTION']._serialized_start=61
   _globals['_DATAFUNCTION']._serialized_end=185
   _globals['_TASK']._serialized_start=188
@@ -53,39 +53,39 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_REGISTERWORKERRESPONSE']._serialized_start=891
   _globals['_REGISTERWORKERRESPONSE']._serialized_end=969
   _globals['_REGISTERSERVINGREQUEST']._serialized_start=971
-  _globals['_REGISTERSERVINGREQUEST']._serialized_end=1085
-  _globals['_REGISTERSERVINGRESPONSE']._serialized_start=1087
-  _globals['_REGISTERSERVINGRESPONSE']._serialized_end=1166
-  _globals['_TRIGGERWORKFLOWREQUEST']._serialized_start=1169
-  _globals['_TRIGGERWORKFLOWREQUEST']._serialized_end=1353
-  _globals['_TRIGGERWORKFLOWRESPONSE']._serialized_start=1355
-  _globals['_TRIGGERWORKFLOWRESPONSE']._serialized_end=1452
-  _globals['_REGISTERDATAFUNCTIONCOMPLETIONREQUEST']._serialized_start=1454
-  _globals['_REGISTERDATAFUNCTIONCOMPLETIONREQUEST']._serialized_end=1567
-  _globals['_REGISTERDATAFUNCTIONCOMPLETIONRESPONSE']._serialized_start=1569
-  _globals['_REGISTERDATAFUNCTIONCOMPLETIONRESPONSE']._serialized_end=1609
-  _globals['_REGISTERTASKRESULTREQUEST']._serialized_start=1612
-  _globals['_REGISTERTASKRESULTREQUEST']._serialized_end=1788
-  _globals['_REGISTERTASKRESULTRESPONSE']._serialized_start=1790
-  _globals['_REGISTERTASKRESULTRESPONSE']._serialized_end=1818
-  _globals['_EXPOSESTATEREQUEST']._serialized_start=1821
-  _globals['_EXPOSESTATEREQUEST']._serialized_end=1989
-  _globals['_EXPOSESTATERESPONSE']._serialized_start=1991
-  _globals['_EXPOSESTATERESPONSE']._serialized_end=2102
-  _globals['_QUERYPARAMS']._serialized_start=2105
-  _globals['_QUERYPARAMS']._serialized_end=2340
-  _globals['_PASTRESULTS']._serialized_start=2342
-  _globals['_PASTRESULTS']._serialized_end=2435
-  _globals['_TASKRESULT']._serialized_start=2437
-  _globals['_TASKRESULT']._serialized_end=2509
-  _globals['_FILTERGROUP']._serialized_start=2511
-  _globals['_FILTERGROUP']._serialized_end=2554
-  _globals['_LEAFFILTER']._serialized_start=2556
-  _globals['_LEAFFILTER']._serialized_end=2677
-  _globals['_STRINGLIST']._serialized_start=2679
-  _globals['_STRINGLIST']._serialized_end=2707
-  _globals['_ORDERBYSTATEMENT']._serialized_start=2709
-  _globals['_ORDERBYSTATEMENT']._serialized_end=2804
-  _globals['_CORE']._serialized_start=3124
-  _globals['_CORE']._serialized_end=3642
+  _globals['_REGISTERSERVINGREQUEST']._serialized_end=1051
+  _globals['_REGISTERSERVINGRESPONSE']._serialized_start=1053
+  _globals['_REGISTERSERVINGRESPONSE']._serialized_end=1132
+  _globals['_TRIGGERWORKFLOWREQUEST']._serialized_start=1135
+  _globals['_TRIGGERWORKFLOWREQUEST']._serialized_end=1319
+  _globals['_TRIGGERWORKFLOWRESPONSE']._serialized_start=1321
+  _globals['_TRIGGERWORKFLOWRESPONSE']._serialized_end=1418
+  _globals['_REGISTERDATAFUNCTIONCOMPLETIONREQUEST']._serialized_start=1420
+  _globals['_REGISTERDATAFUNCTIONCOMPLETIONREQUEST']._serialized_end=1533
+  _globals['_REGISTERDATAFUNCTIONCOMPLETIONRESPONSE']._serialized_start=1535
+  _globals['_REGISTERDATAFUNCTIONCOMPLETIONRESPONSE']._serialized_end=1575
+  _globals['_REGISTERTASKRESULTREQUEST']._serialized_start=1578
+  _globals['_REGISTERTASKRESULTREQUEST']._serialized_end=1754
+  _globals['_REGISTERTASKRESULTRESPONSE']._serialized_start=1756
+  _globals['_REGISTERTASKRESULTRESPONSE']._serialized_end=1784
+  _globals['_EXPOSESTATEREQUEST']._serialized_start=1787
+  _globals['_EXPOSESTATEREQUEST']._serialized_end=1955
+  _globals['_EXPOSESTATERESPONSE']._serialized_start=1957
+  _globals['_EXPOSESTATERESPONSE']._serialized_end=2068
+  _globals['_QUERYPARAMS']._serialized_start=2071
+  _globals['_QUERYPARAMS']._serialized_end=2306
+  _globals['_PASTRESULTS']._serialized_start=2308
+  _globals['_PASTRESULTS']._serialized_end=2401
+  _globals['_TASKRESULT']._serialized_start=2403
+  _globals['_TASKRESULT']._serialized_end=2475
+  _globals['_FILTERGROUP']._serialized_start=2477
+  _globals['_FILTERGROUP']._serialized_end=2520
+  _globals['_LEAFFILTER']._serialized_start=2522
+  _globals['_LEAFFILTER']._serialized_end=2643
+  _globals['_STRINGLIST']._serialized_start=2645
+  _globals['_STRINGLIST']._serialized_end=2673
+  _globals['_ORDERBYSTATEMENT']._serialized_start=2675
+  _globals['_ORDERBYSTATEMENT']._serialized_end=2770
+  _globals['_CORE']._serialized_start=3090
+  _globals['_CORE']._serialized_end=3608
 # @@protoc_insertion_point(module_scope)

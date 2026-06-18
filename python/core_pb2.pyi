@@ -146,14 +146,14 @@ class RegisterWorkerResponse(_message.Message):
     def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ...) -> None: ...
 
 class RegisterServingRequest(_message.Message):
-    __slots__ = ("md5", "connectionUrl", "servingPercentage")
-    MD5_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("name", "connectionUrl", "isServing")
+    NAME_FIELD_NUMBER: _ClassVar[int]
     CONNECTIONURL_FIELD_NUMBER: _ClassVar[int]
-    SERVINGPERCENTAGE_FIELD_NUMBER: _ClassVar[int]
-    md5: str
+    ISSERVING_FIELD_NUMBER: _ClassVar[int]
+    name: str
     connectionUrl: str
-    servingPercentage: float
-    def __init__(self, md5: _Optional[str] = ..., connectionUrl: _Optional[str] = ..., servingPercentage: _Optional[float] = ...) -> None: ...
+    isServing: bool
+    def __init__(self, name: _Optional[str] = ..., connectionUrl: _Optional[str] = ..., isServing: bool = ...) -> None: ...
 
 class RegisterServingResponse(_message.Message):
     __slots__ = ("status", "message")

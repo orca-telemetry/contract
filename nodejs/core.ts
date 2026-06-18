@@ -376,7 +376,7 @@ export interface Workflow {
  * ============================================================
  */
 export interface RegisterWorkerRequest {
-  /** Name is the globally unique name of the codebase. */
+  /** Name is the globally unique name of the worker. */
   name?:
     | string
     | undefined;
@@ -417,19 +417,16 @@ export interface RegisterWorkerResponse {
  * RegisterServingStatus message
  */
 export interface RegisterServingRequest {
-  /** MD5 hash of the worker */
-  md5?:
+  /** Name of the worker */
+  name?:
     | string
     | undefined;
   /** Connection URL from the perspective of the core orchestrator */
   connectionUrl?:
     | string
     | undefined;
-  /**
-   * Serving percentage to apply when the MD5 exists but has a different
-   * connection URL
-   */
-  servingPercentage?: number | undefined;
+  /** Explicit flag stating whether the worker is serving */
+  isServing?: boolean | undefined;
 }
 
 /** RegisterServingResponse message */
@@ -1546,19 +1543,19 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
 };
 
 function createBaseRegisterServingRequest(): RegisterServingRequest {
-  return { md5: "", connectionUrl: "", servingPercentage: undefined };
+  return { name: "", connectionUrl: "", isServing: false };
 }
 
 export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
   encode(message: RegisterServingRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.md5 !== undefined && message.md5 !== "") {
-      writer.uint32(10).string(message.md5);
+    if (message.name !== undefined && message.name !== "") {
+      writer.uint32(10).string(message.name);
     }
     if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
       writer.uint32(18).string(message.connectionUrl);
     }
-    if (message.servingPercentage !== undefined) {
-      writer.uint32(29).float(message.servingPercentage);
+    if (message.isServing !== undefined && message.isServing !== false) {
+      writer.uint32(24).bool(message.isServing);
     }
     return writer;
   },
@@ -1575,7 +1572,7 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
             break;
           }
 
-          message.md5 = reader.string();
+          message.name = reader.string();
           continue;
         }
         case 2: {
@@ -1587,11 +1584,11 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
           continue;
         }
         case 3: {
-          if (tag !== 29) {
+          if (tag !== 24) {
             break;
           }
 
-          message.servingPercentage = reader.float();
+          message.isServing = reader.bool();
           continue;
         }
       }
@@ -1605,22 +1602,22 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
 
   fromJSON(object: any): RegisterServingRequest {
     return {
-      md5: isSet(object.md5) ? globalThis.String(object.md5) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
       connectionUrl: isSet(object.connectionUrl) ? globalThis.String(object.connectionUrl) : "",
-      servingPercentage: isSet(object.servingPercentage) ? globalThis.Number(object.servingPercentage) : undefined,
+      isServing: isSet(object.isServing) ? globalThis.Boolean(object.isServing) : false,
     };
   },
 
   toJSON(message: RegisterServingRequest): unknown {
     const obj: any = {};
-    if (message.md5 !== undefined && message.md5 !== "") {
-      obj.md5 = message.md5;
+    if (message.name !== undefined && message.name !== "") {
+      obj.name = message.name;
     }
     if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
       obj.connectionUrl = message.connectionUrl;
     }
-    if (message.servingPercentage !== undefined) {
-      obj.servingPercentage = message.servingPercentage;
+    if (message.isServing !== undefined && message.isServing !== false) {
+      obj.isServing = message.isServing;
     }
     return obj;
   },
@@ -1630,9 +1627,9 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
   },
   fromPartial<I extends Exact<DeepPartial<RegisterServingRequest>, I>>(object: I): RegisterServingRequest {
     const message = createBaseRegisterServingRequest();
-    message.md5 = object.md5 ?? "";
+    message.name = object.name ?? "";
     message.connectionUrl = object.connectionUrl ?? "";
-    message.servingPercentage = object.servingPercentage ?? undefined;
+    message.isServing = object.isServing ?? false;
     return message;
   },
 };
