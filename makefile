@@ -4,13 +4,13 @@ build:
 		--go_opt=paths=source_relative \
 		--go-grpc_out=go \
 		--go-grpc_opt=paths=source_relative \
-		*.proto vendor/*.proto
+		*.proto
 	python -m grpc_tools.protoc \
     --proto_path=./ \
     --python_out=./python \
     --pyi_out=./python \
     --grpc_python_out=./python \
-		*.proto vendor/*.proto
+		*.proto
 	protoc \
 		--plugin=protoc-gen-ts=`which protoc-gen-ts_proto` \
 		--ts_proto_out=./nodejs \
@@ -23,4 +23,4 @@ build:
 		--ts_proto_opt=oneof=unions-value \
 		--ts_proto_opt=snakeToCamel=keys_json \
 		--ts_proto_opt=outputClientImpl=true \
-		*.proto vendor/*.proto
+		*.proto
