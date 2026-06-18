@@ -1,4 +1,7 @@
-# README 
+# README
+
+Herein is the description of the API design / contract for the orca core
+service, and for workers.
 
 # Core Service
 
