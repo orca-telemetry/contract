@@ -302,6 +302,35 @@ export interface Task {
   requiredDataFunctions?: string[] | undefined;
 }
 
+/**
+ * WorkflowEdge defines the relationship between two tasks in the workflow.
+ * Edges are combined to form a workflow, or DAG.
+ */
+export interface WorkflowEdge {
+  /** The name of the task going from */
+  fromTaskName?:
+    | string
+    | undefined;
+  /** The hash of the AST segment of the task */
+  fromTaskHash?:
+    | string
+    | undefined;
+  /** The worker that implements the task */
+  fromTaskWorker?:
+    | string
+    | undefined;
+  /** The name of the task going from */
+  toTaskName?:
+    | string
+    | undefined;
+  /** The hash of the AST segment of the task */
+  toTaskHash?:
+    | string
+    | undefined;
+  /** The worker that implements the task */
+  toTaskWorker?: string | undefined;
+}
+
 /** Workflow defines a registered workflow, its task graph, and runtime settings. */
 export interface Workflow {
   /** WorkflowName is the globally unique string identifier for this workflow. */
@@ -319,40 +348,26 @@ export interface Workflow {
   workflowHash?:
     | string
     | undefined;
-  /**
-   * Tasks is a list of structural identifiers linking to pre-registered tasks,
-   * including local stubs of cross-language definitions.
-   */
-  tasks?:
-    | string[]
-    | undefined;
   /** Edges defines the dependency relationships between tasks in this workflow. */
   edges?:
-    | string[]
+    | WorkflowEdge[]
     | undefined;
   /** ExecutionSettings defines concurrency limits and task prioritisation. */
   executionSettings?:
     | WorkflowExecutionSettings
     | undefined;
   /**
-   * ExecutionParametersModel is a marshalled JSON schema describing the
+   * InputModel is a marshalled JSON schema describing the
    * parameters that must be provided at workflow trigger time.
    */
-  executionParametersModel?:
+  inputModel?:
     | string
     | undefined;
   /**
    * HaltOnFailure instructs the orchestrator to stop parallel task execution
    * if any task encounters a failure.
    */
-  haltOnFailure?:
-    | boolean
-    | undefined;
-  /**
-   * ConnectionUrl is the gRPC server URL exposing this workflow. Must match
-   * the local or cloud implementation visible to the core orchestrator.
-   */
-  connectionUrl?: string | undefined;
+  haltOnFailure?: boolean | undefined;
 }
 
 /**
@@ -378,7 +393,11 @@ export interface RegisterWorkerRequest {
     | Task[]
     | undefined;
   /** Workflows is an array of workflows */
-  workflows?: Workflow[] | undefined;
+  workflows?:
+    | Workflow[]
+    | undefined;
+  /** The external connection URL of the worker */
+  url?: string | undefined;
 }
 
 /** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
@@ -978,17 +997,155 @@ export const Task: MessageFns<Task> = {
   },
 };
 
+function createBaseWorkflowEdge(): WorkflowEdge {
+  return { fromTaskName: "", fromTaskHash: "", fromTaskWorker: "", toTaskName: "", toTaskHash: "", toTaskWorker: "" };
+}
+
+export const WorkflowEdge: MessageFns<WorkflowEdge> = {
+  encode(message: WorkflowEdge, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.fromTaskName !== undefined && message.fromTaskName !== "") {
+      writer.uint32(10).string(message.fromTaskName);
+    }
+    if (message.fromTaskHash !== undefined && message.fromTaskHash !== "") {
+      writer.uint32(18).string(message.fromTaskHash);
+    }
+    if (message.fromTaskWorker !== undefined && message.fromTaskWorker !== "") {
+      writer.uint32(26).string(message.fromTaskWorker);
+    }
+    if (message.toTaskName !== undefined && message.toTaskName !== "") {
+      writer.uint32(34).string(message.toTaskName);
+    }
+    if (message.toTaskHash !== undefined && message.toTaskHash !== "") {
+      writer.uint32(42).string(message.toTaskHash);
+    }
+    if (message.toTaskWorker !== undefined && message.toTaskWorker !== "") {
+      writer.uint32(50).string(message.toTaskWorker);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WorkflowEdge {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWorkflowEdge();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.fromTaskName = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.fromTaskHash = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.fromTaskWorker = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.toTaskName = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.toTaskHash = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.toTaskWorker = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WorkflowEdge {
+    return {
+      fromTaskName: isSet(object.fromTaskName) ? globalThis.String(object.fromTaskName) : "",
+      fromTaskHash: isSet(object.fromTaskHash) ? globalThis.String(object.fromTaskHash) : "",
+      fromTaskWorker: isSet(object.fromTaskWorker) ? globalThis.String(object.fromTaskWorker) : "",
+      toTaskName: isSet(object.toTaskName) ? globalThis.String(object.toTaskName) : "",
+      toTaskHash: isSet(object.toTaskHash) ? globalThis.String(object.toTaskHash) : "",
+      toTaskWorker: isSet(object.toTaskWorker) ? globalThis.String(object.toTaskWorker) : "",
+    };
+  },
+
+  toJSON(message: WorkflowEdge): unknown {
+    const obj: any = {};
+    if (message.fromTaskName !== undefined && message.fromTaskName !== "") {
+      obj.fromTaskName = message.fromTaskName;
+    }
+    if (message.fromTaskHash !== undefined && message.fromTaskHash !== "") {
+      obj.fromTaskHash = message.fromTaskHash;
+    }
+    if (message.fromTaskWorker !== undefined && message.fromTaskWorker !== "") {
+      obj.fromTaskWorker = message.fromTaskWorker;
+    }
+    if (message.toTaskName !== undefined && message.toTaskName !== "") {
+      obj.toTaskName = message.toTaskName;
+    }
+    if (message.toTaskHash !== undefined && message.toTaskHash !== "") {
+      obj.toTaskHash = message.toTaskHash;
+    }
+    if (message.toTaskWorker !== undefined && message.toTaskWorker !== "") {
+      obj.toTaskWorker = message.toTaskWorker;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<WorkflowEdge>, I>>(base?: I): WorkflowEdge {
+    return WorkflowEdge.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<WorkflowEdge>, I>>(object: I): WorkflowEdge {
+    const message = createBaseWorkflowEdge();
+    message.fromTaskName = object.fromTaskName ?? "";
+    message.fromTaskHash = object.fromTaskHash ?? "";
+    message.fromTaskWorker = object.fromTaskWorker ?? "";
+    message.toTaskName = object.toTaskName ?? "";
+    message.toTaskHash = object.toTaskHash ?? "";
+    message.toTaskWorker = object.toTaskWorker ?? "";
+    return message;
+  },
+};
+
 function createBaseWorkflow(): Workflow {
   return {
     workflowName: "",
     description: "",
     workflowHash: "",
-    tasks: [],
     edges: [],
     executionSettings: undefined,
-    executionParametersModel: "",
+    inputModel: "",
     haltOnFailure: false,
-    connectionUrl: "",
   };
 }
 
@@ -1003,27 +1160,19 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
       writer.uint32(26).string(message.workflowHash);
     }
-    if (message.tasks !== undefined && message.tasks.length !== 0) {
-      for (const v of message.tasks) {
-        writer.uint32(34).string(v!);
-      }
-    }
     if (message.edges !== undefined && message.edges.length !== 0) {
       for (const v of message.edges) {
-        writer.uint32(42).string(v!);
+        WorkflowEdge.encode(v!, writer.uint32(34).fork()).join();
       }
     }
     if (message.executionSettings !== undefined) {
-      WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(50).fork()).join();
+      WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(42).fork()).join();
     }
-    if (message.executionParametersModel !== undefined && message.executionParametersModel !== "") {
-      writer.uint32(58).string(message.executionParametersModel);
+    if (message.inputModel !== undefined && message.inputModel !== "") {
+      writer.uint32(50).string(message.inputModel);
     }
     if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
-      writer.uint32(64).bool(message.haltOnFailure);
-    }
-    if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
-      writer.uint32(74).string(message.connectionUrl);
+      writer.uint32(56).bool(message.haltOnFailure);
     }
     return writer;
   },
@@ -1064,9 +1213,9 @@ export const Workflow: MessageFns<Workflow> = {
             break;
           }
 
-          const el = reader.string();
+          const el = WorkflowEdge.decode(reader, reader.uint32());
           if (el !== undefined) {
-            message.tasks!.push(el);
+            message.edges!.push(el);
           }
           continue;
         }
@@ -1075,10 +1224,7 @@ export const Workflow: MessageFns<Workflow> = {
             break;
           }
 
-          const el = reader.string();
-          if (el !== undefined) {
-            message.edges!.push(el);
-          }
+          message.executionSettings = WorkflowExecutionSettings.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
@@ -1086,31 +1232,15 @@ export const Workflow: MessageFns<Workflow> = {
             break;
           }
 
-          message.executionSettings = WorkflowExecutionSettings.decode(reader, reader.uint32());
+          message.inputModel = reader.string();
           continue;
         }
         case 7: {
-          if (tag !== 58) {
-            break;
-          }
-
-          message.executionParametersModel = reader.string();
-          continue;
-        }
-        case 8: {
-          if (tag !== 64) {
+          if (tag !== 56) {
             break;
           }
 
           message.haltOnFailure = reader.bool();
-          continue;
-        }
-        case 9: {
-          if (tag !== 74) {
-            break;
-          }
-
-          message.connectionUrl = reader.string();
           continue;
         }
       }
@@ -1127,16 +1257,12 @@ export const Workflow: MessageFns<Workflow> = {
       workflowName: isSet(object.workflowName) ? globalThis.String(object.workflowName) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       workflowHash: isSet(object.workflowHash) ? globalThis.String(object.workflowHash) : "",
-      tasks: globalThis.Array.isArray(object?.tasks) ? object.tasks.map((e: any) => globalThis.String(e)) : [],
-      edges: globalThis.Array.isArray(object?.edges) ? object.edges.map((e: any) => globalThis.String(e)) : [],
+      edges: globalThis.Array.isArray(object?.edges) ? object.edges.map((e: any) => WorkflowEdge.fromJSON(e)) : [],
       executionSettings: isSet(object.executionSettings)
         ? WorkflowExecutionSettings.fromJSON(object.executionSettings)
         : undefined,
-      executionParametersModel: isSet(object.executionParametersModel)
-        ? globalThis.String(object.executionParametersModel)
-        : "",
+      inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
       haltOnFailure: isSet(object.haltOnFailure) ? globalThis.Boolean(object.haltOnFailure) : false,
-      connectionUrl: isSet(object.connectionUrl) ? globalThis.String(object.connectionUrl) : "",
     };
   },
 
@@ -1151,23 +1277,17 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
       obj.workflowHash = message.workflowHash;
     }
-    if (message.tasks?.length) {
-      obj.tasks = message.tasks;
-    }
     if (message.edges?.length) {
-      obj.edges = message.edges;
+      obj.edges = message.edges.map((e) => WorkflowEdge.toJSON(e));
     }
     if (message.executionSettings !== undefined) {
       obj.executionSettings = WorkflowExecutionSettings.toJSON(message.executionSettings);
     }
-    if (message.executionParametersModel !== undefined && message.executionParametersModel !== "") {
-      obj.executionParametersModel = message.executionParametersModel;
+    if (message.inputModel !== undefined && message.inputModel !== "") {
+      obj.inputModel = message.inputModel;
     }
     if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
       obj.haltOnFailure = message.haltOnFailure;
-    }
-    if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
-      obj.connectionUrl = message.connectionUrl;
     }
     return obj;
   },
@@ -1180,20 +1300,18 @@ export const Workflow: MessageFns<Workflow> = {
     message.workflowName = object.workflowName ?? "";
     message.description = object.description ?? "";
     message.workflowHash = object.workflowHash ?? "";
-    message.tasks = object.tasks?.map((e) => e) || [];
-    message.edges = object.edges?.map((e) => e) || [];
+    message.edges = object.edges?.map((e) => WorkflowEdge.fromPartial(e)) || [];
     message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)
       ? WorkflowExecutionSettings.fromPartial(object.executionSettings)
       : undefined;
-    message.executionParametersModel = object.executionParametersModel ?? "";
+    message.inputModel = object.inputModel ?? "";
     message.haltOnFailure = object.haltOnFailure ?? false;
-    message.connectionUrl = object.connectionUrl ?? "";
     return message;
   },
 };
 
 function createBaseRegisterWorkerRequest(): RegisterWorkerRequest {
-  return { name: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [] };
+  return { name: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [], url: "" };
 }
 
 export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
@@ -1218,6 +1336,9 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
       for (const v of message.workflows) {
         Workflow.encode(v!, writer.uint32(42).fork()).join();
       }
+    }
+    if (message.url !== undefined && message.url !== "") {
+      writer.uint32(50).string(message.url);
     }
     return writer;
   },
@@ -1278,6 +1399,14 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
           }
           continue;
         }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.url = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1298,6 +1427,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
       workflows: globalThis.Array.isArray(object?.workflows)
         ? object.workflows.map((e: any) => Workflow.fromJSON(e))
         : [],
+      url: isSet(object.url) ? globalThis.String(object.url) : "",
     };
   },
 
@@ -1318,6 +1448,9 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
     if (message.workflows?.length) {
       obj.workflows = message.workflows.map((e) => Workflow.toJSON(e));
     }
+    if (message.url !== undefined && message.url !== "") {
+      obj.url = message.url;
+    }
     return obj;
   },
 
@@ -1331,6 +1464,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
     message.dataFunctions = object.dataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
     message.tasks = object.tasks?.map((e) => Task.fromPartial(e)) || [];
     message.workflows = object.workflows?.map((e) => Workflow.fromPartial(e)) || [];
+    message.url = object.url ?? "";
     return message;
   },
 };

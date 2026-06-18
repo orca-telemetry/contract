@@ -390,6 +390,98 @@ func (x *Task) GetRequiredDataFunctions() []string {
 	return nil
 }
 
+// WorkflowEdge defines the relationship between two tasks in the workflow.
+// Edges are combined to form a workflow, or DAG.
+type WorkflowEdge struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The name of the task going from
+	FromTaskName string `protobuf:"bytes,1,opt,name=fromTaskName,proto3" json:"fromTaskName,omitempty"`
+	// The hash of the AST segment of the task
+	FromTaskHash string `protobuf:"bytes,2,opt,name=fromTaskHash,proto3" json:"fromTaskHash,omitempty"`
+	// The worker that implements the task
+	FromTaskWorker string `protobuf:"bytes,3,opt,name=fromTaskWorker,proto3" json:"fromTaskWorker,omitempty"`
+	// The name of the task going from
+	ToTaskName string `protobuf:"bytes,4,opt,name=toTaskName,proto3" json:"toTaskName,omitempty"`
+	// The hash of the AST segment of the task
+	ToTaskHash string `protobuf:"bytes,5,opt,name=toTaskHash,proto3" json:"toTaskHash,omitempty"`
+	// The worker that implements the task
+	ToTaskWorker  string `protobuf:"bytes,6,opt,name=toTaskWorker,proto3" json:"toTaskWorker,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkflowEdge) Reset() {
+	*x = WorkflowEdge{}
+	mi := &file_core_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkflowEdge) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkflowEdge) ProtoMessage() {}
+
+func (x *WorkflowEdge) ProtoReflect() protoreflect.Message {
+	mi := &file_core_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkflowEdge.ProtoReflect.Descriptor instead.
+func (*WorkflowEdge) Descriptor() ([]byte, []int) {
+	return file_core_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *WorkflowEdge) GetFromTaskName() string {
+	if x != nil {
+		return x.FromTaskName
+	}
+	return ""
+}
+
+func (x *WorkflowEdge) GetFromTaskHash() string {
+	if x != nil {
+		return x.FromTaskHash
+	}
+	return ""
+}
+
+func (x *WorkflowEdge) GetFromTaskWorker() string {
+	if x != nil {
+		return x.FromTaskWorker
+	}
+	return ""
+}
+
+func (x *WorkflowEdge) GetToTaskName() string {
+	if x != nil {
+		return x.ToTaskName
+	}
+	return ""
+}
+
+func (x *WorkflowEdge) GetToTaskHash() string {
+	if x != nil {
+		return x.ToTaskHash
+	}
+	return ""
+}
+
+func (x *WorkflowEdge) GetToTaskWorker() string {
+	if x != nil {
+		return x.ToTaskWorker
+	}
+	return ""
+}
+
 // Workflow defines a registered workflow, its task graph, and runtime settings.
 type Workflow struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -400,29 +492,23 @@ type Workflow struct {
 	// WorkflowHash is a hash of the workflow structure, factoring in tasks,
 	// dependencies, and execution models.
 	WorkflowHash string `protobuf:"bytes,3,opt,name=workflowHash,proto3" json:"workflowHash,omitempty"`
-	// Tasks is a list of structural identifiers linking to pre-registered tasks,
-	// including local stubs of cross-language definitions.
-	Tasks []string `protobuf:"bytes,4,rep,name=tasks,proto3" json:"tasks,omitempty"`
 	// Edges defines the dependency relationships between tasks in this workflow.
-	Edges []string `protobuf:"bytes,5,rep,name=edges,proto3" json:"edges,omitempty"`
+	Edges []*WorkflowEdge `protobuf:"bytes,4,rep,name=edges,proto3" json:"edges,omitempty"`
 	// ExecutionSettings defines concurrency limits and task prioritisation.
-	ExecutionSettings *WorkflowExecutionSettings `protobuf:"bytes,6,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
-	// ExecutionParametersModel is a marshalled JSON schema describing the
+	ExecutionSettings *WorkflowExecutionSettings `protobuf:"bytes,5,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
+	// InputModel is a marshalled JSON schema describing the
 	// parameters that must be provided at workflow trigger time.
-	ExecutionParametersModel string `protobuf:"bytes,7,opt,name=executionParametersModel,proto3" json:"executionParametersModel,omitempty"`
+	InputModel string `protobuf:"bytes,6,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
 	// HaltOnFailure instructs the orchestrator to stop parallel task execution
 	// if any task encounters a failure.
-	HaltOnFailure bool `protobuf:"varint,8,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
-	// ConnectionUrl is the gRPC server URL exposing this workflow. Must match
-	// the local or cloud implementation visible to the core orchestrator.
-	ConnectionUrl string `protobuf:"bytes,9,opt,name=connectionUrl,proto3" json:"connectionUrl,omitempty"`
+	HaltOnFailure bool `protobuf:"varint,7,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Workflow) Reset() {
 	*x = Workflow{}
-	mi := &file_core_proto_msgTypes[2]
+	mi := &file_core_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -434,7 +520,7 @@ func (x *Workflow) String() string {
 func (*Workflow) ProtoMessage() {}
 
 func (x *Workflow) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[2]
+	mi := &file_core_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -447,7 +533,7 @@ func (x *Workflow) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Workflow.ProtoReflect.Descriptor instead.
 func (*Workflow) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{2}
+	return file_core_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Workflow) GetWorkflowName() string {
@@ -471,14 +557,7 @@ func (x *Workflow) GetWorkflowHash() string {
 	return ""
 }
 
-func (x *Workflow) GetTasks() []string {
-	if x != nil {
-		return x.Tasks
-	}
-	return nil
-}
-
-func (x *Workflow) GetEdges() []string {
+func (x *Workflow) GetEdges() []*WorkflowEdge {
 	if x != nil {
 		return x.Edges
 	}
@@ -492,9 +571,9 @@ func (x *Workflow) GetExecutionSettings() *WorkflowExecutionSettings {
 	return nil
 }
 
-func (x *Workflow) GetExecutionParametersModel() string {
+func (x *Workflow) GetInputModel() string {
 	if x != nil {
-		return x.ExecutionParametersModel
+		return x.InputModel
 	}
 	return ""
 }
@@ -504,13 +583,6 @@ func (x *Workflow) GetHaltOnFailure() bool {
 		return x.HaltOnFailure
 	}
 	return false
-}
-
-func (x *Workflow) GetConnectionUrl() string {
-	if x != nil {
-		return x.ConnectionUrl
-	}
-	return ""
 }
 
 // ============================================================
@@ -527,14 +599,16 @@ type RegisterWorkerRequest struct {
 	// Tasks is an array of tasks
 	Tasks []*Task `protobuf:"bytes,4,rep,name=tasks,proto3" json:"tasks,omitempty"`
 	// Workflows is an array of workflows
-	Workflows     []*Workflow `protobuf:"bytes,5,rep,name=workflows,proto3" json:"workflows,omitempty"`
+	Workflows []*Workflow `protobuf:"bytes,5,rep,name=workflows,proto3" json:"workflows,omitempty"`
+	// The external connection URL of the worker
+	Url           string `protobuf:"bytes,6,opt,name=url,proto3" json:"url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RegisterWorkerRequest) Reset() {
 	*x = RegisterWorkerRequest{}
-	mi := &file_core_proto_msgTypes[3]
+	mi := &file_core_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -546,7 +620,7 @@ func (x *RegisterWorkerRequest) String() string {
 func (*RegisterWorkerRequest) ProtoMessage() {}
 
 func (x *RegisterWorkerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[3]
+	mi := &file_core_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -559,7 +633,7 @@ func (x *RegisterWorkerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterWorkerRequest.ProtoReflect.Descriptor instead.
 func (*RegisterWorkerRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{3}
+	return file_core_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *RegisterWorkerRequest) GetName() string {
@@ -597,6 +671,13 @@ func (x *RegisterWorkerRequest) GetWorkflows() []*Workflow {
 	return nil
 }
 
+func (x *RegisterWorkerRequest) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
 type RegisterWorkerResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -610,7 +691,7 @@ type RegisterWorkerResponse struct {
 
 func (x *RegisterWorkerResponse) Reset() {
 	*x = RegisterWorkerResponse{}
-	mi := &file_core_proto_msgTypes[4]
+	mi := &file_core_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -622,7 +703,7 @@ func (x *RegisterWorkerResponse) String() string {
 func (*RegisterWorkerResponse) ProtoMessage() {}
 
 func (x *RegisterWorkerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[4]
+	mi := &file_core_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -635,7 +716,7 @@ func (x *RegisterWorkerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterWorkerResponse.ProtoReflect.Descriptor instead.
 func (*RegisterWorkerResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{4}
+	return file_core_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *RegisterWorkerResponse) GetStatus() RegistrationStatus {
@@ -671,7 +752,7 @@ type RegisterServingRequest struct {
 
 func (x *RegisterServingRequest) Reset() {
 	*x = RegisterServingRequest{}
-	mi := &file_core_proto_msgTypes[5]
+	mi := &file_core_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -683,7 +764,7 @@ func (x *RegisterServingRequest) String() string {
 func (*RegisterServingRequest) ProtoMessage() {}
 
 func (x *RegisterServingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[5]
+	mi := &file_core_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -696,7 +777,7 @@ func (x *RegisterServingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterServingRequest.ProtoReflect.Descriptor instead.
 func (*RegisterServingRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{5}
+	return file_core_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RegisterServingRequest) GetMd5() string {
@@ -733,7 +814,7 @@ type RegisterServingResponse struct {
 
 func (x *RegisterServingResponse) Reset() {
 	*x = RegisterServingResponse{}
-	mi := &file_core_proto_msgTypes[6]
+	mi := &file_core_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -745,7 +826,7 @@ func (x *RegisterServingResponse) String() string {
 func (*RegisterServingResponse) ProtoMessage() {}
 
 func (x *RegisterServingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[6]
+	mi := &file_core_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -758,7 +839,7 @@ func (x *RegisterServingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterServingResponse.ProtoReflect.Descriptor instead.
 func (*RegisterServingResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{6}
+	return file_core_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *RegisterServingResponse) GetStatus() RegistrationStatus {
@@ -793,7 +874,7 @@ type TriggerWorkflowRequest struct {
 
 func (x *TriggerWorkflowRequest) Reset() {
 	*x = TriggerWorkflowRequest{}
-	mi := &file_core_proto_msgTypes[7]
+	mi := &file_core_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -805,7 +886,7 @@ func (x *TriggerWorkflowRequest) String() string {
 func (*TriggerWorkflowRequest) ProtoMessage() {}
 
 func (x *TriggerWorkflowRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[7]
+	mi := &file_core_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -818,7 +899,7 @@ func (x *TriggerWorkflowRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TriggerWorkflowRequest.ProtoReflect.Descriptor instead.
 func (*TriggerWorkflowRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{7}
+	return file_core_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *TriggerWorkflowRequest) GetWorkflowName() string {
@@ -865,7 +946,7 @@ type TriggerWorkflowResponse struct {
 
 func (x *TriggerWorkflowResponse) Reset() {
 	*x = TriggerWorkflowResponse{}
-	mi := &file_core_proto_msgTypes[8]
+	mi := &file_core_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -877,7 +958,7 @@ func (x *TriggerWorkflowResponse) String() string {
 func (*TriggerWorkflowResponse) ProtoMessage() {}
 
 func (x *TriggerWorkflowResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[8]
+	mi := &file_core_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -890,7 +971,7 @@ func (x *TriggerWorkflowResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TriggerWorkflowResponse.ProtoReflect.Descriptor instead.
 func (*TriggerWorkflowResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{8}
+	return file_core_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *TriggerWorkflowResponse) GetWorkflowRunId() string {
@@ -931,7 +1012,7 @@ type RegisterDataFunctionCompletionRequest struct {
 
 func (x *RegisterDataFunctionCompletionRequest) Reset() {
 	*x = RegisterDataFunctionCompletionRequest{}
-	mi := &file_core_proto_msgTypes[9]
+	mi := &file_core_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -943,7 +1024,7 @@ func (x *RegisterDataFunctionCompletionRequest) String() string {
 func (*RegisterDataFunctionCompletionRequest) ProtoMessage() {}
 
 func (x *RegisterDataFunctionCompletionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[9]
+	mi := &file_core_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -956,7 +1037,7 @@ func (x *RegisterDataFunctionCompletionRequest) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use RegisterDataFunctionCompletionRequest.ProtoReflect.Descriptor instead.
 func (*RegisterDataFunctionCompletionRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{9}
+	return file_core_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *RegisterDataFunctionCompletionRequest) GetWorkflowRunId() string {
@@ -990,7 +1071,7 @@ type RegisterDataFunctionCompletionResponse struct {
 
 func (x *RegisterDataFunctionCompletionResponse) Reset() {
 	*x = RegisterDataFunctionCompletionResponse{}
-	mi := &file_core_proto_msgTypes[10]
+	mi := &file_core_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1002,7 +1083,7 @@ func (x *RegisterDataFunctionCompletionResponse) String() string {
 func (*RegisterDataFunctionCompletionResponse) ProtoMessage() {}
 
 func (x *RegisterDataFunctionCompletionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[10]
+	mi := &file_core_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1015,7 +1096,7 @@ func (x *RegisterDataFunctionCompletionResponse) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use RegisterDataFunctionCompletionResponse.ProtoReflect.Descriptor instead.
 func (*RegisterDataFunctionCompletionResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{10}
+	return file_core_proto_rawDescGZIP(), []int{11}
 }
 
 // RegisterTaskResultRequest is the request message for the RegisterTaskResult RPC.
@@ -1040,7 +1121,7 @@ type RegisterTaskResultRequest struct {
 
 func (x *RegisterTaskResultRequest) Reset() {
 	*x = RegisterTaskResultRequest{}
-	mi := &file_core_proto_msgTypes[11]
+	mi := &file_core_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1052,7 +1133,7 @@ func (x *RegisterTaskResultRequest) String() string {
 func (*RegisterTaskResultRequest) ProtoMessage() {}
 
 func (x *RegisterTaskResultRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[11]
+	mi := &file_core_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1065,7 +1146,7 @@ func (x *RegisterTaskResultRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterTaskResultRequest.ProtoReflect.Descriptor instead.
 func (*RegisterTaskResultRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{11}
+	return file_core_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *RegisterTaskResultRequest) GetWorkflowRunId() string {
@@ -1120,7 +1201,7 @@ type RegisterTaskResultResponse struct {
 
 func (x *RegisterTaskResultResponse) Reset() {
 	*x = RegisterTaskResultResponse{}
-	mi := &file_core_proto_msgTypes[12]
+	mi := &file_core_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1132,7 +1213,7 @@ func (x *RegisterTaskResultResponse) String() string {
 func (*RegisterTaskResultResponse) ProtoMessage() {}
 
 func (x *RegisterTaskResultResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[12]
+	mi := &file_core_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1145,7 +1226,7 @@ func (x *RegisterTaskResultResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterTaskResultResponse.ProtoReflect.Descriptor instead.
 func (*RegisterTaskResultResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{12}
+	return file_core_proto_rawDescGZIP(), []int{13}
 }
 
 // ExposeStateRequest is the request message for the ExposeState RPC.
@@ -1166,7 +1247,7 @@ type ExposeStateRequest struct {
 
 func (x *ExposeStateRequest) Reset() {
 	*x = ExposeStateRequest{}
-	mi := &file_core_proto_msgTypes[13]
+	mi := &file_core_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1178,7 +1259,7 @@ func (x *ExposeStateRequest) String() string {
 func (*ExposeStateRequest) ProtoMessage() {}
 
 func (x *ExposeStateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[13]
+	mi := &file_core_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1191,7 +1272,7 @@ func (x *ExposeStateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExposeStateRequest.ProtoReflect.Descriptor instead.
 func (*ExposeStateRequest) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{13}
+	return file_core_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ExposeStateRequest) GetGitCommitHash() string {
@@ -1230,7 +1311,7 @@ type ExposeStateResponse struct {
 
 func (x *ExposeStateResponse) Reset() {
 	*x = ExposeStateResponse{}
-	mi := &file_core_proto_msgTypes[14]
+	mi := &file_core_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1242,7 +1323,7 @@ func (x *ExposeStateResponse) String() string {
 func (*ExposeStateResponse) ProtoMessage() {}
 
 func (x *ExposeStateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[14]
+	mi := &file_core_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1255,7 +1336,7 @@ func (x *ExposeStateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExposeStateResponse.ProtoReflect.Descriptor instead.
 func (*ExposeStateResponse) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{14}
+	return file_core_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ExposeStateResponse) GetTasks() []*Task {
@@ -1306,7 +1387,7 @@ type QueryParams struct {
 
 func (x *QueryParams) Reset() {
 	*x = QueryParams{}
-	mi := &file_core_proto_msgTypes[15]
+	mi := &file_core_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1318,7 +1399,7 @@ func (x *QueryParams) String() string {
 func (*QueryParams) ProtoMessage() {}
 
 func (x *QueryParams) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[15]
+	mi := &file_core_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1331,7 +1412,7 @@ func (x *QueryParams) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryParams.ProtoReflect.Descriptor instead.
 func (*QueryParams) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{15}
+	return file_core_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *QueryParams) GetName() string {
@@ -1397,7 +1478,7 @@ type PastResults struct {
 
 func (x *PastResults) Reset() {
 	*x = PastResults{}
-	mi := &file_core_proto_msgTypes[16]
+	mi := &file_core_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1409,7 +1490,7 @@ func (x *PastResults) String() string {
 func (*PastResults) ProtoMessage() {}
 
 func (x *PastResults) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[16]
+	mi := &file_core_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1422,7 +1503,7 @@ func (x *PastResults) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PastResults.ProtoReflect.Descriptor instead.
 func (*PastResults) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{16}
+	return file_core_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *PastResults) GetResults() []*TaskResult {
@@ -1455,7 +1536,7 @@ type TaskResult struct {
 
 func (x *TaskResult) Reset() {
 	*x = TaskResult{}
-	mi := &file_core_proto_msgTypes[17]
+	mi := &file_core_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1467,7 +1548,7 @@ func (x *TaskResult) String() string {
 func (*TaskResult) ProtoMessage() {}
 
 func (x *TaskResult) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[17]
+	mi := &file_core_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1480,7 +1561,7 @@ func (x *TaskResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskResult.ProtoReflect.Descriptor instead.
 func (*TaskResult) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{17}
+	return file_core_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *TaskResult) GetName() string {
@@ -1515,7 +1596,7 @@ type FilterGroup struct {
 
 func (x *FilterGroup) Reset() {
 	*x = FilterGroup{}
-	mi := &file_core_proto_msgTypes[18]
+	mi := &file_core_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1527,7 +1608,7 @@ func (x *FilterGroup) String() string {
 func (*FilterGroup) ProtoMessage() {}
 
 func (x *FilterGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[18]
+	mi := &file_core_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1540,7 +1621,7 @@ func (x *FilterGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FilterGroup.ProtoReflect.Descriptor instead.
 func (*FilterGroup) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{18}
+	return file_core_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *FilterGroup) GetFilters() []*LeafFilter {
@@ -1572,7 +1653,7 @@ type LeafFilter struct {
 
 func (x *LeafFilter) Reset() {
 	*x = LeafFilter{}
-	mi := &file_core_proto_msgTypes[19]
+	mi := &file_core_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1584,7 +1665,7 @@ func (x *LeafFilter) String() string {
 func (*LeafFilter) ProtoMessage() {}
 
 func (x *LeafFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[19]
+	mi := &file_core_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1597,7 +1678,7 @@ func (x *LeafFilter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeafFilter.ProtoReflect.Descriptor instead.
 func (*LeafFilter) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{19}
+	return file_core_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *LeafFilter) GetKey() string {
@@ -1665,7 +1746,7 @@ type StringList struct {
 
 func (x *StringList) Reset() {
 	*x = StringList{}
-	mi := &file_core_proto_msgTypes[20]
+	mi := &file_core_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1677,7 +1758,7 @@ func (x *StringList) String() string {
 func (*StringList) ProtoMessage() {}
 
 func (x *StringList) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[20]
+	mi := &file_core_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1690,7 +1771,7 @@ func (x *StringList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StringList.ProtoReflect.Descriptor instead.
 func (*StringList) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{20}
+	return file_core_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *StringList) GetValues() []string {
@@ -1715,7 +1796,7 @@ type OrderByStatement struct {
 
 func (x *OrderByStatement) Reset() {
 	*x = OrderByStatement{}
-	mi := &file_core_proto_msgTypes[21]
+	mi := &file_core_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1727,7 +1808,7 @@ func (x *OrderByStatement) String() string {
 func (*OrderByStatement) ProtoMessage() {}
 
 func (x *OrderByStatement) ProtoReflect() protoreflect.Message {
-	mi := &file_core_proto_msgTypes[21]
+	mi := &file_core_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1740,7 +1821,7 @@ func (x *OrderByStatement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderByStatement.ProtoReflect.Descriptor instead.
 func (*OrderByStatement) Descriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{21}
+	return file_core_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *OrderByStatement) GetKey() string {
@@ -1787,23 +1868,35 @@ const file_core_proto_rawDesc = "" +
 	"inputModel\x18\x05 \x01(\tR\n" +
 	"inputModel\x12 \n" +
 	"\voutputModel\x18\x06 \x01(\tR\voutputModel\x124\n" +
-	"\x15requiredDataFunctions\x18\a \x03(\tR\x15requiredDataFunctions\"\xf2\x02\n" +
+	"\x15requiredDataFunctions\x18\a \x03(\tR\x15requiredDataFunctions\"\xe2\x01\n" +
+	"\fWorkflowEdge\x12\"\n" +
+	"\ffromTaskName\x18\x01 \x01(\tR\ffromTaskName\x12\"\n" +
+	"\ffromTaskHash\x18\x02 \x01(\tR\ffromTaskHash\x12&\n" +
+	"\x0efromTaskWorker\x18\x03 \x01(\tR\x0efromTaskWorker\x12\x1e\n" +
+	"\n" +
+	"toTaskName\x18\x04 \x01(\tR\n" +
+	"toTaskName\x12\x1e\n" +
+	"\n" +
+	"toTaskHash\x18\x05 \x01(\tR\n" +
+	"toTaskHash\x12\"\n" +
+	"\ftoTaskWorker\x18\x06 \x01(\tR\ftoTaskWorker\"\xa9\x02\n" +
 	"\bWorkflow\x12\"\n" +
 	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\"\n" +
-	"\fworkflowHash\x18\x03 \x01(\tR\fworkflowHash\x12\x14\n" +
-	"\x05tasks\x18\x04 \x03(\tR\x05tasks\x12\x14\n" +
-	"\x05edges\x18\x05 \x03(\tR\x05edges\x12H\n" +
-	"\x11executionSettings\x18\x06 \x01(\v2\x1a.WorkflowExecutionSettingsR\x11executionSettings\x12:\n" +
-	"\x18executionParametersModel\x18\a \x01(\tR\x18executionParametersModel\x12$\n" +
-	"\rhaltOnFailure\x18\b \x01(\bR\rhaltOnFailure\x12$\n" +
-	"\rconnectionUrl\x18\t \x01(\tR\rconnectionUrl\"\xcc\x01\n" +
+	"\fworkflowHash\x18\x03 \x01(\tR\fworkflowHash\x12#\n" +
+	"\x05edges\x18\x04 \x03(\v2\r.WorkflowEdgeR\x05edges\x12H\n" +
+	"\x11executionSettings\x18\x05 \x01(\v2\x1a.WorkflowExecutionSettingsR\x11executionSettings\x12\x1e\n" +
+	"\n" +
+	"inputModel\x18\x06 \x01(\tR\n" +
+	"inputModel\x12$\n" +
+	"\rhaltOnFailure\x18\a \x01(\bR\rhaltOnFailure\"\xde\x01\n" +
 	"\x15RegisterWorkerRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12$\n" +
 	"\rgitCommitHash\x18\x02 \x01(\tR\rgitCommitHash\x123\n" +
 	"\rdataFunctions\x18\x03 \x03(\v2\r.DataFunctionR\rdataFunctions\x12\x1b\n" +
 	"\x05tasks\x18\x04 \x03(\v2\x05.TaskR\x05tasks\x12'\n" +
-	"\tworkflows\x18\x05 \x03(\v2\t.WorkflowR\tworkflows\"_\n" +
+	"\tworkflows\x18\x05 \x03(\v2\t.WorkflowR\tworkflows\x12\x10\n" +
+	"\x03url\x18\x06 \x01(\tR\x03url\"_\n" +
 	"\x16RegisterWorkerResponse\x12+\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"\x99\x01\n" +
@@ -1939,90 +2032,92 @@ func file_core_proto_rawDescGZIP() []byte {
 }
 
 var file_core_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_core_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_core_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_core_proto_goTypes = []any{
 	(Comparator)(0),                                // 0: Comparator
 	(DataSource)(0),                                // 1: DataSource
 	(SortDirection)(0),                             // 2: SortDirection
 	(*DataFunction)(nil),                           // 3: DataFunction
 	(*Task)(nil),                                   // 4: Task
-	(*Workflow)(nil),                               // 5: Workflow
-	(*RegisterWorkerRequest)(nil),                  // 6: RegisterWorkerRequest
-	(*RegisterWorkerResponse)(nil),                 // 7: RegisterWorkerResponse
-	(*RegisterServingRequest)(nil),                 // 8: RegisterServingRequest
-	(*RegisterServingResponse)(nil),                // 9: RegisterServingResponse
-	(*TriggerWorkflowRequest)(nil),                 // 10: TriggerWorkflowRequest
-	(*TriggerWorkflowResponse)(nil),                // 11: TriggerWorkflowResponse
-	(*RegisterDataFunctionCompletionRequest)(nil),  // 12: RegisterDataFunctionCompletionRequest
-	(*RegisterDataFunctionCompletionResponse)(nil), // 13: RegisterDataFunctionCompletionResponse
-	(*RegisterTaskResultRequest)(nil),              // 14: RegisterTaskResultRequest
-	(*RegisterTaskResultResponse)(nil),             // 15: RegisterTaskResultResponse
-	(*ExposeStateRequest)(nil),                     // 16: ExposeStateRequest
-	(*ExposeStateResponse)(nil),                    // 17: ExposeStateResponse
-	(*QueryParams)(nil),                            // 18: QueryParams
-	(*PastResults)(nil),                            // 19: PastResults
-	(*TaskResult)(nil),                             // 20: TaskResult
-	(*FilterGroup)(nil),                            // 21: FilterGroup
-	(*LeafFilter)(nil),                             // 22: LeafFilter
-	(*StringList)(nil),                             // 23: StringList
-	(*OrderByStatement)(nil),                       // 24: OrderByStatement
-	(*DataFunctionSettings)(nil),                   // 25: DataFunctionSettings
-	(*TaskExecutionSettings)(nil),                  // 26: TaskExecutionSettings
-	(*WorkflowExecutionSettings)(nil),              // 27: WorkflowExecutionSettings
-	(RegistrationStatus)(0),                        // 28: RegistrationStatus
-	(*timestamppb.Timestamp)(nil),                  // 29: google.protobuf.Timestamp
-	(TriggerSource)(0),                             // 30: TriggerSource
-	(TriggerStatus)(0),                             // 31: TriggerStatus
-	(ExecutionStatus)(0),                           // 32: ExecutionStatus
-	(*ComputeMetrics)(nil),                         // 33: ComputeMetrics
+	(*WorkflowEdge)(nil),                           // 5: WorkflowEdge
+	(*Workflow)(nil),                               // 6: Workflow
+	(*RegisterWorkerRequest)(nil),                  // 7: RegisterWorkerRequest
+	(*RegisterWorkerResponse)(nil),                 // 8: RegisterWorkerResponse
+	(*RegisterServingRequest)(nil),                 // 9: RegisterServingRequest
+	(*RegisterServingResponse)(nil),                // 10: RegisterServingResponse
+	(*TriggerWorkflowRequest)(nil),                 // 11: TriggerWorkflowRequest
+	(*TriggerWorkflowResponse)(nil),                // 12: TriggerWorkflowResponse
+	(*RegisterDataFunctionCompletionRequest)(nil),  // 13: RegisterDataFunctionCompletionRequest
+	(*RegisterDataFunctionCompletionResponse)(nil), // 14: RegisterDataFunctionCompletionResponse
+	(*RegisterTaskResultRequest)(nil),              // 15: RegisterTaskResultRequest
+	(*RegisterTaskResultResponse)(nil),             // 16: RegisterTaskResultResponse
+	(*ExposeStateRequest)(nil),                     // 17: ExposeStateRequest
+	(*ExposeStateResponse)(nil),                    // 18: ExposeStateResponse
+	(*QueryParams)(nil),                            // 19: QueryParams
+	(*PastResults)(nil),                            // 20: PastResults
+	(*TaskResult)(nil),                             // 21: TaskResult
+	(*FilterGroup)(nil),                            // 22: FilterGroup
+	(*LeafFilter)(nil),                             // 23: LeafFilter
+	(*StringList)(nil),                             // 24: StringList
+	(*OrderByStatement)(nil),                       // 25: OrderByStatement
+	(*DataFunctionSettings)(nil),                   // 26: DataFunctionSettings
+	(*TaskExecutionSettings)(nil),                  // 27: TaskExecutionSettings
+	(*WorkflowExecutionSettings)(nil),              // 28: WorkflowExecutionSettings
+	(RegistrationStatus)(0),                        // 29: RegistrationStatus
+	(*timestamppb.Timestamp)(nil),                  // 30: google.protobuf.Timestamp
+	(TriggerSource)(0),                             // 31: TriggerSource
+	(TriggerStatus)(0),                             // 32: TriggerStatus
+	(ExecutionStatus)(0),                           // 33: ExecutionStatus
+	(*ComputeMetrics)(nil),                         // 34: ComputeMetrics
 }
 var file_core_proto_depIdxs = []int32{
-	25, // 0: DataFunction.settings:type_name -> DataFunctionSettings
-	26, // 1: Task.executionSettings:type_name -> TaskExecutionSettings
-	27, // 2: Workflow.executionSettings:type_name -> WorkflowExecutionSettings
-	3,  // 3: RegisterWorkerRequest.dataFunctions:type_name -> DataFunction
-	4,  // 4: RegisterWorkerRequest.tasks:type_name -> Task
-	5,  // 5: RegisterWorkerRequest.workflows:type_name -> Workflow
-	28, // 6: RegisterWorkerResponse.status:type_name -> RegistrationStatus
-	28, // 7: RegisterServingResponse.status:type_name -> RegistrationStatus
-	29, // 8: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
-	30, // 9: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
-	31, // 10: TriggerWorkflowResponse.status:type_name -> TriggerStatus
-	32, // 11: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
-	32, // 12: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
-	33, // 13: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
-	29, // 14: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
-	4,  // 15: ExposeStateResponse.tasks:type_name -> Task
-	5,  // 16: ExposeStateResponse.workflows:type_name -> Workflow
-	3,  // 17: ExposeStateResponse.dataFunctions:type_name -> DataFunction
-	21, // 18: QueryParams.execution_parameter_filters:type_name -> FilterGroup
-	21, // 19: QueryParams.result_filters:type_name -> FilterGroup
-	24, // 20: QueryParams.order_by:type_name -> OrderByStatement
-	20, // 21: PastResults.results:type_name -> TaskResult
-	22, // 22: FilterGroup.filters:type_name -> LeafFilter
-	0,  // 23: LeafFilter.comparator:type_name -> Comparator
-	23, // 24: LeafFilter.values:type_name -> StringList
-	1,  // 25: OrderByStatement.source:type_name -> DataSource
-	2,  // 26: OrderByStatement.direction:type_name -> SortDirection
-	6,  // 27: Core.RegisterWorkerSnapshot:input_type -> RegisterWorkerRequest
-	8,  // 28: Core.RegisterServing:input_type -> RegisterServingRequest
-	10, // 29: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
-	12, // 30: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
-	14, // 31: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
-	16, // 32: Core.ExposeState:input_type -> ExposeStateRequest
-	18, // 33: Core.QueryTaskResult:input_type -> QueryParams
-	7,  // 34: Core.RegisterWorkerSnapshot:output_type -> RegisterWorkerResponse
-	9,  // 35: Core.RegisterServing:output_type -> RegisterServingResponse
-	11, // 36: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
-	13, // 37: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
-	15, // 38: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
-	17, // 39: Core.ExposeState:output_type -> ExposeStateResponse
-	19, // 40: Core.QueryTaskResult:output_type -> PastResults
-	34, // [34:41] is the sub-list for method output_type
-	27, // [27:34] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	26, // 0: DataFunction.settings:type_name -> DataFunctionSettings
+	27, // 1: Task.executionSettings:type_name -> TaskExecutionSettings
+	5,  // 2: Workflow.edges:type_name -> WorkflowEdge
+	28, // 3: Workflow.executionSettings:type_name -> WorkflowExecutionSettings
+	3,  // 4: RegisterWorkerRequest.dataFunctions:type_name -> DataFunction
+	4,  // 5: RegisterWorkerRequest.tasks:type_name -> Task
+	6,  // 6: RegisterWorkerRequest.workflows:type_name -> Workflow
+	29, // 7: RegisterWorkerResponse.status:type_name -> RegistrationStatus
+	29, // 8: RegisterServingResponse.status:type_name -> RegistrationStatus
+	30, // 9: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
+	31, // 10: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
+	32, // 11: TriggerWorkflowResponse.status:type_name -> TriggerStatus
+	33, // 12: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
+	33, // 13: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
+	34, // 14: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
+	30, // 15: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
+	4,  // 16: ExposeStateResponse.tasks:type_name -> Task
+	6,  // 17: ExposeStateResponse.workflows:type_name -> Workflow
+	3,  // 18: ExposeStateResponse.dataFunctions:type_name -> DataFunction
+	22, // 19: QueryParams.execution_parameter_filters:type_name -> FilterGroup
+	22, // 20: QueryParams.result_filters:type_name -> FilterGroup
+	25, // 21: QueryParams.order_by:type_name -> OrderByStatement
+	21, // 22: PastResults.results:type_name -> TaskResult
+	23, // 23: FilterGroup.filters:type_name -> LeafFilter
+	0,  // 24: LeafFilter.comparator:type_name -> Comparator
+	24, // 25: LeafFilter.values:type_name -> StringList
+	1,  // 26: OrderByStatement.source:type_name -> DataSource
+	2,  // 27: OrderByStatement.direction:type_name -> SortDirection
+	7,  // 28: Core.RegisterWorkerSnapshot:input_type -> RegisterWorkerRequest
+	9,  // 29: Core.RegisterServing:input_type -> RegisterServingRequest
+	11, // 30: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
+	13, // 31: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
+	15, // 32: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
+	17, // 33: Core.ExposeState:input_type -> ExposeStateRequest
+	19, // 34: Core.QueryTaskResult:input_type -> QueryParams
+	8,  // 35: Core.RegisterWorkerSnapshot:output_type -> RegisterWorkerResponse
+	10, // 36: Core.RegisterServing:output_type -> RegisterServingResponse
+	12, // 37: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
+	14, // 38: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
+	16, // 39: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
+	18, // 40: Core.ExposeState:output_type -> ExposeStateResponse
+	20, // 41: Core.QueryTaskResult:output_type -> PastResults
+	35, // [35:42] is the sub-list for method output_type
+	28, // [28:35] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_core_proto_init() }
@@ -2031,12 +2126,12 @@ func file_core_proto_init() {
 		return
 	}
 	file_shared_proto_init()
-	file_core_proto_msgTypes[5].OneofWrappers = []any{}
-	file_core_proto_msgTypes[7].OneofWrappers = []any{}
-	file_core_proto_msgTypes[13].OneofWrappers = []any{}
-	file_core_proto_msgTypes[15].OneofWrappers = []any{}
+	file_core_proto_msgTypes[6].OneofWrappers = []any{}
+	file_core_proto_msgTypes[8].OneofWrappers = []any{}
+	file_core_proto_msgTypes[14].OneofWrappers = []any{}
 	file_core_proto_msgTypes[16].OneofWrappers = []any{}
-	file_core_proto_msgTypes[19].OneofWrappers = []any{
+	file_core_proto_msgTypes[17].OneofWrappers = []any{}
+	file_core_proto_msgTypes[20].OneofWrappers = []any{
 		(*LeafFilter_Value)(nil),
 		(*LeafFilter_Values)(nil),
 	}
@@ -2046,7 +2141,7 @@ func file_core_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_core_proto_rawDesc), len(file_core_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   22,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -21,7 +21,8 @@ idempotent on git commit has and codebase name.
     the worker when the worker notifies of it's readiness to serve.
 * **DataFunctions**: An array of data functions
 * **Tasks**: An array of tasks
-* **Workflows**: An array of workflows.
+* **Workflows**: An array of workflows
+* **URL**: A connection URL that should be used to contact this worker.
 
 ### Response Message
 * **Status**: Success | Failure 
@@ -73,21 +74,19 @@ this task requires.
 
 #### Workflow
 * **WorkflowName**: A unique string identifier for the workflow. This is a
-globally unique definition of the workflow.
+    globally unique definition of the workflow.
 * **Description**: A textual explanation of the workflow's purpose.
 * **WorkflowHash**: A hash of the workflow structure, factoring in the tasks,
-dependencies, and execution models.
-* **Tasks**: A list of structural identifiers linking to independent,
-pre-registered tasks (including local stubs of cross-language definitions).
-* **Edges**: A list of dependencies between workflows.
+    dependencies, and execution models.
+* **Edges**: An array of task dependencies in the workflow.
 * **ExecutionSettings**: A dictionary map of pipeline configuration parameters
-that define how a workflow runs:
+    that define how a workflow runs:
   * **PriorityQueue**: definition of tasks that should take priority over other
   tasks in parallel execution
   * **ConcurrencyLimit**: a limit on the number of tasks that should be executed
   in parallel at any moment in time
-* **ExectionParametersModel:&#x20;**&#x41; marshalled JSON schema stating the
-model of the execution parameters that should be provided at runtime.
+* **InputModel**: A marshalled JSON schema stating the model of the execution
+parameters that should be provided at runtime.
 * **HaltOnFailure**: A flag that states whether parallel execution of tasks
 should be stopped if a task suffers a failure.
 

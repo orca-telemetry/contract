@@ -86,6 +86,28 @@ message Task {
   repeated string requiredDataFunctions = 7;
 }
 
+// WorkflowEdge defines the relationship between two tasks in the workflow.
+// Edges are combined to form a workflow, or DAG. 
+message WorkflowEdge{
+  // The name of the task going from
+  string fromTaskName = 1;
+
+  // The hash of the AST segment of the task
+  string fromTaskHash = 2;
+
+  // The worker that implements the task
+  string fromTaskWorker = 3;
+
+  // The name of the task going from
+  string toTaskName = 4;
+
+  // The hash of the AST segment of the task
+  string toTaskHash = 5;
+
+  // The worker that implements the task
+  string toTaskWorker = 6;
+}
+
 // Workflow defines a registered workflow, its task graph, and runtime settings.
 message Workflow {
   // WorkflowName is the globally unique string identifier for this workflow.
@@ -98,27 +120,19 @@ message Workflow {
   // dependencies, and execution models.
   string workflowHash = 3;
 
-  // Tasks is a list of structural identifiers linking to pre-registered tasks,
-  // including local stubs of cross-language definitions.
-  repeated string tasks = 4;
-
   // Edges defines the dependency relationships between tasks in this workflow.
-  repeated string edges = 5;
+  repeated WorkflowEdge edges = 4;
 
   // ExecutionSettings defines concurrency limits and task prioritisation.
-  WorkflowExecutionSettings executionSettings = 6;
+  WorkflowExecutionSettings executionSettings = 5;
 
-  // ExecutionParametersModel is a marshalled JSON schema describing the
+  // InputModel is a marshalled JSON schema describing the
   // parameters that must be provided at workflow trigger time.
-  string executionParametersModel = 7;
+  string inputModel = 6;
 
   // HaltOnFailure instructs the orchestrator to stop parallel task execution
   // if any task encounters a failure.
-  bool haltOnFailure = 8;
-
-  // ConnectionUrl is the gRPC server URL exposing this workflow. Must match
-  // the local or cloud implementation visible to the core orchestrator.
-  string connectionUrl = 9;
+  bool haltOnFailure = 7;
 }
 
 // ============================================================
@@ -139,6 +153,9 @@ message RegisterWorkerRequest {
 
   // Workflows is an array of workflows
   repeated Workflow workflows = 5;
+
+  // The external connection URL of the worker
+  string url = 6;
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.

@@ -87,41 +87,55 @@ class Task(_message.Message):
     requiredDataFunctions: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[str] = ..., outputModel: _Optional[str] = ..., requiredDataFunctions: _Optional[_Iterable[str]] = ...) -> None: ...
 
+class WorkflowEdge(_message.Message):
+    __slots__ = ("fromTaskName", "fromTaskHash", "fromTaskWorker", "toTaskName", "toTaskHash", "toTaskWorker")
+    FROMTASKNAME_FIELD_NUMBER: _ClassVar[int]
+    FROMTASKHASH_FIELD_NUMBER: _ClassVar[int]
+    FROMTASKWORKER_FIELD_NUMBER: _ClassVar[int]
+    TOTASKNAME_FIELD_NUMBER: _ClassVar[int]
+    TOTASKHASH_FIELD_NUMBER: _ClassVar[int]
+    TOTASKWORKER_FIELD_NUMBER: _ClassVar[int]
+    fromTaskName: str
+    fromTaskHash: str
+    fromTaskWorker: str
+    toTaskName: str
+    toTaskHash: str
+    toTaskWorker: str
+    def __init__(self, fromTaskName: _Optional[str] = ..., fromTaskHash: _Optional[str] = ..., fromTaskWorker: _Optional[str] = ..., toTaskName: _Optional[str] = ..., toTaskHash: _Optional[str] = ..., toTaskWorker: _Optional[str] = ...) -> None: ...
+
 class Workflow(_message.Message):
-    __slots__ = ("workflowName", "description", "workflowHash", "tasks", "edges", "executionSettings", "executionParametersModel", "haltOnFailure", "connectionUrl")
+    __slots__ = ("workflowName", "description", "workflowHash", "edges", "executionSettings", "inputModel", "haltOnFailure")
     WORKFLOWNAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWHASH_FIELD_NUMBER: _ClassVar[int]
-    TASKS_FIELD_NUMBER: _ClassVar[int]
     EDGES_FIELD_NUMBER: _ClassVar[int]
     EXECUTIONSETTINGS_FIELD_NUMBER: _ClassVar[int]
-    EXECUTIONPARAMETERSMODEL_FIELD_NUMBER: _ClassVar[int]
+    INPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     HALTONFAILURE_FIELD_NUMBER: _ClassVar[int]
-    CONNECTIONURL_FIELD_NUMBER: _ClassVar[int]
     workflowName: str
     description: str
     workflowHash: str
-    tasks: _containers.RepeatedScalarFieldContainer[str]
-    edges: _containers.RepeatedScalarFieldContainer[str]
+    edges: _containers.RepeatedCompositeFieldContainer[WorkflowEdge]
     executionSettings: _shared_pb2.WorkflowExecutionSettings
-    executionParametersModel: str
+    inputModel: str
     haltOnFailure: bool
-    connectionUrl: str
-    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., tasks: _Optional[_Iterable[str]] = ..., edges: _Optional[_Iterable[str]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., executionParametersModel: _Optional[str] = ..., haltOnFailure: bool = ..., connectionUrl: _Optional[str] = ...) -> None: ...
+    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[str] = ..., haltOnFailure: bool = ...) -> None: ...
 
 class RegisterWorkerRequest(_message.Message):
-    __slots__ = ("name", "gitCommitHash", "dataFunctions", "tasks", "workflows")
+    __slots__ = ("name", "gitCommitHash", "dataFunctions", "tasks", "workflows", "url")
     NAME_FIELD_NUMBER: _ClassVar[int]
     GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
     DATAFUNCTIONS_FIELD_NUMBER: _ClassVar[int]
     TASKS_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWS_FIELD_NUMBER: _ClassVar[int]
+    URL_FIELD_NUMBER: _ClassVar[int]
     name: str
     gitCommitHash: str
     dataFunctions: _containers.RepeatedCompositeFieldContainer[DataFunction]
     tasks: _containers.RepeatedCompositeFieldContainer[Task]
     workflows: _containers.RepeatedCompositeFieldContainer[Workflow]
-    def __init__(self, name: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ...) -> None: ...
+    url: str
+    def __init__(self, name: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ..., url: _Optional[str] = ...) -> None: ...
 
 class RegisterWorkerResponse(_message.Message):
     __slots__ = ("status", "message")
