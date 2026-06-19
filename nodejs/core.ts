@@ -372,10 +372,34 @@ export interface Workflow {
 
 /**
  * ============================================================
- * RegisterWorkerSnapshot RPC
+ * RegisterWorker RPC
  * ============================================================
  */
 export interface RegisterWorkerRequest {
+  /** Name is the globally unique name of the worker. */
+  name?: string | undefined;
+}
+
+/** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
+export interface RegisterWorkerResponse {
+  /** Status indicates whether registration succeeded or failed. */
+  status?:
+    | RegistrationStatus
+    | undefined;
+  /** Message provides detail on why registration failed, if applicable. */
+  message?:
+    | string
+    | undefined;
+  /** The authentication key to be used by the worker */
+  key?: string | undefined;
+}
+
+/**
+ * ============================================================
+ * RegisterWorkerSnapshot RPC
+ * ============================================================
+ */
+export interface RegisterWorkerSnapshotRequest {
   /** Name is the globally unique name of the worker. */
   name?:
     | string
@@ -401,7 +425,7 @@ export interface RegisterWorkerRequest {
 }
 
 /** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
-export interface RegisterWorkerResponse {
+export interface RegisterWorkerSnapshotResponse {
   /** Status indicates whether registration succeeded or failed. */
   status?:
     | RegistrationStatus
@@ -1308,11 +1332,161 @@ export const Workflow: MessageFns<Workflow> = {
 };
 
 function createBaseRegisterWorkerRequest(): RegisterWorkerRequest {
-  return { name: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [], taskDfMd5Hash: "" };
+  return { name: "" };
 }
 
 export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   encode(message: RegisterWorkerRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.name !== undefined && message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegisterWorkerRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RegisterWorkerRequest {
+    return { name: isSet(object.name) ? globalThis.String(object.name) : "" };
+  },
+
+  toJSON(message: RegisterWorkerRequest): unknown {
+    const obj: any = {};
+    if (message.name !== undefined && message.name !== "") {
+      obj.name = message.name;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RegisterWorkerRequest>, I>>(base?: I): RegisterWorkerRequest {
+    return RegisterWorkerRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RegisterWorkerRequest>, I>>(object: I): RegisterWorkerRequest {
+    const message = createBaseRegisterWorkerRequest();
+    message.name = object.name ?? "";
+    return message;
+  },
+};
+
+function createBaseRegisterWorkerResponse(): RegisterWorkerResponse {
+  return { status: 0, message: "", key: "" };
+}
+
+export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
+  encode(message: RegisterWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== undefined && message.status !== 0) {
+      writer.uint32(8).int32(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      writer.uint32(18).string(message.message);
+    }
+    if (message.key !== undefined && message.key !== "") {
+      writer.uint32(26).string(message.key);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegisterWorkerResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RegisterWorkerResponse {
+    return {
+      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+    };
+  },
+
+  toJSON(message: RegisterWorkerResponse): unknown {
+    const obj: any = {};
+    if (message.status !== undefined && message.status !== 0) {
+      obj.status = registrationStatusToJSON(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      obj.message = message.message;
+    }
+    if (message.key !== undefined && message.key !== "") {
+      obj.key = message.key;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RegisterWorkerResponse>, I>>(base?: I): RegisterWorkerResponse {
+    return RegisterWorkerResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RegisterWorkerResponse>, I>>(object: I): RegisterWorkerResponse {
+    const message = createBaseRegisterWorkerResponse();
+    message.status = object.status ?? 0;
+    message.message = object.message ?? "";
+    message.key = object.key ?? "";
+    return message;
+  },
+};
+
+function createBaseRegisterWorkerSnapshotRequest(): RegisterWorkerSnapshotRequest {
+  return { name: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [], taskDfMd5Hash: "" };
+}
+
+export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotRequest> = {
+  encode(message: RegisterWorkerSnapshotRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.name !== undefined && message.name !== "") {
       writer.uint32(10).string(message.name);
     }
@@ -1340,10 +1514,10 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerRequest {
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerSnapshotRequest {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterWorkerRequest();
+    const message = createBaseRegisterWorkerSnapshotRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1413,7 +1587,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
     return message;
   },
 
-  fromJSON(object: any): RegisterWorkerRequest {
+  fromJSON(object: any): RegisterWorkerSnapshotRequest {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
@@ -1428,7 +1602,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
     };
   },
 
-  toJSON(message: RegisterWorkerRequest): unknown {
+  toJSON(message: RegisterWorkerSnapshotRequest): unknown {
     const obj: any = {};
     if (message.name !== undefined && message.name !== "") {
       obj.name = message.name;
@@ -1451,11 +1625,13 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RegisterWorkerRequest>, I>>(base?: I): RegisterWorkerRequest {
-    return RegisterWorkerRequest.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<RegisterWorkerSnapshotRequest>, I>>(base?: I): RegisterWorkerSnapshotRequest {
+    return RegisterWorkerSnapshotRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RegisterWorkerRequest>, I>>(object: I): RegisterWorkerRequest {
-    const message = createBaseRegisterWorkerRequest();
+  fromPartial<I extends Exact<DeepPartial<RegisterWorkerSnapshotRequest>, I>>(
+    object: I,
+  ): RegisterWorkerSnapshotRequest {
+    const message = createBaseRegisterWorkerSnapshotRequest();
     message.name = object.name ?? "";
     message.gitCommitHash = object.gitCommitHash ?? "";
     message.dataFunctions = object.dataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
@@ -1466,12 +1642,12 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   },
 };
 
-function createBaseRegisterWorkerResponse(): RegisterWorkerResponse {
+function createBaseRegisterWorkerSnapshotResponse(): RegisterWorkerSnapshotResponse {
   return { status: 0, message: "" };
 }
 
-export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
-  encode(message: RegisterWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const RegisterWorkerSnapshotResponse: MessageFns<RegisterWorkerSnapshotResponse> = {
+  encode(message: RegisterWorkerSnapshotResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.status !== undefined && message.status !== 0) {
       writer.uint32(8).int32(message.status);
     }
@@ -1481,10 +1657,10 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerResponse {
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerSnapshotResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRegisterWorkerResponse();
+    const message = createBaseRegisterWorkerSnapshotResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1513,14 +1689,14 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
     return message;
   },
 
-  fromJSON(object: any): RegisterWorkerResponse {
+  fromJSON(object: any): RegisterWorkerSnapshotResponse {
     return {
       status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
       message: isSet(object.message) ? globalThis.String(object.message) : "",
     };
   },
 
-  toJSON(message: RegisterWorkerResponse): unknown {
+  toJSON(message: RegisterWorkerSnapshotResponse): unknown {
     const obj: any = {};
     if (message.status !== undefined && message.status !== 0) {
       obj.status = registrationStatusToJSON(message.status);
@@ -1531,11 +1707,13 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RegisterWorkerResponse>, I>>(base?: I): RegisterWorkerResponse {
-    return RegisterWorkerResponse.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<RegisterWorkerSnapshotResponse>, I>>(base?: I): RegisterWorkerSnapshotResponse {
+    return RegisterWorkerSnapshotResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RegisterWorkerResponse>, I>>(object: I): RegisterWorkerResponse {
-    const message = createBaseRegisterWorkerResponse();
+  fromPartial<I extends Exact<DeepPartial<RegisterWorkerSnapshotResponse>, I>>(
+    object: I,
+  ): RegisterWorkerSnapshotResponse {
+    const message = createBaseRegisterWorkerSnapshotResponse();
     message.status = object.status ?? 0;
     message.message = object.message ?? "";
     return message;
@@ -3185,12 +3363,9 @@ export const OrderByStatement: MessageFns<OrderByStatement> = {
  */
 export type CoreService = typeof CoreService;
 export const CoreService = {
-  /**
-   * Registers a worker, along with all assets defined in the worker's codebase.
-   * This operation is idempotent on the worker name and git commit hash.
-   */
-  registerWorkerSnapshot: {
-    path: "/Core/RegisterWorkerSnapshot" as const,
+  /** Registers a worker with core, recieves authentication credentials in return */
+  registerWorker: {
+    path: "/Core/RegisterWorker" as const,
     requestStream: false as const,
     responseStream: false as const,
     requestSerialize: (value: RegisterWorkerRequest): Buffer =>
@@ -3199,6 +3374,22 @@ export const CoreService = {
     responseSerialize: (value: RegisterWorkerResponse): Buffer =>
       Buffer.from(RegisterWorkerResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): RegisterWorkerResponse => RegisterWorkerResponse.decode(value),
+  },
+  /**
+   * Registers all assets defined in the worker's codebase.
+   * This operation is idempotent on the worker name and git commit hash.
+   */
+  registerWorkerSnapshot: {
+    path: "/Core/RegisterWorkerSnapshot" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: RegisterWorkerSnapshotRequest): Buffer =>
+      Buffer.from(RegisterWorkerSnapshotRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RegisterWorkerSnapshotRequest => RegisterWorkerSnapshotRequest.decode(value),
+    responseSerialize: (value: RegisterWorkerSnapshotResponse): Buffer =>
+      Buffer.from(RegisterWorkerSnapshotResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): RegisterWorkerSnapshotResponse =>
+      RegisterWorkerSnapshotResponse.decode(value),
   },
   /** Notify existence */
   registerServing: {
@@ -3273,11 +3464,13 @@ export const CoreService = {
 } as const;
 
 export interface CoreServer extends UntypedServiceImplementation {
+  /** Registers a worker with core, recieves authentication credentials in return */
+  registerWorker: handleUnaryCall<RegisterWorkerRequest, RegisterWorkerResponse>;
   /**
-   * Registers a worker, along with all assets defined in the worker's codebase.
+   * Registers all assets defined in the worker's codebase.
    * This operation is idempotent on the worker name and git commit hash.
    */
-  registerWorkerSnapshot: handleUnaryCall<RegisterWorkerRequest, RegisterWorkerResponse>;
+  registerWorkerSnapshot: handleUnaryCall<RegisterWorkerSnapshotRequest, RegisterWorkerSnapshotResponse>;
   /** Notify existence */
   registerServing: handleUnaryCall<RegisterServingRequest, RegisterServingResponse>;
   /** Triggers a workflow */
@@ -3296,24 +3489,40 @@ export interface CoreServer extends UntypedServiceImplementation {
 }
 
 export interface CoreClient extends Client {
-  /**
-   * Registers a worker, along with all assets defined in the worker's codebase.
-   * This operation is idempotent on the worker name and git commit hash.
-   */
-  registerWorkerSnapshot(
+  /** Registers a worker with core, recieves authentication credentials in return */
+  registerWorker(
     request: RegisterWorkerRequest,
     callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
   ): ClientUnaryCall;
-  registerWorkerSnapshot(
+  registerWorker(
     request: RegisterWorkerRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
   ): ClientUnaryCall;
-  registerWorkerSnapshot(
+  registerWorker(
     request: RegisterWorkerRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
+  ): ClientUnaryCall;
+  /**
+   * Registers all assets defined in the worker's codebase.
+   * This operation is idempotent on the worker name and git commit hash.
+   */
+  registerWorkerSnapshot(
+    request: RegisterWorkerSnapshotRequest,
+    callback: (error: ServiceError | null, response: RegisterWorkerSnapshotResponse) => void,
+  ): ClientUnaryCall;
+  registerWorkerSnapshot(
+    request: RegisterWorkerSnapshotRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: RegisterWorkerSnapshotResponse) => void,
+  ): ClientUnaryCall;
+  registerWorkerSnapshot(
+    request: RegisterWorkerSnapshotRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: RegisterWorkerSnapshotResponse) => void,
   ): ClientUnaryCall;
   /** Notify existence */
   registerServing(

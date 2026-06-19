@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
+	Core_RegisterWorker_FullMethodName             = "/Core/RegisterWorker"
 	Core_RegisterWorkerSnapshot_FullMethodName     = "/Core/RegisterWorkerSnapshot"
 	Core_RegisterServing_FullMethodName            = "/Core/RegisterServing"
 	Core_TriggerWorkflow_FullMethodName            = "/Core/TriggerWorkflow"
@@ -38,9 +39,11 @@ const (
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 type CoreClient interface {
-	// Registers a worker, along with all assets defined in the worker's codebase.
+	// Registers a worker with core, recieves authentication credentials in return
+	RegisterWorker(ctx context.Context, in *RegisterWorkerRequest, opts ...grpc.CallOption) (*RegisterWorkerResponse, error)
+	// Registers all assets defined in the worker's codebase.
 	// This operation is idempotent on the worker name and git commit hash.
-	RegisterWorkerSnapshot(ctx context.Context, in *RegisterWorkerRequest, opts ...grpc.CallOption) (*RegisterWorkerResponse, error)
+	RegisterWorkerSnapshot(ctx context.Context, in *RegisterWorkerSnapshotRequest, opts ...grpc.CallOption) (*RegisterWorkerSnapshotResponse, error)
 	// Notify existence
 	RegisterServing(ctx context.Context, in *RegisterServingRequest, opts ...grpc.CallOption) (*RegisterServingResponse, error)
 	// Triggers a workflow
@@ -63,9 +66,19 @@ func NewCoreClient(cc grpc.ClientConnInterface) CoreClient {
 	return &coreClient{cc}
 }
 
-func (c *coreClient) RegisterWorkerSnapshot(ctx context.Context, in *RegisterWorkerRequest, opts ...grpc.CallOption) (*RegisterWorkerResponse, error) {
+func (c *coreClient) RegisterWorker(ctx context.Context, in *RegisterWorkerRequest, opts ...grpc.CallOption) (*RegisterWorkerResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RegisterWorkerResponse)
+	err := c.cc.Invoke(ctx, Core_RegisterWorker_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coreClient) RegisterWorkerSnapshot(ctx context.Context, in *RegisterWorkerSnapshotRequest, opts ...grpc.CallOption) (*RegisterWorkerSnapshotResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RegisterWorkerSnapshotResponse)
 	err := c.cc.Invoke(ctx, Core_RegisterWorkerSnapshot_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -152,9 +165,11 @@ type Core_QueryTaskResultClient = grpc.ServerStreamingClient[PastResults]
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 type CoreServer interface {
-	// Registers a worker, along with all assets defined in the worker's codebase.
+	// Registers a worker with core, recieves authentication credentials in return
+	RegisterWorker(context.Context, *RegisterWorkerRequest) (*RegisterWorkerResponse, error)
+	// Registers all assets defined in the worker's codebase.
 	// This operation is idempotent on the worker name and git commit hash.
-	RegisterWorkerSnapshot(context.Context, *RegisterWorkerRequest) (*RegisterWorkerResponse, error)
+	RegisterWorkerSnapshot(context.Context, *RegisterWorkerSnapshotRequest) (*RegisterWorkerSnapshotResponse, error)
 	// Notify existence
 	RegisterServing(context.Context, *RegisterServingRequest) (*RegisterServingResponse, error)
 	// Triggers a workflow
@@ -177,7 +192,10 @@ type CoreServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCoreServer struct{}
 
-func (UnimplementedCoreServer) RegisterWorkerSnapshot(context.Context, *RegisterWorkerRequest) (*RegisterWorkerResponse, error) {
+func (UnimplementedCoreServer) RegisterWorker(context.Context, *RegisterWorkerRequest) (*RegisterWorkerResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RegisterWorker not implemented")
+}
+func (UnimplementedCoreServer) RegisterWorkerSnapshot(context.Context, *RegisterWorkerSnapshotRequest) (*RegisterWorkerSnapshotResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RegisterWorkerSnapshot not implemented")
 }
 func (UnimplementedCoreServer) RegisterServing(context.Context, *RegisterServingRequest) (*RegisterServingResponse, error) {
@@ -219,8 +237,26 @@ func RegisterCoreServer(s grpc.ServiceRegistrar, srv CoreServer) {
 	s.RegisterService(&Core_ServiceDesc, srv)
 }
 
-func _Core_RegisterWorkerSnapshot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Core_RegisterWorker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterWorkerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoreServer).RegisterWorker(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Core_RegisterWorker_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoreServer).RegisterWorker(ctx, req.(*RegisterWorkerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Core_RegisterWorkerSnapshot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterWorkerSnapshotRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -232,7 +268,7 @@ func _Core_RegisterWorkerSnapshot_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: Core_RegisterWorkerSnapshot_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoreServer).RegisterWorkerSnapshot(ctx, req.(*RegisterWorkerRequest))
+		return srv.(CoreServer).RegisterWorkerSnapshot(ctx, req.(*RegisterWorkerSnapshotRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -345,6 +381,10 @@ var Core_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "Core",
 	HandlerType: (*CoreServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegisterWorker",
+			Handler:    _Core_RegisterWorker_Handler,
+		},
 		{
 			MethodName: "RegisterWorkerSnapshot",
 			Handler:    _Core_RegisterWorkerSnapshot_Handler,

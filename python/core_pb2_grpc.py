@@ -39,10 +39,15 @@ class CoreStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.RegisterWorkerSnapshot = channel.unary_unary(
-                '/Core/RegisterWorkerSnapshot',
+        self.RegisterWorker = channel.unary_unary(
+                '/Core/RegisterWorker',
                 request_serializer=core__pb2.RegisterWorkerRequest.SerializeToString,
                 response_deserializer=core__pb2.RegisterWorkerResponse.FromString,
+                _registered_method=True)
+        self.RegisterWorkerSnapshot = channel.unary_unary(
+                '/Core/RegisterWorkerSnapshot',
+                request_serializer=core__pb2.RegisterWorkerSnapshotRequest.SerializeToString,
+                response_deserializer=core__pb2.RegisterWorkerSnapshotResponse.FromString,
                 _registered_method=True)
         self.RegisterServing = channel.unary_unary(
                 '/Core/RegisterServing',
@@ -84,8 +89,15 @@ class CoreServicer(object):
     - Tracks DAG execution state and handles distributed failure modes
     """
 
+    def RegisterWorker(self, request, context):
+        """Registers a worker with core, recieves authentication credentials in return
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def RegisterWorkerSnapshot(self, request, context):
-        """Registers a worker, along with all assets defined in the worker's codebase.
+        """Registers all assets defined in the worker's codebase.
         This operation is idempotent on the worker name and git commit hash.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -137,10 +149,15 @@ class CoreServicer(object):
 
 def add_CoreServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'RegisterWorkerSnapshot': grpc.unary_unary_rpc_method_handler(
-                    servicer.RegisterWorkerSnapshot,
+            'RegisterWorker': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterWorker,
                     request_deserializer=core__pb2.RegisterWorkerRequest.FromString,
                     response_serializer=core__pb2.RegisterWorkerResponse.SerializeToString,
+            ),
+            'RegisterWorkerSnapshot': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterWorkerSnapshot,
+                    request_deserializer=core__pb2.RegisterWorkerSnapshotRequest.FromString,
+                    response_serializer=core__pb2.RegisterWorkerSnapshotResponse.SerializeToString,
             ),
             'RegisterServing': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterServing,
@@ -189,6 +206,33 @@ class Core(object):
     """
 
     @staticmethod
+    def RegisterWorker(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Core/RegisterWorker',
+            core__pb2.RegisterWorkerRequest.SerializeToString,
+            core__pb2.RegisterWorkerResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def RegisterWorkerSnapshot(request,
             target,
             options=(),
@@ -203,8 +247,8 @@ class Core(object):
             request,
             target,
             '/Core/RegisterWorkerSnapshot',
-            core__pb2.RegisterWorkerRequest.SerializeToString,
-            core__pb2.RegisterWorkerResponse.FromString,
+            core__pb2.RegisterWorkerSnapshotRequest.SerializeToString,
+            core__pb2.RegisterWorkerSnapshotResponse.FromString,
             options,
             channel_credentials,
             insecure,

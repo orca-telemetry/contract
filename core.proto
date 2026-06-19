@@ -11,9 +11,13 @@ import "shared.proto";
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 service Core {
-  // Registers a worker, along with all assets defined in the worker's codebase.
+
+  // Registers a worker with core, recieves authentication credentials in return
+  rpc RegisterWorker(RegisterWorkerRequest) returns (RegisterWorkerResponse);
+
+  // Registers all assets defined in the worker's codebase.
   // This operation is idempotent on the worker name and git commit hash.
-  rpc RegisterWorkerSnapshot(RegisterWorkerRequest) returns (RegisterWorkerResponse);
+  rpc RegisterWorkerSnapshot(RegisterWorkerSnapshotRequest) returns (RegisterWorkerSnapshotResponse);
 
   // Notify existence
   rpc RegisterServing(RegisterServingRequest) returns (RegisterServingResponse);
@@ -136,9 +140,29 @@ message Workflow {
 }
 
 // ============================================================
-// RegisterWorkerSnapshot RPC
+// RegisterWorker RPC
 // ============================================================
 message RegisterWorkerRequest {
+  // Name is the globally unique name of the worker.
+  string name = 1;
+};
+
+// RegisterWorkerResponse is the response message for the Registercodebase RPC.
+message RegisterWorkerResponse {
+  // Status indicates whether registration succeeded or failed.
+  RegistrationStatus status = 1;
+
+  // Message provides detail on why registration failed, if applicable.
+  string message = 2;
+
+  // The authentication key to be used by the worker
+  string key = 3;
+};
+
+// ============================================================
+// RegisterWorkerSnapshot RPC
+// ============================================================
+message RegisterWorkerSnapshotRequest {
   // Name is the globally unique name of the worker.
   string name = 1;
 
@@ -159,7 +183,7 @@ message RegisterWorkerRequest {
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
-message RegisterWorkerResponse {
+message RegisterWorkerSnapshotResponse {
   // Status indicates whether registration succeeded or failed.
   RegistrationStatus status = 1;
 

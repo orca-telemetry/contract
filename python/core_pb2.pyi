@@ -122,6 +122,22 @@ class Workflow(_message.Message):
     def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[str] = ..., haltOnFailure: bool = ...) -> None: ...
 
 class RegisterWorkerRequest(_message.Message):
+    __slots__ = ("name",)
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    def __init__(self, name: _Optional[str] = ...) -> None: ...
+
+class RegisterWorkerResponse(_message.Message):
+    __slots__ = ("status", "message", "key")
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    status: _shared_pb2.RegistrationStatus
+    message: str
+    key: str
+    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ..., key: _Optional[str] = ...) -> None: ...
+
+class RegisterWorkerSnapshotRequest(_message.Message):
     __slots__ = ("name", "gitCommitHash", "dataFunctions", "tasks", "workflows", "taskDfMd5Hash")
     NAME_FIELD_NUMBER: _ClassVar[int]
     GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
@@ -137,7 +153,7 @@ class RegisterWorkerRequest(_message.Message):
     taskDfMd5Hash: str
     def __init__(self, name: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ..., taskDfMd5Hash: _Optional[str] = ...) -> None: ...
 
-class RegisterWorkerResponse(_message.Message):
+class RegisterWorkerSnapshotResponse(_message.Message):
     __slots__ = ("status", "message")
     STATUS_FIELD_NUMBER: _ClassVar[int]
     MESSAGE_FIELD_NUMBER: _ClassVar[int]

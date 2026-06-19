@@ -7,6 +7,21 @@ service, and for workers.
 
 These are all the remote procedure calls that should sit under the core service.
 
+## RegisterWorker
+
+This service initialises the worker, and in return sends a unique key that the
+worker should use to authenticate itself with the core.
+
+### Request Message
+
+* **WorkerName** - The name of the worker
+
+### Response Message
+
+* **Status** - Success | Failed
+* **Message** - The failure message if any
+* **Key** - Access key 
+
 ## RegisterCodebaseSnapshot
 
 This service takes a snapshot of the codebase and registers all the assets
@@ -20,7 +35,7 @@ idempotent on git commit has and codebase name.
 * **WorkerName**: The name of the worker that implements the assets. Globally unique.
 * **GitCommitHash**: The current git commit of codebase.
 * **DataFunctions**: An array of data functions
-* **TaskDfMD5Hash**: A organised MD5 hash of the data functions and tasks.
+* **PublicKey**: The public key associated with this worker.
 * **Tasks**: An array of tasks
 * **Workflows**: An array of workflows
 
