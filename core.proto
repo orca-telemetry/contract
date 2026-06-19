@@ -11,9 +11,14 @@ import "shared.proto";
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 service Core {
-
-  // Registers a worker with core, recieves authentication credentials in return
+  // Registers a worker with core
   rpc RegisterWorker(RegisterWorkerRequest) returns (RegisterWorkerResponse);
+
+  // Get a nonce from the server
+  rpc GetNonce(GetNonceRequest) returns (GetNonceResponse);
+
+  // Check a nonce with the server
+  rpc CheckNonce(CheckNonceRequest) returns (CheckNonceResponse);
 
   // Registers all assets defined in the worker's codebase.
   // This operation is idempotent on the worker name and git commit hash.
@@ -35,7 +40,7 @@ service Core {
   rpc ExposeState(ExposeStateRequest) returns (ExposeStateResponse);
 
   // Query past results of tasks
-  rpc QueryTaskResult(QueryParams) returns (stream PastResults);
+  rpc QueryTaskResult(QueryTaskRequest) returns (stream QueryTaskResponse);
 };
 
 // ============================================================
@@ -139,12 +144,13 @@ message Workflow {
   bool haltOnFailure = 7;
 }
 
+
 // ============================================================
 // RegisterWorker RPC
 // ============================================================
 message RegisterWorkerRequest {
-  // Name is the globally unique name of the worker.
-  string name = 1;
+  // The public of the worker
+  string public_key = 1;
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
@@ -155,16 +161,60 @@ message RegisterWorkerResponse {
   // Message provides detail on why registration failed, if applicable.
   string message = 2;
 
-  // The authentication key to be used by the worker
-  string key = 3;
+  // The unique worker Id
+  string worker_id = 3;
+};
+
+// ============================================================
+// GetNonce RPC
+// ============================================================
+message GetNonceRequest {
+  // The unique ID of the worker
+  string worker_id = 1;
+};
+
+message GetNonceResponse {
+  // Status indicates whether get nonce succeeded or failed.
+  RegistrationStatus status = 1;
+
+  // Message provides detail on why registration failed, if applicable.
+  string message = 2;
+
+  // A challenge that the worker needs to sign
+  bytes challenge = 3;
+}
+
+// ============================================================
+// CheckNonce RPC
+// ============================================================
+message CheckNonceRequest {
+  // the response to the challenge
+  bytes signed_challenge = 1;
+
+  // The worker ID
+  string worker_id = 2;
+};
+
+message CheckNonceResponse {
+  // Status indicates whether get nonce check succeeded or failed.
+  RegistrationStatus status = 1;
+
+  // Message provides detail on why it failed, if applicable.
+  string message = 2;
+
+  // Access key expiry datetime
+  google.protobuf.Timestamp expires_at = 3;
+
+  // A short lived access key
+  string access_key = 4;
 };
 
 // ============================================================
 // RegisterWorkerSnapshot RPC
 // ============================================================
 message RegisterWorkerSnapshotRequest {
-  // Name is the globally unique name of the worker.
-  string name = 1;
+  // ID is the globally unique ID of the worker
+  string id = 1;
 
   // GitCommitHash is the current git commit
   string gitCommitHash = 2;
@@ -177,9 +227,6 @@ message RegisterWorkerSnapshotRequest {
 
   // Workflows is an array of workflows
   repeated Workflow workflows = 5;
-
-  // An MD5 hash of the tasks and data functions
-  string taskDfMd5Hash = 6;
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
@@ -337,7 +384,7 @@ message ExposeStateResponse {
 // ============================================================
 //
 // The top-level request message for QueryTaskResult.
-message QueryParams {
+message QueryTaskRequest {
   // The name of the task to return results for.
   string name = 1;
 
@@ -361,7 +408,7 @@ message QueryParams {
 }
 
 // The top-level response message for QueryTaskResult.
-message PastResults {
+message QueryTaskResponse {
   // The matched task results.
   repeated TaskResult results = 1;
 

@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	Core_RegisterWorker_FullMethodName             = "/Core/RegisterWorker"
+	Core_GetNonce_FullMethodName                   = "/Core/GetNonce"
+	Core_CheckNonce_FullMethodName                 = "/Core/CheckNonce"
 	Core_RegisterWorkerSnapshot_FullMethodName     = "/Core/RegisterWorkerSnapshot"
 	Core_RegisterServing_FullMethodName            = "/Core/RegisterServing"
 	Core_TriggerWorkflow_FullMethodName            = "/Core/TriggerWorkflow"
@@ -39,8 +41,12 @@ const (
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 type CoreClient interface {
-	// Registers a worker with core, recieves authentication credentials in return
+	// Registers a worker with core
 	RegisterWorker(ctx context.Context, in *RegisterWorkerRequest, opts ...grpc.CallOption) (*RegisterWorkerResponse, error)
+	// Get a nonce from the server
+	GetNonce(ctx context.Context, in *GetNonceRequest, opts ...grpc.CallOption) (*GetNonceResponse, error)
+	// Check a nonce with the server
+	CheckNonce(ctx context.Context, in *CheckNonceRequest, opts ...grpc.CallOption) (*CheckNonceResponse, error)
 	// Registers all assets defined in the worker's codebase.
 	// This operation is idempotent on the worker name and git commit hash.
 	RegisterWorkerSnapshot(ctx context.Context, in *RegisterWorkerSnapshotRequest, opts ...grpc.CallOption) (*RegisterWorkerSnapshotResponse, error)
@@ -55,7 +61,7 @@ type CoreClient interface {
 	// Expose the internal state of the orchestration stack
 	ExposeState(ctx context.Context, in *ExposeStateRequest, opts ...grpc.CallOption) (*ExposeStateResponse, error)
 	// Query past results of tasks
-	QueryTaskResult(ctx context.Context, in *QueryParams, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PastResults], error)
+	QueryTaskResult(ctx context.Context, in *QueryTaskRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[QueryTaskResponse], error)
 }
 
 type coreClient struct {
@@ -70,6 +76,26 @@ func (c *coreClient) RegisterWorker(ctx context.Context, in *RegisterWorkerReque
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RegisterWorkerResponse)
 	err := c.cc.Invoke(ctx, Core_RegisterWorker_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coreClient) GetNonce(ctx context.Context, in *GetNonceRequest, opts ...grpc.CallOption) (*GetNonceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetNonceResponse)
+	err := c.cc.Invoke(ctx, Core_GetNonce_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coreClient) CheckNonce(ctx context.Context, in *CheckNonceRequest, opts ...grpc.CallOption) (*CheckNonceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckNonceResponse)
+	err := c.cc.Invoke(ctx, Core_CheckNonce_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -136,13 +162,13 @@ func (c *coreClient) ExposeState(ctx context.Context, in *ExposeStateRequest, op
 	return out, nil
 }
 
-func (c *coreClient) QueryTaskResult(ctx context.Context, in *QueryParams, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PastResults], error) {
+func (c *coreClient) QueryTaskResult(ctx context.Context, in *QueryTaskRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[QueryTaskResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Core_ServiceDesc.Streams[0], Core_QueryTaskResult_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[QueryParams, PastResults]{ClientStream: stream}
+	x := &grpc.GenericClientStream[QueryTaskRequest, QueryTaskResponse]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -153,7 +179,7 @@ func (c *coreClient) QueryTaskResult(ctx context.Context, in *QueryParams, opts 
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Core_QueryTaskResultClient = grpc.ServerStreamingClient[PastResults]
+type Core_QueryTaskResultClient = grpc.ServerStreamingClient[QueryTaskResponse]
 
 // CoreServer is the server API for Core service.
 // All implementations must embed UnimplementedCoreServer
@@ -165,8 +191,12 @@ type Core_QueryTaskResultClient = grpc.ServerStreamingClient[PastResults]
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 type CoreServer interface {
-	// Registers a worker with core, recieves authentication credentials in return
+	// Registers a worker with core
 	RegisterWorker(context.Context, *RegisterWorkerRequest) (*RegisterWorkerResponse, error)
+	// Get a nonce from the server
+	GetNonce(context.Context, *GetNonceRequest) (*GetNonceResponse, error)
+	// Check a nonce with the server
+	CheckNonce(context.Context, *CheckNonceRequest) (*CheckNonceResponse, error)
 	// Registers all assets defined in the worker's codebase.
 	// This operation is idempotent on the worker name and git commit hash.
 	RegisterWorkerSnapshot(context.Context, *RegisterWorkerSnapshotRequest) (*RegisterWorkerSnapshotResponse, error)
@@ -181,7 +211,7 @@ type CoreServer interface {
 	// Expose the internal state of the orchestration stack
 	ExposeState(context.Context, *ExposeStateRequest) (*ExposeStateResponse, error)
 	// Query past results of tasks
-	QueryTaskResult(*QueryParams, grpc.ServerStreamingServer[PastResults]) error
+	QueryTaskResult(*QueryTaskRequest, grpc.ServerStreamingServer[QueryTaskResponse]) error
 	mustEmbedUnimplementedCoreServer()
 }
 
@@ -194,6 +224,12 @@ type UnimplementedCoreServer struct{}
 
 func (UnimplementedCoreServer) RegisterWorker(context.Context, *RegisterWorkerRequest) (*RegisterWorkerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RegisterWorker not implemented")
+}
+func (UnimplementedCoreServer) GetNonce(context.Context, *GetNonceRequest) (*GetNonceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetNonce not implemented")
+}
+func (UnimplementedCoreServer) CheckNonce(context.Context, *CheckNonceRequest) (*CheckNonceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CheckNonce not implemented")
 }
 func (UnimplementedCoreServer) RegisterWorkerSnapshot(context.Context, *RegisterWorkerSnapshotRequest) (*RegisterWorkerSnapshotResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RegisterWorkerSnapshot not implemented")
@@ -213,7 +249,7 @@ func (UnimplementedCoreServer) RegisterTaskResult(context.Context, *RegisterTask
 func (UnimplementedCoreServer) ExposeState(context.Context, *ExposeStateRequest) (*ExposeStateResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExposeState not implemented")
 }
-func (UnimplementedCoreServer) QueryTaskResult(*QueryParams, grpc.ServerStreamingServer[PastResults]) error {
+func (UnimplementedCoreServer) QueryTaskResult(*QueryTaskRequest, grpc.ServerStreamingServer[QueryTaskResponse]) error {
 	return status.Error(codes.Unimplemented, "method QueryTaskResult not implemented")
 }
 func (UnimplementedCoreServer) mustEmbedUnimplementedCoreServer() {}
@@ -251,6 +287,42 @@ func _Core_RegisterWorker_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CoreServer).RegisterWorker(ctx, req.(*RegisterWorkerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Core_GetNonce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNonceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoreServer).GetNonce(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Core_GetNonce_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoreServer).GetNonce(ctx, req.(*GetNonceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Core_CheckNonce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckNonceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoreServer).CheckNonce(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Core_CheckNonce_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoreServer).CheckNonce(ctx, req.(*CheckNonceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -364,15 +436,15 @@ func _Core_ExposeState_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Core_QueryTaskResult_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(QueryParams)
+	m := new(QueryTaskRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(CoreServer).QueryTaskResult(m, &grpc.GenericServerStream[QueryParams, PastResults]{ServerStream: stream})
+	return srv.(CoreServer).QueryTaskResult(m, &grpc.GenericServerStream[QueryTaskRequest, QueryTaskResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Core_QueryTaskResultServer = grpc.ServerStreamingServer[PastResults]
+type Core_QueryTaskResultServer = grpc.ServerStreamingServer[QueryTaskResponse]
 
 // Core_ServiceDesc is the grpc.ServiceDesc for Core service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -384,6 +456,14 @@ var Core_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterWorker",
 			Handler:    _Core_RegisterWorker_Handler,
+		},
+		{
+			MethodName: "GetNonce",
+			Handler:    _Core_GetNonce_Handler,
+		},
+		{
+			MethodName: "CheckNonce",
+			Handler:    _Core_CheckNonce_Handler,
 		},
 		{
 			MethodName: "RegisterWorkerSnapshot",

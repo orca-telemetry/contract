@@ -376,8 +376,8 @@ export interface Workflow {
  * ============================================================
  */
 export interface RegisterWorkerRequest {
-  /** Name is the globally unique name of the worker. */
-  name?: string | undefined;
+  /** The public of the worker */
+  publicKey?: string | undefined;
 }
 
 /** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
@@ -390,8 +390,62 @@ export interface RegisterWorkerResponse {
   message?:
     | string
     | undefined;
-  /** The authentication key to be used by the worker */
-  key?: string | undefined;
+  /** The unique worker Id */
+  workerId?: string | undefined;
+}
+
+/**
+ * ============================================================
+ * GetNonce RPC
+ * ============================================================
+ */
+export interface GetNonceRequest {
+  /** The unique ID of the worker */
+  workerId?: string | undefined;
+}
+
+export interface GetNonceResponse {
+  /** Status indicates whether get nonce succeeded or failed. */
+  status?:
+    | RegistrationStatus
+    | undefined;
+  /** Message provides detail on why registration failed, if applicable. */
+  message?:
+    | string
+    | undefined;
+  /** A challenge that the worker needs to sign */
+  challenge?: Buffer | undefined;
+}
+
+/**
+ * ============================================================
+ * CheckNonce RPC
+ * ============================================================
+ */
+export interface CheckNonceRequest {
+  /** the response to the challenge */
+  signedChallenge?:
+    | Buffer
+    | undefined;
+  /** The worker ID */
+  workerId?: string | undefined;
+}
+
+export interface CheckNonceResponse {
+  /** Status indicates whether get nonce check succeeded or failed. */
+  status?:
+    | RegistrationStatus
+    | undefined;
+  /** Message provides detail on why it failed, if applicable. */
+  message?:
+    | string
+    | undefined;
+  /** Access key expiry datetime */
+  expiresAt?:
+    | Date
+    | undefined;
+  /** A short lived access key */
+  accessKey?: string | undefined;
 }
 
 /**
@@ -400,8 +454,8 @@ export interface RegisterWorkerResponse {
  * ============================================================
  */
 export interface RegisterWorkerSnapshotRequest {
-  /** Name is the globally unique name of the worker. */
-  name?:
+  /** ID is the globally unique ID of the worker */
+  id?:
     | string
     | undefined;
   /** GitCommitHash is the current git commit */
@@ -417,11 +471,7 @@ export interface RegisterWorkerSnapshotRequest {
     | Task[]
     | undefined;
   /** Workflows is an array of workflows */
-  workflows?:
-    | Workflow[]
-    | undefined;
-  /** An MD5 hash of the tasks and data functions */
-  taskDfMd5Hash?: string | undefined;
+  workflows?: Workflow[] | undefined;
 }
 
 /** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
@@ -608,7 +658,7 @@ export interface ExposeStateResponse {
  *
  * The top-level request message for QueryTaskResult.
  */
-export interface QueryParams {
+export interface QueryTaskRequest {
   /** The name of the task to return results for. */
   name?:
     | string
@@ -638,7 +688,7 @@ export interface QueryParams {
 }
 
 /** The top-level response message for QueryTaskResult. */
-export interface PastResults {
+export interface QueryTaskResponse {
   /** The matched task results. */
   results?:
     | TaskResult[]
@@ -1332,13 +1382,13 @@ export const Workflow: MessageFns<Workflow> = {
 };
 
 function createBaseRegisterWorkerRequest(): RegisterWorkerRequest {
-  return { name: "" };
+  return { publicKey: "" };
 }
 
 export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   encode(message: RegisterWorkerRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.name !== undefined && message.name !== "") {
-      writer.uint32(10).string(message.name);
+    if (message.publicKey !== undefined && message.publicKey !== "") {
+      writer.uint32(10).string(message.publicKey);
     }
     return writer;
   },
@@ -1355,7 +1405,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
             break;
           }
 
-          message.name = reader.string();
+          message.publicKey = reader.string();
           continue;
         }
       }
@@ -1368,13 +1418,19 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   },
 
   fromJSON(object: any): RegisterWorkerRequest {
-    return { name: isSet(object.name) ? globalThis.String(object.name) : "" };
+    return {
+      publicKey: isSet(object.publicKey)
+        ? globalThis.String(object.publicKey)
+        : isSet(object.public_key)
+        ? globalThis.String(object.public_key)
+        : "",
+    };
   },
 
   toJSON(message: RegisterWorkerRequest): unknown {
     const obj: any = {};
-    if (message.name !== undefined && message.name !== "") {
-      obj.name = message.name;
+    if (message.publicKey !== undefined && message.publicKey !== "") {
+      obj.publicKey = message.publicKey;
     }
     return obj;
   },
@@ -1384,13 +1440,13 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   },
   fromPartial<I extends Exact<DeepPartial<RegisterWorkerRequest>, I>>(object: I): RegisterWorkerRequest {
     const message = createBaseRegisterWorkerRequest();
-    message.name = object.name ?? "";
+    message.publicKey = object.publicKey ?? "";
     return message;
   },
 };
 
 function createBaseRegisterWorkerResponse(): RegisterWorkerResponse {
-  return { status: 0, message: "", key: "" };
+  return { status: 0, message: "", workerId: "" };
 }
 
 export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
@@ -1401,8 +1457,8 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
     if (message.message !== undefined && message.message !== "") {
       writer.uint32(18).string(message.message);
     }
-    if (message.key !== undefined && message.key !== "") {
-      writer.uint32(26).string(message.key);
+    if (message.workerId !== undefined && message.workerId !== "") {
+      writer.uint32(26).string(message.workerId);
     }
     return writer;
   },
@@ -1435,7 +1491,7 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
             break;
           }
 
-          message.key = reader.string();
+          message.workerId = reader.string();
           continue;
         }
       }
@@ -1451,7 +1507,11 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
     return {
       status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
       message: isSet(object.message) ? globalThis.String(object.message) : "",
-      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      workerId: isSet(object.workerId)
+        ? globalThis.String(object.workerId)
+        : isSet(object.worker_id)
+        ? globalThis.String(object.worker_id)
+        : "",
     };
   },
 
@@ -1463,8 +1523,8 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
     if (message.message !== undefined && message.message !== "") {
       obj.message = message.message;
     }
-    if (message.key !== undefined && message.key !== "") {
-      obj.key = message.key;
+    if (message.workerId !== undefined && message.workerId !== "") {
+      obj.workerId = message.workerId;
     }
     return obj;
   },
@@ -1476,19 +1536,375 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
     const message = createBaseRegisterWorkerResponse();
     message.status = object.status ?? 0;
     message.message = object.message ?? "";
-    message.key = object.key ?? "";
+    message.workerId = object.workerId ?? "";
+    return message;
+  },
+};
+
+function createBaseGetNonceRequest(): GetNonceRequest {
+  return { workerId: "" };
+}
+
+export const GetNonceRequest: MessageFns<GetNonceRequest> = {
+  encode(message: GetNonceRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.workerId !== undefined && message.workerId !== "") {
+      writer.uint32(10).string(message.workerId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetNonceRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetNonceRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.workerId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetNonceRequest {
+    return {
+      workerId: isSet(object.workerId)
+        ? globalThis.String(object.workerId)
+        : isSet(object.worker_id)
+        ? globalThis.String(object.worker_id)
+        : "",
+    };
+  },
+
+  toJSON(message: GetNonceRequest): unknown {
+    const obj: any = {};
+    if (message.workerId !== undefined && message.workerId !== "") {
+      obj.workerId = message.workerId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GetNonceRequest>, I>>(base?: I): GetNonceRequest {
+    return GetNonceRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GetNonceRequest>, I>>(object: I): GetNonceRequest {
+    const message = createBaseGetNonceRequest();
+    message.workerId = object.workerId ?? "";
+    return message;
+  },
+};
+
+function createBaseGetNonceResponse(): GetNonceResponse {
+  return { status: 0, message: "", challenge: Buffer.alloc(0) };
+}
+
+export const GetNonceResponse: MessageFns<GetNonceResponse> = {
+  encode(message: GetNonceResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== undefined && message.status !== 0) {
+      writer.uint32(8).int32(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      writer.uint32(18).string(message.message);
+    }
+    if (message.challenge !== undefined && message.challenge.length !== 0) {
+      writer.uint32(26).bytes(message.challenge);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetNonceResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetNonceResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.challenge = Buffer.from(reader.bytes());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetNonceResponse {
+    return {
+      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+      challenge: isSet(object.challenge) ? Buffer.from(bytesFromBase64(object.challenge)) : Buffer.alloc(0),
+    };
+  },
+
+  toJSON(message: GetNonceResponse): unknown {
+    const obj: any = {};
+    if (message.status !== undefined && message.status !== 0) {
+      obj.status = registrationStatusToJSON(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      obj.message = message.message;
+    }
+    if (message.challenge !== undefined && message.challenge.length !== 0) {
+      obj.challenge = base64FromBytes(message.challenge);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GetNonceResponse>, I>>(base?: I): GetNonceResponse {
+    return GetNonceResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GetNonceResponse>, I>>(object: I): GetNonceResponse {
+    const message = createBaseGetNonceResponse();
+    message.status = object.status ?? 0;
+    message.message = object.message ?? "";
+    message.challenge = object.challenge ?? Buffer.alloc(0);
+    return message;
+  },
+};
+
+function createBaseCheckNonceRequest(): CheckNonceRequest {
+  return { signedChallenge: Buffer.alloc(0), workerId: "" };
+}
+
+export const CheckNonceRequest: MessageFns<CheckNonceRequest> = {
+  encode(message: CheckNonceRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.signedChallenge !== undefined && message.signedChallenge.length !== 0) {
+      writer.uint32(10).bytes(message.signedChallenge);
+    }
+    if (message.workerId !== undefined && message.workerId !== "") {
+      writer.uint32(18).string(message.workerId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CheckNonceRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCheckNonceRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.signedChallenge = Buffer.from(reader.bytes());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.workerId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CheckNonceRequest {
+    return {
+      signedChallenge: isSet(object.signedChallenge)
+        ? Buffer.from(bytesFromBase64(object.signedChallenge))
+        : isSet(object.signed_challenge)
+        ? Buffer.from(bytesFromBase64(object.signed_challenge))
+        : Buffer.alloc(0),
+      workerId: isSet(object.workerId)
+        ? globalThis.String(object.workerId)
+        : isSet(object.worker_id)
+        ? globalThis.String(object.worker_id)
+        : "",
+    };
+  },
+
+  toJSON(message: CheckNonceRequest): unknown {
+    const obj: any = {};
+    if (message.signedChallenge !== undefined && message.signedChallenge.length !== 0) {
+      obj.signedChallenge = base64FromBytes(message.signedChallenge);
+    }
+    if (message.workerId !== undefined && message.workerId !== "") {
+      obj.workerId = message.workerId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CheckNonceRequest>, I>>(base?: I): CheckNonceRequest {
+    return CheckNonceRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CheckNonceRequest>, I>>(object: I): CheckNonceRequest {
+    const message = createBaseCheckNonceRequest();
+    message.signedChallenge = object.signedChallenge ?? Buffer.alloc(0);
+    message.workerId = object.workerId ?? "";
+    return message;
+  },
+};
+
+function createBaseCheckNonceResponse(): CheckNonceResponse {
+  return { status: 0, message: "", expiresAt: undefined, accessKey: "" };
+}
+
+export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
+  encode(message: CheckNonceResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== undefined && message.status !== 0) {
+      writer.uint32(8).int32(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      writer.uint32(18).string(message.message);
+    }
+    if (message.expiresAt !== undefined) {
+      Timestamp.encode(toTimestamp(message.expiresAt), writer.uint32(26).fork()).join();
+    }
+    if (message.accessKey !== undefined && message.accessKey !== "") {
+      writer.uint32(34).string(message.accessKey);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CheckNonceResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCheckNonceResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.expiresAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.accessKey = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CheckNonceResponse {
+    return {
+      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+      expiresAt: isSet(object.expiresAt)
+        ? fromJsonTimestamp(object.expiresAt)
+        : isSet(object.expires_at)
+        ? fromJsonTimestamp(object.expires_at)
+        : undefined,
+      accessKey: isSet(object.accessKey)
+        ? globalThis.String(object.accessKey)
+        : isSet(object.access_key)
+        ? globalThis.String(object.access_key)
+        : "",
+    };
+  },
+
+  toJSON(message: CheckNonceResponse): unknown {
+    const obj: any = {};
+    if (message.status !== undefined && message.status !== 0) {
+      obj.status = registrationStatusToJSON(message.status);
+    }
+    if (message.message !== undefined && message.message !== "") {
+      obj.message = message.message;
+    }
+    if (message.expiresAt !== undefined) {
+      obj.expiresAt = message.expiresAt.toISOString();
+    }
+    if (message.accessKey !== undefined && message.accessKey !== "") {
+      obj.accessKey = message.accessKey;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CheckNonceResponse>, I>>(base?: I): CheckNonceResponse {
+    return CheckNonceResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CheckNonceResponse>, I>>(object: I): CheckNonceResponse {
+    const message = createBaseCheckNonceResponse();
+    message.status = object.status ?? 0;
+    message.message = object.message ?? "";
+    message.expiresAt = object.expiresAt ?? undefined;
+    message.accessKey = object.accessKey ?? "";
     return message;
   },
 };
 
 function createBaseRegisterWorkerSnapshotRequest(): RegisterWorkerSnapshotRequest {
-  return { name: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [], taskDfMd5Hash: "" };
+  return { id: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [] };
 }
 
 export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotRequest> = {
   encode(message: RegisterWorkerSnapshotRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.name !== undefined && message.name !== "") {
-      writer.uint32(10).string(message.name);
+    if (message.id !== undefined && message.id !== "") {
+      writer.uint32(10).string(message.id);
     }
     if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
       writer.uint32(18).string(message.gitCommitHash);
@@ -1508,9 +1924,6 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
         Workflow.encode(v!, writer.uint32(42).fork()).join();
       }
     }
-    if (message.taskDfMd5Hash !== undefined && message.taskDfMd5Hash !== "") {
-      writer.uint32(50).string(message.taskDfMd5Hash);
-    }
     return writer;
   },
 
@@ -1526,7 +1939,7 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
             break;
           }
 
-          message.name = reader.string();
+          message.id = reader.string();
           continue;
         }
         case 2: {
@@ -1570,14 +1983,6 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
           }
           continue;
         }
-        case 6: {
-          if (tag !== 50) {
-            break;
-          }
-
-          message.taskDfMd5Hash = reader.string();
-          continue;
-        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1589,7 +1994,7 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
 
   fromJSON(object: any): RegisterWorkerSnapshotRequest {
     return {
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
       gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
       dataFunctions: globalThis.Array.isArray(object?.dataFunctions)
         ? object.dataFunctions.map((e: any) => DataFunction.fromJSON(e))
@@ -1598,14 +2003,13 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
       workflows: globalThis.Array.isArray(object?.workflows)
         ? object.workflows.map((e: any) => Workflow.fromJSON(e))
         : [],
-      taskDfMd5Hash: isSet(object.taskDfMd5Hash) ? globalThis.String(object.taskDfMd5Hash) : "",
     };
   },
 
   toJSON(message: RegisterWorkerSnapshotRequest): unknown {
     const obj: any = {};
-    if (message.name !== undefined && message.name !== "") {
-      obj.name = message.name;
+    if (message.id !== undefined && message.id !== "") {
+      obj.id = message.id;
     }
     if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
       obj.gitCommitHash = message.gitCommitHash;
@@ -1619,9 +2023,6 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
     if (message.workflows?.length) {
       obj.workflows = message.workflows.map((e) => Workflow.toJSON(e));
     }
-    if (message.taskDfMd5Hash !== undefined && message.taskDfMd5Hash !== "") {
-      obj.taskDfMd5Hash = message.taskDfMd5Hash;
-    }
     return obj;
   },
 
@@ -1632,12 +2033,11 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
     object: I,
   ): RegisterWorkerSnapshotRequest {
     const message = createBaseRegisterWorkerSnapshotRequest();
-    message.name = object.name ?? "";
+    message.id = object.id ?? "";
     message.gitCommitHash = object.gitCommitHash ?? "";
     message.dataFunctions = object.dataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
     message.tasks = object.tasks?.map((e) => Task.fromPartial(e)) || [];
     message.workflows = object.workflows?.map((e) => Workflow.fromPartial(e)) || [];
-    message.taskDfMd5Hash = object.taskDfMd5Hash ?? "";
     return message;
   },
 };
@@ -2619,7 +3019,7 @@ export const ExposeStateResponse: MessageFns<ExposeStateResponse> = {
   },
 };
 
-function createBaseQueryParams(): QueryParams {
+function createBaseQueryTaskRequest(): QueryTaskRequest {
   return {
     name: "",
     executionParameterFilters: [],
@@ -2631,8 +3031,8 @@ function createBaseQueryParams(): QueryParams {
   };
 }
 
-export const QueryParams: MessageFns<QueryParams> = {
-  encode(message: QueryParams, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const QueryTaskRequest: MessageFns<QueryTaskRequest> = {
+  encode(message: QueryTaskRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.name !== undefined && message.name !== "") {
       writer.uint32(10).string(message.name);
     }
@@ -2665,10 +3065,10 @@ export const QueryParams: MessageFns<QueryParams> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryParams {
+  decode(input: BinaryReader | Uint8Array, length?: number): QueryTaskRequest {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryParams();
+    const message = createBaseQueryTaskRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2749,7 +3149,7 @@ export const QueryParams: MessageFns<QueryParams> = {
     return message;
   },
 
-  fromJSON(object: any): QueryParams {
+  fromJSON(object: any): QueryTaskRequest {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       executionParameterFilters: globalThis.Array.isArray(object?.executionParameterFilters)
@@ -2785,7 +3185,7 @@ export const QueryParams: MessageFns<QueryParams> = {
     };
   },
 
-  toJSON(message: QueryParams): unknown {
+  toJSON(message: QueryTaskRequest): unknown {
     const obj: any = {};
     if (message.name !== undefined && message.name !== "") {
       obj.name = message.name;
@@ -2811,11 +3211,11 @@ export const QueryParams: MessageFns<QueryParams> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<QueryParams>, I>>(base?: I): QueryParams {
-    return QueryParams.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<QueryTaskRequest>, I>>(base?: I): QueryTaskRequest {
+    return QueryTaskRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<QueryParams>, I>>(object: I): QueryParams {
-    const message = createBaseQueryParams();
+  fromPartial<I extends Exact<DeepPartial<QueryTaskRequest>, I>>(object: I): QueryTaskRequest {
+    const message = createBaseQueryTaskRequest();
     message.name = object.name ?? "";
     message.executionParameterFilters = object.executionParameterFilters?.map((e) => FilterGroup.fromPartial(e)) || [];
     message.resultFilters = object.resultFilters?.map((e) => FilterGroup.fromPartial(e)) || [];
@@ -2827,12 +3227,12 @@ export const QueryParams: MessageFns<QueryParams> = {
   },
 };
 
-function createBasePastResults(): PastResults {
+function createBaseQueryTaskResponse(): QueryTaskResponse {
   return { results: [], nextPageToken: undefined };
 }
 
-export const PastResults: MessageFns<PastResults> = {
-  encode(message: PastResults, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const QueryTaskResponse: MessageFns<QueryTaskResponse> = {
+  encode(message: QueryTaskResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.results !== undefined && message.results.length !== 0) {
       for (const v of message.results) {
         TaskResult.encode(v!, writer.uint32(10).fork()).join();
@@ -2844,10 +3244,10 @@ export const PastResults: MessageFns<PastResults> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PastResults {
+  decode(input: BinaryReader | Uint8Array, length?: number): QueryTaskResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePastResults();
+    const message = createBaseQueryTaskResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2879,7 +3279,7 @@ export const PastResults: MessageFns<PastResults> = {
     return message;
   },
 
-  fromJSON(object: any): PastResults {
+  fromJSON(object: any): QueryTaskResponse {
     return {
       results: globalThis.Array.isArray(object?.results) ? object.results.map((e: any) => TaskResult.fromJSON(e)) : [],
       nextPageToken: isSet(object.nextPageToken)
@@ -2890,7 +3290,7 @@ export const PastResults: MessageFns<PastResults> = {
     };
   },
 
-  toJSON(message: PastResults): unknown {
+  toJSON(message: QueryTaskResponse): unknown {
     const obj: any = {};
     if (message.results?.length) {
       obj.results = message.results.map((e) => TaskResult.toJSON(e));
@@ -2901,11 +3301,11 @@ export const PastResults: MessageFns<PastResults> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PastResults>, I>>(base?: I): PastResults {
-    return PastResults.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<QueryTaskResponse>, I>>(base?: I): QueryTaskResponse {
+    return QueryTaskResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PastResults>, I>>(object: I): PastResults {
-    const message = createBasePastResults();
+  fromPartial<I extends Exact<DeepPartial<QueryTaskResponse>, I>>(object: I): QueryTaskResponse {
+    const message = createBaseQueryTaskResponse();
     message.results = object.results?.map((e) => TaskResult.fromPartial(e)) || [];
     message.nextPageToken = object.nextPageToken ?? undefined;
     return message;
@@ -3363,7 +3763,7 @@ export const OrderByStatement: MessageFns<OrderByStatement> = {
  */
 export type CoreService = typeof CoreService;
 export const CoreService = {
-  /** Registers a worker with core, recieves authentication credentials in return */
+  /** Registers a worker with core */
   registerWorker: {
     path: "/Core/RegisterWorker" as const,
     requestStream: false as const,
@@ -3374,6 +3774,26 @@ export const CoreService = {
     responseSerialize: (value: RegisterWorkerResponse): Buffer =>
       Buffer.from(RegisterWorkerResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): RegisterWorkerResponse => RegisterWorkerResponse.decode(value),
+  },
+  /** Get a nonce from the server */
+  getNonce: {
+    path: "/Core/GetNonce" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: GetNonceRequest): Buffer => Buffer.from(GetNonceRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): GetNonceRequest => GetNonceRequest.decode(value),
+    responseSerialize: (value: GetNonceResponse): Buffer => Buffer.from(GetNonceResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): GetNonceResponse => GetNonceResponse.decode(value),
+  },
+  /** Check a nonce with the server */
+  checkNonce: {
+    path: "/Core/CheckNonce" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: CheckNonceRequest): Buffer => Buffer.from(CheckNonceRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CheckNonceRequest => CheckNonceRequest.decode(value),
+    responseSerialize: (value: CheckNonceResponse): Buffer => Buffer.from(CheckNonceResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): CheckNonceResponse => CheckNonceResponse.decode(value),
   },
   /**
    * Registers all assets defined in the worker's codebase.
@@ -3456,16 +3876,20 @@ export const CoreService = {
     path: "/Core/QueryTaskResult" as const,
     requestStream: false as const,
     responseStream: true as const,
-    requestSerialize: (value: QueryParams): Buffer => Buffer.from(QueryParams.encode(value).finish()),
-    requestDeserialize: (value: Buffer): QueryParams => QueryParams.decode(value),
-    responseSerialize: (value: PastResults): Buffer => Buffer.from(PastResults.encode(value).finish()),
-    responseDeserialize: (value: Buffer): PastResults => PastResults.decode(value),
+    requestSerialize: (value: QueryTaskRequest): Buffer => Buffer.from(QueryTaskRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): QueryTaskRequest => QueryTaskRequest.decode(value),
+    responseSerialize: (value: QueryTaskResponse): Buffer => Buffer.from(QueryTaskResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): QueryTaskResponse => QueryTaskResponse.decode(value),
   },
 } as const;
 
 export interface CoreServer extends UntypedServiceImplementation {
-  /** Registers a worker with core, recieves authentication credentials in return */
+  /** Registers a worker with core */
   registerWorker: handleUnaryCall<RegisterWorkerRequest, RegisterWorkerResponse>;
+  /** Get a nonce from the server */
+  getNonce: handleUnaryCall<GetNonceRequest, GetNonceResponse>;
+  /** Check a nonce with the server */
+  checkNonce: handleUnaryCall<CheckNonceRequest, CheckNonceResponse>;
   /**
    * Registers all assets defined in the worker's codebase.
    * This operation is idempotent on the worker name and git commit hash.
@@ -3485,11 +3909,11 @@ export interface CoreServer extends UntypedServiceImplementation {
   /** Expose the internal state of the orchestration stack */
   exposeState: handleUnaryCall<ExposeStateRequest, ExposeStateResponse>;
   /** Query past results of tasks */
-  queryTaskResult: handleServerStreamingCall<QueryParams, PastResults>;
+  queryTaskResult: handleServerStreamingCall<QueryTaskRequest, QueryTaskResponse>;
 }
 
 export interface CoreClient extends Client {
-  /** Registers a worker with core, recieves authentication credentials in return */
+  /** Registers a worker with core */
   registerWorker(
     request: RegisterWorkerRequest,
     callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
@@ -3504,6 +3928,38 @@ export interface CoreClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
+  ): ClientUnaryCall;
+  /** Get a nonce from the server */
+  getNonce(
+    request: GetNonceRequest,
+    callback: (error: ServiceError | null, response: GetNonceResponse) => void,
+  ): ClientUnaryCall;
+  getNonce(
+    request: GetNonceRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: GetNonceResponse) => void,
+  ): ClientUnaryCall;
+  getNonce(
+    request: GetNonceRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: GetNonceResponse) => void,
+  ): ClientUnaryCall;
+  /** Check a nonce with the server */
+  checkNonce(
+    request: CheckNonceRequest,
+    callback: (error: ServiceError | null, response: CheckNonceResponse) => void,
+  ): ClientUnaryCall;
+  checkNonce(
+    request: CheckNonceRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CheckNonceResponse) => void,
+  ): ClientUnaryCall;
+  checkNonce(
+    request: CheckNonceRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CheckNonceResponse) => void,
   ): ClientUnaryCall;
   /**
    * Registers all assets defined in the worker's codebase.
@@ -3605,12 +4061,12 @@ export interface CoreClient extends Client {
     callback: (error: ServiceError | null, response: ExposeStateResponse) => void,
   ): ClientUnaryCall;
   /** Query past results of tasks */
-  queryTaskResult(request: QueryParams, options?: Partial<CallOptions>): ClientReadableStream<PastResults>;
+  queryTaskResult(request: QueryTaskRequest, options?: Partial<CallOptions>): ClientReadableStream<QueryTaskResponse>;
   queryTaskResult(
-    request: QueryParams,
+    request: QueryTaskRequest,
     metadata?: Metadata,
     options?: Partial<CallOptions>,
-  ): ClientReadableStream<PastResults>;
+  ): ClientReadableStream<QueryTaskResponse>;
 }
 
 export const CoreClient = makeGenericClientConstructor(CoreService, "Core") as unknown as {
@@ -3618,6 +4074,14 @@ export const CoreClient = makeGenericClientConstructor(CoreService, "Core") as u
   service: typeof CoreService;
   serviceName: string;
 };
+
+function bytesFromBase64(b64: string): Uint8Array {
+  return Uint8Array.from(globalThis.Buffer.from(b64, "base64"));
+}
+
+function base64FromBytes(arr: Uint8Array): string {
+  return globalThis.Buffer.from(arr).toString("base64");
+}
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 

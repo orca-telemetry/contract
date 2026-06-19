@@ -122,36 +122,70 @@ class Workflow(_message.Message):
     def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[str] = ..., haltOnFailure: bool = ...) -> None: ...
 
 class RegisterWorkerRequest(_message.Message):
-    __slots__ = ("name",)
-    NAME_FIELD_NUMBER: _ClassVar[int]
-    name: str
-    def __init__(self, name: _Optional[str] = ...) -> None: ...
+    __slots__ = ("public_key",)
+    PUBLIC_KEY_FIELD_NUMBER: _ClassVar[int]
+    public_key: str
+    def __init__(self, public_key: _Optional[str] = ...) -> None: ...
 
 class RegisterWorkerResponse(_message.Message):
-    __slots__ = ("status", "message", "key")
+    __slots__ = ("status", "message", "worker_id")
     STATUS_FIELD_NUMBER: _ClassVar[int]
     MESSAGE_FIELD_NUMBER: _ClassVar[int]
-    KEY_FIELD_NUMBER: _ClassVar[int]
+    WORKER_ID_FIELD_NUMBER: _ClassVar[int]
     status: _shared_pb2.RegistrationStatus
     message: str
-    key: str
-    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ..., key: _Optional[str] = ...) -> None: ...
+    worker_id: str
+    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ..., worker_id: _Optional[str] = ...) -> None: ...
+
+class GetNonceRequest(_message.Message):
+    __slots__ = ("worker_id",)
+    WORKER_ID_FIELD_NUMBER: _ClassVar[int]
+    worker_id: str
+    def __init__(self, worker_id: _Optional[str] = ...) -> None: ...
+
+class GetNonceResponse(_message.Message):
+    __slots__ = ("status", "message", "challenge")
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    CHALLENGE_FIELD_NUMBER: _ClassVar[int]
+    status: _shared_pb2.RegistrationStatus
+    message: str
+    challenge: bytes
+    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ..., challenge: _Optional[bytes] = ...) -> None: ...
+
+class CheckNonceRequest(_message.Message):
+    __slots__ = ("signed_challenge", "worker_id")
+    SIGNED_CHALLENGE_FIELD_NUMBER: _ClassVar[int]
+    WORKER_ID_FIELD_NUMBER: _ClassVar[int]
+    signed_challenge: bytes
+    worker_id: str
+    def __init__(self, signed_challenge: _Optional[bytes] = ..., worker_id: _Optional[str] = ...) -> None: ...
+
+class CheckNonceResponse(_message.Message):
+    __slots__ = ("status", "message", "expires_at", "access_key")
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    ACCESS_KEY_FIELD_NUMBER: _ClassVar[int]
+    status: _shared_pb2.RegistrationStatus
+    message: str
+    expires_at: _timestamp_pb2.Timestamp
+    access_key: str
+    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_key: _Optional[str] = ...) -> None: ...
 
 class RegisterWorkerSnapshotRequest(_message.Message):
-    __slots__ = ("name", "gitCommitHash", "dataFunctions", "tasks", "workflows", "taskDfMd5Hash")
-    NAME_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("id", "gitCommitHash", "dataFunctions", "tasks", "workflows")
+    ID_FIELD_NUMBER: _ClassVar[int]
     GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
     DATAFUNCTIONS_FIELD_NUMBER: _ClassVar[int]
     TASKS_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWS_FIELD_NUMBER: _ClassVar[int]
-    TASKDFMD5HASH_FIELD_NUMBER: _ClassVar[int]
-    name: str
+    id: str
     gitCommitHash: str
     dataFunctions: _containers.RepeatedCompositeFieldContainer[DataFunction]
     tasks: _containers.RepeatedCompositeFieldContainer[Task]
     workflows: _containers.RepeatedCompositeFieldContainer[Workflow]
-    taskDfMd5Hash: str
-    def __init__(self, name: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ..., taskDfMd5Hash: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ...) -> None: ...
 
 class RegisterWorkerSnapshotResponse(_message.Message):
     __slots__ = ("status", "message")
@@ -255,7 +289,7 @@ class ExposeStateResponse(_message.Message):
     dataFunctions: _containers.RepeatedCompositeFieldContainer[DataFunction]
     def __init__(self, tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ...) -> None: ...
 
-class QueryParams(_message.Message):
+class QueryTaskRequest(_message.Message):
     __slots__ = ("name", "execution_parameter_filters", "result_filters", "order_by", "result_fields", "page_size", "page_token")
     NAME_FIELD_NUMBER: _ClassVar[int]
     EXECUTION_PARAMETER_FILTERS_FIELD_NUMBER: _ClassVar[int]
@@ -273,7 +307,7 @@ class QueryParams(_message.Message):
     page_token: str
     def __init__(self, name: _Optional[str] = ..., execution_parameter_filters: _Optional[_Iterable[_Union[FilterGroup, _Mapping]]] = ..., result_filters: _Optional[_Iterable[_Union[FilterGroup, _Mapping]]] = ..., order_by: _Optional[_Iterable[_Union[OrderByStatement, _Mapping]]] = ..., result_fields: _Optional[_Iterable[str]] = ..., page_size: _Optional[int] = ..., page_token: _Optional[str] = ...) -> None: ...
 
-class PastResults(_message.Message):
+class QueryTaskResponse(_message.Message):
     __slots__ = ("results", "next_page_token")
     RESULTS_FIELD_NUMBER: _ClassVar[int]
     NEXT_PAGE_TOKEN_FIELD_NUMBER: _ClassVar[int]
