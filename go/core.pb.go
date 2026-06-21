@@ -853,7 +853,7 @@ type CheckNonceResponse struct {
 	// Access key expiry datetime
 	ExpiresAt *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
 	// A short lived access key
-	AccessKey     string `protobuf:"bytes,2,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
+	AccessKey     []byte `protobuf:"bytes,2,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -895,11 +895,11 @@ func (x *CheckNonceResponse) GetExpiresAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *CheckNonceResponse) GetAccessKey() string {
+func (x *CheckNonceResponse) GetAccessKey() []byte {
 	if x != nil {
 		return x.AccessKey
 	}
-	return ""
+	return nil
 }
 
 // ============================================================
@@ -2179,7 +2179,7 @@ const file_core_proto_rawDesc = "" +
 	"\n" +
 	"expires_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x1d\n" +
 	"\n" +
-	"access_key\x18\x02 \x01(\tR\taccessKey\"\xd0\x01\n" +
+	"access_key\x18\x02 \x01(\fR\taccessKey\"\xd0\x01\n" +
 	"\x1dRegisterWorkerSnapshotRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12$\n" +
 	"\rgitCommitHash\x18\x02 \x01(\tR\rgitCommitHash\x123\n" +

@@ -162,8 +162,8 @@ class CheckNonceResponse(_message.Message):
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
     ACCESS_KEY_FIELD_NUMBER: _ClassVar[int]
     expires_at: _timestamp_pb2.Timestamp
-    access_key: str
-    def __init__(self, expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_key: _Optional[str] = ...) -> None: ...
+    access_key: bytes
+    def __init__(self, expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_key: _Optional[bytes] = ...) -> None: ...
 
 class RegisterWorkerSnapshotRequest(_message.Message):
     __slots__ = ("id", "gitCommitHash", "dataFunctions", "tasks", "workflows")

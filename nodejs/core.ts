@@ -429,7 +429,7 @@ export interface CheckNonceResponse {
     | Date
     | undefined;
   /** A short lived access key */
-  accessKey?: string | undefined;
+  accessKey?: Buffer | undefined;
 }
 
 /**
@@ -1728,7 +1728,7 @@ export const CheckNonceRequest: MessageFns<CheckNonceRequest> = {
 };
 
 function createBaseCheckNonceResponse(): CheckNonceResponse {
-  return { expiresAt: undefined, accessKey: "" };
+  return { expiresAt: undefined, accessKey: Buffer.alloc(0) };
 }
 
 export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
@@ -1736,8 +1736,8 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
     if (message.expiresAt !== undefined) {
       Timestamp.encode(toTimestamp(message.expiresAt), writer.uint32(10).fork()).join();
     }
-    if (message.accessKey !== undefined && message.accessKey !== "") {
-      writer.uint32(18).string(message.accessKey);
+    if (message.accessKey !== undefined && message.accessKey.length !== 0) {
+      writer.uint32(18).bytes(message.accessKey);
     }
     return writer;
   },
@@ -1762,7 +1762,7 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
             break;
           }
 
-          message.accessKey = reader.string();
+          message.accessKey = Buffer.from(reader.bytes());
           continue;
         }
       }
@@ -1782,10 +1782,10 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
         ? fromJsonTimestamp(object.expires_at)
         : undefined,
       accessKey: isSet(object.accessKey)
-        ? globalThis.String(object.accessKey)
+        ? Buffer.from(bytesFromBase64(object.accessKey))
         : isSet(object.access_key)
-        ? globalThis.String(object.access_key)
-        : "",
+        ? Buffer.from(bytesFromBase64(object.access_key))
+        : Buffer.alloc(0),
     };
   },
 
@@ -1794,8 +1794,8 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
     if (message.expiresAt !== undefined) {
       obj.expiresAt = message.expiresAt.toISOString();
     }
-    if (message.accessKey !== undefined && message.accessKey !== "") {
-      obj.accessKey = message.accessKey;
+    if (message.accessKey !== undefined && message.accessKey.length !== 0) {
+      obj.accessKey = base64FromBytes(message.accessKey);
     }
     return obj;
   },
@@ -1806,7 +1806,7 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
   fromPartial<I extends Exact<DeepPartial<CheckNonceResponse>, I>>(object: I): CheckNonceResponse {
     const message = createBaseCheckNonceResponse();
     message.expiresAt = object.expiresAt ?? undefined;
-    message.accessKey = object.accessKey ?? "";
+    message.accessKey = object.accessKey ?? Buffer.alloc(0);
     return message;
   },
 };

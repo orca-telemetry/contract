@@ -194,7 +194,7 @@ message CheckNonceResponse {
   google.protobuf.Timestamp expires_at = 1;
 
   // A short lived access key
-  string access_key = 2;
+  bytes access_key = 2;
 };
 
 // ============================================================
