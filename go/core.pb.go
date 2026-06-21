@@ -590,8 +590,8 @@ func (x *Workflow) GetHaltOnFailure() bool {
 // ============================================================
 type RegisterWorkerRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The public of the worker
-	PublicKey     string `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	// The Ed25519 ublic key of the worker
+	PublicKey     []byte `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -626,11 +626,11 @@ func (*RegisterWorkerRequest) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *RegisterWorkerRequest) GetPublicKey() string {
+func (x *RegisterWorkerRequest) GetPublicKey() []byte {
 	if x != nil {
 		return x.PublicKey
 	}
-	return ""
+	return nil
 }
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
@@ -2234,7 +2234,7 @@ const file_core_proto_rawDesc = "" +
 	"\rhaltOnFailure\x18\a \x01(\bR\rhaltOnFailure\"6\n" +
 	"\x15RegisterWorkerRequest\x12\x1d\n" +
 	"\n" +
-	"public_key\x18\x01 \x01(\tR\tpublicKey\"|\n" +
+	"public_key\x18\x01 \x01(\fR\tpublicKey\"|\n" +
 	"\x16RegisterWorkerResponse\x12+\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1b\n" +

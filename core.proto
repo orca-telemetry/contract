@@ -1,5 +1,4 @@
 syntax = "proto3";
-
 option go_package = "github.com/orca-telemetry/contract/go/v2";
 
 import "google/protobuf/timestamp.proto";
@@ -17,7 +16,7 @@ service Core {
   // Get a nonce from the server
   rpc GetNonce(GetNonceRequest) returns (GetNonceResponse);
 
-  // Check a nonce with the server
+  // Check a nonce with the server and issues access key
   rpc CheckNonce(CheckNonceRequest) returns (CheckNonceResponse);
 
   // Registers all assets defined in the worker's codebase.
@@ -149,8 +148,8 @@ message Workflow {
 // RegisterWorker RPC
 // ============================================================
 message RegisterWorkerRequest {
-  // The public of the worker
-  string public_key = 1;
+  // The Ed25519 ublic key of the worker
+  bytes public_key = 1;
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.

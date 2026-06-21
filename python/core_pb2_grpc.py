@@ -114,7 +114,7 @@ class CoreServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def CheckNonce(self, request, context):
-        """Check a nonce with the server
+        """Check a nonce with the server and issues access key
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')

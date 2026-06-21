@@ -45,7 +45,7 @@ type CoreClient interface {
 	RegisterWorker(ctx context.Context, in *RegisterWorkerRequest, opts ...grpc.CallOption) (*RegisterWorkerResponse, error)
 	// Get a nonce from the server
 	GetNonce(ctx context.Context, in *GetNonceRequest, opts ...grpc.CallOption) (*GetNonceResponse, error)
-	// Check a nonce with the server
+	// Check a nonce with the server and issues access key
 	CheckNonce(ctx context.Context, in *CheckNonceRequest, opts ...grpc.CallOption) (*CheckNonceResponse, error)
 	// Registers all assets defined in the worker's codebase.
 	// This operation is idempotent on the worker name and git commit hash.
@@ -195,7 +195,7 @@ type CoreServer interface {
 	RegisterWorker(context.Context, *RegisterWorkerRequest) (*RegisterWorkerResponse, error)
 	// Get a nonce from the server
 	GetNonce(context.Context, *GetNonceRequest) (*GetNonceResponse, error)
-	// Check a nonce with the server
+	// Check a nonce with the server and issues access key
 	CheckNonce(context.Context, *CheckNonceRequest) (*CheckNonceResponse, error)
 	// Registers all assets defined in the worker's codebase.
 	// This operation is idempotent on the worker name and git commit hash.

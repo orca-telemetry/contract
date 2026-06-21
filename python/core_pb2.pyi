@@ -124,8 +124,8 @@ class Workflow(_message.Message):
 class RegisterWorkerRequest(_message.Message):
     __slots__ = ("public_key",)
     PUBLIC_KEY_FIELD_NUMBER: _ClassVar[int]
-    public_key: str
-    def __init__(self, public_key: _Optional[str] = ...) -> None: ...
+    public_key: bytes
+    def __init__(self, public_key: _Optional[bytes] = ...) -> None: ...
 
 class RegisterWorkerResponse(_message.Message):
     __slots__ = ("status", "message", "worker_id")

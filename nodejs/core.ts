@@ -376,8 +376,8 @@ export interface Workflow {
  * ============================================================
  */
 export interface RegisterWorkerRequest {
-  /** The public of the worker */
-  publicKey?: string | undefined;
+  /** The Ed25519 ublic key of the worker */
+  publicKey?: Buffer | undefined;
 }
 
 /** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
@@ -1382,13 +1382,13 @@ export const Workflow: MessageFns<Workflow> = {
 };
 
 function createBaseRegisterWorkerRequest(): RegisterWorkerRequest {
-  return { publicKey: "" };
+  return { publicKey: Buffer.alloc(0) };
 }
 
 export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   encode(message: RegisterWorkerRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.publicKey !== undefined && message.publicKey !== "") {
-      writer.uint32(10).string(message.publicKey);
+    if (message.publicKey !== undefined && message.publicKey.length !== 0) {
+      writer.uint32(10).bytes(message.publicKey);
     }
     return writer;
   },
@@ -1405,7 +1405,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
             break;
           }
 
-          message.publicKey = reader.string();
+          message.publicKey = Buffer.from(reader.bytes());
           continue;
         }
       }
@@ -1420,17 +1420,17 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   fromJSON(object: any): RegisterWorkerRequest {
     return {
       publicKey: isSet(object.publicKey)
-        ? globalThis.String(object.publicKey)
+        ? Buffer.from(bytesFromBase64(object.publicKey))
         : isSet(object.public_key)
-        ? globalThis.String(object.public_key)
-        : "",
+        ? Buffer.from(bytesFromBase64(object.public_key))
+        : Buffer.alloc(0),
     };
   },
 
   toJSON(message: RegisterWorkerRequest): unknown {
     const obj: any = {};
-    if (message.publicKey !== undefined && message.publicKey !== "") {
-      obj.publicKey = message.publicKey;
+    if (message.publicKey !== undefined && message.publicKey.length !== 0) {
+      obj.publicKey = base64FromBytes(message.publicKey);
     }
     return obj;
   },
@@ -1440,7 +1440,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   },
   fromPartial<I extends Exact<DeepPartial<RegisterWorkerRequest>, I>>(object: I): RegisterWorkerRequest {
     const message = createBaseRegisterWorkerRequest();
-    message.publicKey = object.publicKey ?? "";
+    message.publicKey = object.publicKey ?? Buffer.alloc(0);
     return message;
   },
 };
@@ -3785,7 +3785,7 @@ export const CoreService = {
     responseSerialize: (value: GetNonceResponse): Buffer => Buffer.from(GetNonceResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): GetNonceResponse => GetNonceResponse.decode(value),
   },
-  /** Check a nonce with the server */
+  /** Check a nonce with the server and issues access key */
   checkNonce: {
     path: "/Core/CheckNonce" as const,
     requestStream: false as const,
@@ -3888,7 +3888,7 @@ export interface CoreServer extends UntypedServiceImplementation {
   registerWorker: handleUnaryCall<RegisterWorkerRequest, RegisterWorkerResponse>;
   /** Get a nonce from the server */
   getNonce: handleUnaryCall<GetNonceRequest, GetNonceResponse>;
-  /** Check a nonce with the server */
+  /** Check a nonce with the server and issues access key */
   checkNonce: handleUnaryCall<CheckNonceRequest, CheckNonceResponse>;
   /**
    * Registers all assets defined in the worker's codebase.
@@ -3945,7 +3945,7 @@ export interface CoreClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: GetNonceResponse) => void,
   ): ClientUnaryCall;
-  /** Check a nonce with the server */
+  /** Check a nonce with the server and issues access key */
   checkNonce(
     request: CheckNonceRequest,
     callback: (error: ServiceError | null, response: CheckNonceResponse) => void,
