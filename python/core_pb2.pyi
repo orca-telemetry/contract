@@ -128,14 +128,12 @@ class RegisterWorkerRequest(_message.Message):
     def __init__(self, public_key: _Optional[bytes] = ...) -> None: ...
 
 class RegisterWorkerResponse(_message.Message):
-    __slots__ = ("status", "message", "worker_id")
-    STATUS_FIELD_NUMBER: _ClassVar[int]
-    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("worker_id", "nonce_id")
     WORKER_ID_FIELD_NUMBER: _ClassVar[int]
-    status: _shared_pb2.RegistrationStatus
-    message: str
+    NONCE_ID_FIELD_NUMBER: _ClassVar[int]
     worker_id: str
-    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ..., worker_id: _Optional[str] = ...) -> None: ...
+    nonce_id: str
+    def __init__(self, worker_id: _Optional[str] = ..., nonce_id: _Optional[str] = ...) -> None: ...
 
 class GetNonceRequest(_message.Message):
     __slots__ = ("worker_id",)
@@ -144,34 +142,28 @@ class GetNonceRequest(_message.Message):
     def __init__(self, worker_id: _Optional[str] = ...) -> None: ...
 
 class GetNonceResponse(_message.Message):
-    __slots__ = ("status", "message", "challenge")
-    STATUS_FIELD_NUMBER: _ClassVar[int]
-    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("challenge",)
     CHALLENGE_FIELD_NUMBER: _ClassVar[int]
-    status: _shared_pb2.RegistrationStatus
-    message: str
     challenge: bytes
-    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ..., challenge: _Optional[bytes] = ...) -> None: ...
+    def __init__(self, challenge: _Optional[bytes] = ...) -> None: ...
 
 class CheckNonceRequest(_message.Message):
-    __slots__ = ("signed_challenge", "worker_id")
+    __slots__ = ("signed_challenge", "worker_id", "nonce_id")
     SIGNED_CHALLENGE_FIELD_NUMBER: _ClassVar[int]
     WORKER_ID_FIELD_NUMBER: _ClassVar[int]
+    NONCE_ID_FIELD_NUMBER: _ClassVar[int]
     signed_challenge: bytes
     worker_id: str
-    def __init__(self, signed_challenge: _Optional[bytes] = ..., worker_id: _Optional[str] = ...) -> None: ...
+    nonce_id: str
+    def __init__(self, signed_challenge: _Optional[bytes] = ..., worker_id: _Optional[str] = ..., nonce_id: _Optional[str] = ...) -> None: ...
 
 class CheckNonceResponse(_message.Message):
-    __slots__ = ("status", "message", "expires_at", "access_key")
-    STATUS_FIELD_NUMBER: _ClassVar[int]
-    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("expires_at", "access_key")
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
     ACCESS_KEY_FIELD_NUMBER: _ClassVar[int]
-    status: _shared_pb2.RegistrationStatus
-    message: str
     expires_at: _timestamp_pb2.Timestamp
     access_key: str
-    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ..., expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_key: _Optional[str] = ...) -> None: ...
+    def __init__(self, expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_key: _Optional[str] = ...) -> None: ...
 
 class RegisterWorkerSnapshotRequest(_message.Message):
     __slots__ = ("id", "gitCommitHash", "dataFunctions", "tasks", "workflows")
@@ -188,12 +180,8 @@ class RegisterWorkerSnapshotRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ...) -> None: ...
 
 class RegisterWorkerSnapshotResponse(_message.Message):
-    __slots__ = ("status", "message")
-    STATUS_FIELD_NUMBER: _ClassVar[int]
-    MESSAGE_FIELD_NUMBER: _ClassVar[int]
-    status: _shared_pb2.RegistrationStatus
-    message: str
-    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ...) -> None: ...
+    __slots__ = ()
+    def __init__(self) -> None: ...
 
 class RegisterServingRequest(_message.Message):
     __slots__ = ("name", "connectionUrl", "isServing")
@@ -206,12 +194,8 @@ class RegisterServingRequest(_message.Message):
     def __init__(self, name: _Optional[str] = ..., connectionUrl: _Optional[str] = ..., isServing: bool = ...) -> None: ...
 
 class RegisterServingResponse(_message.Message):
-    __slots__ = ("status", "message")
-    STATUS_FIELD_NUMBER: _ClassVar[int]
-    MESSAGE_FIELD_NUMBER: _ClassVar[int]
-    status: _shared_pb2.RegistrationStatus
-    message: str
-    def __init__(self, status: _Optional[_Union[_shared_pb2.RegistrationStatus, str]] = ..., message: _Optional[str] = ...) -> None: ...
+    __slots__ = ()
+    def __init__(self) -> None: ...
 
 class TriggerWorkflowRequest(_message.Message):
     __slots__ = ("workflowName", "logicalDate", "executionParameters", "triggerSource")

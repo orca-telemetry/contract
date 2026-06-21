@@ -14,12 +14,6 @@ class TriggerSource(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     TRIGGER_SOURCE_UI: _ClassVar[TriggerSource]
     TRIGGER_SOURCE_CLI: _ClassVar[TriggerSource]
 
-class RegistrationStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = ()
-    REGISTRATION_STATUS_UNSPECIFIED: _ClassVar[RegistrationStatus]
-    REGISTRATION_STATUS_SUCCESSFUL: _ClassVar[RegistrationStatus]
-    REGISTRATION_STATUS_FAILED: _ClassVar[RegistrationStatus]
-
 class TriggerStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     TRIGGER_STATUS_UNSPECIFIED: _ClassVar[TriggerStatus]
@@ -42,9 +36,6 @@ TRIGGER_SOURCE_CRON: TriggerSource
 TRIGGER_SOURCE_WEBHOOK: TriggerSource
 TRIGGER_SOURCE_UI: TriggerSource
 TRIGGER_SOURCE_CLI: TriggerSource
-REGISTRATION_STATUS_UNSPECIFIED: RegistrationStatus
-REGISTRATION_STATUS_SUCCESSFUL: RegistrationStatus
-REGISTRATION_STATUS_FAILED: RegistrationStatus
 TRIGGER_STATUS_UNSPECIFIED: TriggerStatus
 TRIGGER_STATUS_ACCEPTED: TriggerStatus
 TRIGGER_STATUS_REJECTED: TriggerStatus

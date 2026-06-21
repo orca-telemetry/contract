@@ -154,14 +154,12 @@ message RegisterWorkerRequest {
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
 message RegisterWorkerResponse {
-  // Status indicates whether registration succeeded or failed.
-  RegistrationStatus status = 1;
-
-  // Message provides detail on why registration failed, if applicable.
-  string message = 2;
-
   // The unique worker Id
-  string worker_id = 3;
+  string worker_id = 1;
+
+  // The unique ID of the issued nonce. Multiple worker instances can be requesting a nonce, 
+  // so providing the nonce_id makes it simpler to verify against the right nonce.
+  string nonce_id = 2;
 };
 
 // ============================================================
@@ -173,14 +171,8 @@ message GetNonceRequest {
 };
 
 message GetNonceResponse {
-  // Status indicates whether get nonce succeeded or failed.
-  RegistrationStatus status = 1;
-
-  // Message provides detail on why registration failed, if applicable.
-  string message = 2;
-
   // A challenge that the worker needs to sign
-  bytes challenge = 3;
+  bytes challenge = 1;
 }
 
 // ============================================================
@@ -192,20 +184,17 @@ message CheckNonceRequest {
 
   // The worker ID
   string worker_id = 2;
+
+  // The nonce ID
+  string nonce_id = 3;
 };
 
 message CheckNonceResponse {
-  // Status indicates whether get nonce check succeeded or failed.
-  RegistrationStatus status = 1;
-
-  // Message provides detail on why it failed, if applicable.
-  string message = 2;
-
   // Access key expiry datetime
-  google.protobuf.Timestamp expires_at = 3;
+  google.protobuf.Timestamp expires_at = 1;
 
   // A short lived access key
-  string access_key = 4;
+  string access_key = 2;
 };
 
 // ============================================================
@@ -229,13 +218,7 @@ message RegisterWorkerSnapshotRequest {
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
-message RegisterWorkerSnapshotResponse {
-  // Status indicates whether registration succeeded or failed.
-  RegistrationStatus status = 1;
-
-  // Message provides detail on why registration failed, if applicable.
-  string message = 2;
-}
+message RegisterWorkerSnapshotResponse {}
 
 // ============================================================
 // RegisterServingStatus RPC
@@ -253,13 +236,7 @@ message RegisterServingRequest {
 };
 
 // RegisterServingResponse message
-message RegisterServingResponse{
-  // Status indicates whether registration succeeded or failed.
-  RegistrationStatus status = 1;
-
-  // Message provides detail on why registration failed, if applicable.
-  string message = 2;
-}
+message RegisterServingResponse{}
 
 // ============================================================
 // TriggerWorkflow RPC

@@ -636,12 +636,11 @@ func (x *RegisterWorkerRequest) GetPublicKey() []byte {
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
 type RegisterWorkerResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Status indicates whether registration succeeded or failed.
-	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
-	// Message provides detail on why registration failed, if applicable.
-	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	// The unique worker Id
-	WorkerId      string `protobuf:"bytes,3,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	WorkerId string `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	// The unique ID of the issued nonce. Multiple worker instances can be requesting a nonce,
+	// so providing the nonce_id makes it simpler to verify against the right nonce.
+	NonceId       string `protobuf:"bytes,2,opt,name=nonce_id,json=nonceId,proto3" json:"nonce_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -676,23 +675,16 @@ func (*RegisterWorkerResponse) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *RegisterWorkerResponse) GetStatus() RegistrationStatus {
+func (x *RegisterWorkerResponse) GetWorkerId() string {
 	if x != nil {
-		return x.Status
-	}
-	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
-}
-
-func (x *RegisterWorkerResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
+		return x.WorkerId
 	}
 	return ""
 }
 
-func (x *RegisterWorkerResponse) GetWorkerId() string {
+func (x *RegisterWorkerResponse) GetNonceId() string {
 	if x != nil {
-		return x.WorkerId
+		return x.NonceId
 	}
 	return ""
 }
@@ -747,12 +739,8 @@ func (x *GetNonceRequest) GetWorkerId() string {
 
 type GetNonceResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Status indicates whether get nonce succeeded or failed.
-	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
-	// Message provides detail on why registration failed, if applicable.
-	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	// A challenge that the worker needs to sign
-	Challenge     []byte `protobuf:"bytes,3,opt,name=challenge,proto3" json:"challenge,omitempty"`
+	Challenge     []byte `protobuf:"bytes,1,opt,name=challenge,proto3" json:"challenge,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -787,20 +775,6 @@ func (*GetNonceResponse) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *GetNonceResponse) GetStatus() RegistrationStatus {
-	if x != nil {
-		return x.Status
-	}
-	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
-}
-
-func (x *GetNonceResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
-}
-
 func (x *GetNonceResponse) GetChallenge() []byte {
 	if x != nil {
 		return x.Challenge
@@ -816,7 +790,9 @@ type CheckNonceRequest struct {
 	// the response to the challenge
 	SignedChallenge []byte `protobuf:"bytes,1,opt,name=signed_challenge,json=signedChallenge,proto3" json:"signed_challenge,omitempty"`
 	// The worker ID
-	WorkerId      string `protobuf:"bytes,2,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	WorkerId string `protobuf:"bytes,2,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	// The nonce ID
+	NonceId       string `protobuf:"bytes,3,opt,name=nonce_id,json=nonceId,proto3" json:"nonce_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -865,16 +841,19 @@ func (x *CheckNonceRequest) GetWorkerId() string {
 	return ""
 }
 
+func (x *CheckNonceRequest) GetNonceId() string {
+	if x != nil {
+		return x.NonceId
+	}
+	return ""
+}
+
 type CheckNonceResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Status indicates whether get nonce check succeeded or failed.
-	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
-	// Message provides detail on why it failed, if applicable.
-	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	// Access key expiry datetime
-	ExpiresAt *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	ExpiresAt *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
 	// A short lived access key
-	AccessKey     string `protobuf:"bytes,4,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
+	AccessKey     string `protobuf:"bytes,2,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -907,20 +886,6 @@ func (x *CheckNonceResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CheckNonceResponse.ProtoReflect.Descriptor instead.
 func (*CheckNonceResponse) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *CheckNonceResponse) GetStatus() RegistrationStatus {
-	if x != nil {
-		return x.Status
-	}
-	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
-}
-
-func (x *CheckNonceResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
 }
 
 func (x *CheckNonceResponse) GetExpiresAt() *timestamppb.Timestamp {
@@ -1023,11 +988,7 @@ func (x *RegisterWorkerSnapshotRequest) GetWorkflows() []*Workflow {
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
 type RegisterWorkerSnapshotResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Status indicates whether registration succeeded or failed.
-	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
-	// Message provides detail on why registration failed, if applicable.
-	Message       string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1060,20 +1021,6 @@ func (x *RegisterWorkerSnapshotResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RegisterWorkerSnapshotResponse.ProtoReflect.Descriptor instead.
 func (*RegisterWorkerSnapshotResponse) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *RegisterWorkerSnapshotResponse) GetStatus() RegistrationStatus {
-	if x != nil {
-		return x.Status
-	}
-	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
-}
-
-func (x *RegisterWorkerSnapshotResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
 }
 
 // ============================================================
@@ -1145,11 +1092,7 @@ func (x *RegisterServingRequest) GetIsServing() bool {
 
 // RegisterServingResponse message
 type RegisterServingResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Status indicates whether registration succeeded or failed.
-	Status RegistrationStatus `protobuf:"varint,1,opt,name=status,proto3,enum=RegistrationStatus" json:"status,omitempty"`
-	// Message provides detail on why registration failed, if applicable.
-	Message       string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1182,20 +1125,6 @@ func (x *RegisterServingResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RegisterServingResponse.ProtoReflect.Descriptor instead.
 func (*RegisterServingResponse) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *RegisterServingResponse) GetStatus() RegistrationStatus {
-	if x != nil {
-		return x.Status
-	}
-	return RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED
-}
-
-func (x *RegisterServingResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
 }
 
 // TriggerWorkflowRequest is the request message for the TriggerWorkflow RPC.
@@ -2234,43 +2163,35 @@ const file_core_proto_rawDesc = "" +
 	"\rhaltOnFailure\x18\a \x01(\bR\rhaltOnFailure\"6\n" +
 	"\x15RegisterWorkerRequest\x12\x1d\n" +
 	"\n" +
-	"public_key\x18\x01 \x01(\fR\tpublicKey\"|\n" +
-	"\x16RegisterWorkerResponse\x12+\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1b\n" +
-	"\tworker_id\x18\x03 \x01(\tR\bworkerId\".\n" +
+	"public_key\x18\x01 \x01(\fR\tpublicKey\"P\n" +
+	"\x16RegisterWorkerResponse\x12\x1b\n" +
+	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x12\x19\n" +
+	"\bnonce_id\x18\x02 \x01(\tR\anonceId\".\n" +
 	"\x0fGetNonceRequest\x12\x1b\n" +
-	"\tworker_id\x18\x01 \x01(\tR\bworkerId\"w\n" +
-	"\x10GetNonceResponse\x12+\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +
-	"\tchallenge\x18\x03 \x01(\fR\tchallenge\"[\n" +
+	"\tworker_id\x18\x01 \x01(\tR\bworkerId\"0\n" +
+	"\x10GetNonceResponse\x12\x1c\n" +
+	"\tchallenge\x18\x01 \x01(\fR\tchallenge\"v\n" +
 	"\x11CheckNonceRequest\x12)\n" +
 	"\x10signed_challenge\x18\x01 \x01(\fR\x0fsignedChallenge\x12\x1b\n" +
-	"\tworker_id\x18\x02 \x01(\tR\bworkerId\"\xb5\x01\n" +
-	"\x12CheckNonceResponse\x12+\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\x129\n" +
+	"\tworker_id\x18\x02 \x01(\tR\bworkerId\x12\x19\n" +
+	"\bnonce_id\x18\x03 \x01(\tR\anonceId\"n\n" +
+	"\x12CheckNonceResponse\x129\n" +
 	"\n" +
-	"expires_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x1d\n" +
+	"expires_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x1d\n" +
 	"\n" +
-	"access_key\x18\x04 \x01(\tR\taccessKey\"\xd0\x01\n" +
+	"access_key\x18\x02 \x01(\tR\taccessKey\"\xd0\x01\n" +
 	"\x1dRegisterWorkerSnapshotRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12$\n" +
 	"\rgitCommitHash\x18\x02 \x01(\tR\rgitCommitHash\x123\n" +
 	"\rdataFunctions\x18\x03 \x03(\v2\r.DataFunctionR\rdataFunctions\x12\x1b\n" +
 	"\x05tasks\x18\x04 \x03(\v2\x05.TaskR\x05tasks\x12'\n" +
-	"\tworkflows\x18\x05 \x03(\v2\t.WorkflowR\tworkflows\"g\n" +
-	"\x1eRegisterWorkerSnapshotResponse\x12+\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"p\n" +
+	"\tworkflows\x18\x05 \x03(\v2\t.WorkflowR\tworkflows\" \n" +
+	"\x1eRegisterWorkerSnapshotResponse\"p\n" +
 	"\x16RegisterServingRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12$\n" +
 	"\rconnectionUrl\x18\x02 \x01(\tR\rconnectionUrl\x12\x1c\n" +
-	"\tisServing\x18\x03 \x01(\bR\tisServing\"`\n" +
-	"\x17RegisterServingResponse\x12+\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x13.RegistrationStatusR\x06status\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"\xf7\x01\n" +
+	"\tisServing\x18\x03 \x01(\bR\tisServing\"\x19\n" +
+	"\x17RegisterServingResponse\"\xf7\x01\n" +
 	"\x16TriggerWorkflowRequest\x12\"\n" +
 	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12A\n" +
 	"\vlogicalDate\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampH\x00R\vlogicalDate\x88\x01\x01\x120\n" +
@@ -2436,71 +2357,65 @@ var file_core_proto_goTypes = []any{
 	(*DataFunctionSettings)(nil),                   // 32: DataFunctionSettings
 	(*TaskExecutionSettings)(nil),                  // 33: TaskExecutionSettings
 	(*WorkflowExecutionSettings)(nil),              // 34: WorkflowExecutionSettings
-	(RegistrationStatus)(0),                        // 35: RegistrationStatus
-	(*timestamppb.Timestamp)(nil),                  // 36: google.protobuf.Timestamp
-	(TriggerSource)(0),                             // 37: TriggerSource
-	(TriggerStatus)(0),                             // 38: TriggerStatus
-	(ExecutionStatus)(0),                           // 39: ExecutionStatus
-	(*ComputeMetrics)(nil),                         // 40: ComputeMetrics
+	(*timestamppb.Timestamp)(nil),                  // 35: google.protobuf.Timestamp
+	(TriggerSource)(0),                             // 36: TriggerSource
+	(TriggerStatus)(0),                             // 37: TriggerStatus
+	(ExecutionStatus)(0),                           // 38: ExecutionStatus
+	(*ComputeMetrics)(nil),                         // 39: ComputeMetrics
 }
 var file_core_proto_depIdxs = []int32{
 	32, // 0: DataFunction.settings:type_name -> DataFunctionSettings
 	33, // 1: Task.executionSettings:type_name -> TaskExecutionSettings
 	5,  // 2: Workflow.edges:type_name -> WorkflowEdge
 	34, // 3: Workflow.executionSettings:type_name -> WorkflowExecutionSettings
-	35, // 4: RegisterWorkerResponse.status:type_name -> RegistrationStatus
-	35, // 5: GetNonceResponse.status:type_name -> RegistrationStatus
-	35, // 6: CheckNonceResponse.status:type_name -> RegistrationStatus
-	36, // 7: CheckNonceResponse.expires_at:type_name -> google.protobuf.Timestamp
-	3,  // 8: RegisterWorkerSnapshotRequest.dataFunctions:type_name -> DataFunction
-	4,  // 9: RegisterWorkerSnapshotRequest.tasks:type_name -> Task
-	6,  // 10: RegisterWorkerSnapshotRequest.workflows:type_name -> Workflow
-	35, // 11: RegisterWorkerSnapshotResponse.status:type_name -> RegistrationStatus
-	35, // 12: RegisterServingResponse.status:type_name -> RegistrationStatus
-	36, // 13: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
-	37, // 14: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
-	38, // 15: TriggerWorkflowResponse.status:type_name -> TriggerStatus
-	39, // 16: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
-	39, // 17: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
-	40, // 18: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
-	36, // 19: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
-	4,  // 20: ExposeStateResponse.tasks:type_name -> Task
-	6,  // 21: ExposeStateResponse.workflows:type_name -> Workflow
-	3,  // 22: ExposeStateResponse.dataFunctions:type_name -> DataFunction
-	28, // 23: QueryTaskRequest.execution_parameter_filters:type_name -> FilterGroup
-	28, // 24: QueryTaskRequest.result_filters:type_name -> FilterGroup
-	31, // 25: QueryTaskRequest.order_by:type_name -> OrderByStatement
-	27, // 26: QueryTaskResponse.results:type_name -> TaskResult
-	29, // 27: FilterGroup.filters:type_name -> LeafFilter
-	0,  // 28: LeafFilter.comparator:type_name -> Comparator
-	30, // 29: LeafFilter.values:type_name -> StringList
-	1,  // 30: OrderByStatement.source:type_name -> DataSource
-	2,  // 31: OrderByStatement.direction:type_name -> SortDirection
-	7,  // 32: Core.RegisterWorker:input_type -> RegisterWorkerRequest
-	9,  // 33: Core.GetNonce:input_type -> GetNonceRequest
-	11, // 34: Core.CheckNonce:input_type -> CheckNonceRequest
-	13, // 35: Core.RegisterWorkerSnapshot:input_type -> RegisterWorkerSnapshotRequest
-	15, // 36: Core.RegisterServing:input_type -> RegisterServingRequest
-	17, // 37: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
-	19, // 38: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
-	21, // 39: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
-	23, // 40: Core.ExposeState:input_type -> ExposeStateRequest
-	25, // 41: Core.QueryTaskResult:input_type -> QueryTaskRequest
-	8,  // 42: Core.RegisterWorker:output_type -> RegisterWorkerResponse
-	10, // 43: Core.GetNonce:output_type -> GetNonceResponse
-	12, // 44: Core.CheckNonce:output_type -> CheckNonceResponse
-	14, // 45: Core.RegisterWorkerSnapshot:output_type -> RegisterWorkerSnapshotResponse
-	16, // 46: Core.RegisterServing:output_type -> RegisterServingResponse
-	18, // 47: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
-	20, // 48: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
-	22, // 49: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
-	24, // 50: Core.ExposeState:output_type -> ExposeStateResponse
-	26, // 51: Core.QueryTaskResult:output_type -> QueryTaskResponse
-	42, // [42:52] is the sub-list for method output_type
-	32, // [32:42] is the sub-list for method input_type
-	32, // [32:32] is the sub-list for extension type_name
-	32, // [32:32] is the sub-list for extension extendee
-	0,  // [0:32] is the sub-list for field type_name
+	35, // 4: CheckNonceResponse.expires_at:type_name -> google.protobuf.Timestamp
+	3,  // 5: RegisterWorkerSnapshotRequest.dataFunctions:type_name -> DataFunction
+	4,  // 6: RegisterWorkerSnapshotRequest.tasks:type_name -> Task
+	6,  // 7: RegisterWorkerSnapshotRequest.workflows:type_name -> Workflow
+	35, // 8: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
+	36, // 9: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
+	37, // 10: TriggerWorkflowResponse.status:type_name -> TriggerStatus
+	38, // 11: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
+	38, // 12: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
+	39, // 13: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
+	35, // 14: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
+	4,  // 15: ExposeStateResponse.tasks:type_name -> Task
+	6,  // 16: ExposeStateResponse.workflows:type_name -> Workflow
+	3,  // 17: ExposeStateResponse.dataFunctions:type_name -> DataFunction
+	28, // 18: QueryTaskRequest.execution_parameter_filters:type_name -> FilterGroup
+	28, // 19: QueryTaskRequest.result_filters:type_name -> FilterGroup
+	31, // 20: QueryTaskRequest.order_by:type_name -> OrderByStatement
+	27, // 21: QueryTaskResponse.results:type_name -> TaskResult
+	29, // 22: FilterGroup.filters:type_name -> LeafFilter
+	0,  // 23: LeafFilter.comparator:type_name -> Comparator
+	30, // 24: LeafFilter.values:type_name -> StringList
+	1,  // 25: OrderByStatement.source:type_name -> DataSource
+	2,  // 26: OrderByStatement.direction:type_name -> SortDirection
+	7,  // 27: Core.RegisterWorker:input_type -> RegisterWorkerRequest
+	9,  // 28: Core.GetNonce:input_type -> GetNonceRequest
+	11, // 29: Core.CheckNonce:input_type -> CheckNonceRequest
+	13, // 30: Core.RegisterWorkerSnapshot:input_type -> RegisterWorkerSnapshotRequest
+	15, // 31: Core.RegisterServing:input_type -> RegisterServingRequest
+	17, // 32: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
+	19, // 33: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
+	21, // 34: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
+	23, // 35: Core.ExposeState:input_type -> ExposeStateRequest
+	25, // 36: Core.QueryTaskResult:input_type -> QueryTaskRequest
+	8,  // 37: Core.RegisterWorker:output_type -> RegisterWorkerResponse
+	10, // 38: Core.GetNonce:output_type -> GetNonceResponse
+	12, // 39: Core.CheckNonce:output_type -> CheckNonceResponse
+	14, // 40: Core.RegisterWorkerSnapshot:output_type -> RegisterWorkerSnapshotResponse
+	16, // 41: Core.RegisterServing:output_type -> RegisterServingResponse
+	18, // 42: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
+	20, // 43: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
+	22, // 44: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
+	24, // 45: Core.ExposeState:output_type -> ExposeStateResponse
+	26, // 46: Core.QueryTaskResult:output_type -> QueryTaskResponse
+	37, // [37:47] is the sub-list for method output_type
+	27, // [27:37] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_core_proto_init() }

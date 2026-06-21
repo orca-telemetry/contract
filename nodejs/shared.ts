@@ -61,46 +61,6 @@ export function triggerSourceToJSON(object: TriggerSource): string {
   }
 }
 
-/** RegistrationStatus is the result of a registration RPC. */
-export enum RegistrationStatus {
-  REGISTRATION_STATUS_UNSPECIFIED = 0,
-  REGISTRATION_STATUS_SUCCESSFUL = 1,
-  REGISTRATION_STATUS_FAILED = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function registrationStatusFromJSON(object: any): RegistrationStatus {
-  switch (object) {
-    case 0:
-    case "REGISTRATION_STATUS_UNSPECIFIED":
-      return RegistrationStatus.REGISTRATION_STATUS_UNSPECIFIED;
-    case 1:
-    case "REGISTRATION_STATUS_SUCCESSFUL":
-      return RegistrationStatus.REGISTRATION_STATUS_SUCCESSFUL;
-    case 2:
-    case "REGISTRATION_STATUS_FAILED":
-      return RegistrationStatus.REGISTRATION_STATUS_FAILED;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return RegistrationStatus.UNRECOGNIZED;
-  }
-}
-
-export function registrationStatusToJSON(object: RegistrationStatus): string {
-  switch (object) {
-    case RegistrationStatus.REGISTRATION_STATUS_UNSPECIFIED:
-      return "REGISTRATION_STATUS_UNSPECIFIED";
-    case RegistrationStatus.REGISTRATION_STATUS_SUCCESSFUL:
-      return "REGISTRATION_STATUS_SUCCESSFUL";
-    case RegistrationStatus.REGISTRATION_STATUS_FAILED:
-      return "REGISTRATION_STATUS_FAILED";
-    case RegistrationStatus.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
 /** TriggerStatus is the result of a workflow trigger RPC. */
 export enum TriggerStatus {
   TRIGGER_STATUS_UNSPECIFIED = 0,

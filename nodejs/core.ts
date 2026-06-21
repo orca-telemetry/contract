@@ -27,9 +27,6 @@ import {
   ExecutionStatus,
   executionStatusFromJSON,
   executionStatusToJSON,
-  RegistrationStatus,
-  registrationStatusFromJSON,
-  registrationStatusToJSON,
   TaskExecutionSettings,
   TriggerSource,
   triggerSourceFromJSON,
@@ -382,16 +379,15 @@ export interface RegisterWorkerRequest {
 
 /** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
 export interface RegisterWorkerResponse {
-  /** Status indicates whether registration succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why registration failed, if applicable. */
-  message?:
+  /** The unique worker Id */
+  workerId?:
     | string
     | undefined;
-  /** The unique worker Id */
-  workerId?: string | undefined;
+  /**
+   * The unique ID of the issued nonce. Multiple worker instances can be requesting a nonce,
+   * so providing the nonce_id makes it simpler to verify against the right nonce.
+   */
+  nonceId?: string | undefined;
 }
 
 /**
@@ -405,14 +401,6 @@ export interface GetNonceRequest {
 }
 
 export interface GetNonceResponse {
-  /** Status indicates whether get nonce succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why registration failed, if applicable. */
-  message?:
-    | string
-    | undefined;
   /** A challenge that the worker needs to sign */
   challenge?: Buffer | undefined;
 }
@@ -428,18 +416,14 @@ export interface CheckNonceRequest {
     | Buffer
     | undefined;
   /** The worker ID */
-  workerId?: string | undefined;
+  workerId?:
+    | string
+    | undefined;
+  /** The nonce ID */
+  nonceId?: string | undefined;
 }
 
 export interface CheckNonceResponse {
-  /** Status indicates whether get nonce check succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why it failed, if applicable. */
-  message?:
-    | string
-    | undefined;
   /** Access key expiry datetime */
   expiresAt?:
     | Date
@@ -476,12 +460,6 @@ export interface RegisterWorkerSnapshotRequest {
 
 /** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
 export interface RegisterWorkerSnapshotResponse {
-  /** Status indicates whether registration succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why registration failed, if applicable. */
-  message?: string | undefined;
 }
 
 /**
@@ -505,12 +483,6 @@ export interface RegisterServingRequest {
 
 /** RegisterServingResponse message */
 export interface RegisterServingResponse {
-  /** Status indicates whether registration succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why registration failed, if applicable. */
-  message?: string | undefined;
 }
 
 /** TriggerWorkflowRequest is the request message for the TriggerWorkflow RPC. */
@@ -1446,19 +1418,16 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
 };
 
 function createBaseRegisterWorkerResponse(): RegisterWorkerResponse {
-  return { status: 0, message: "", workerId: "" };
+  return { workerId: "", nonceId: "" };
 }
 
 export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
   encode(message: RegisterWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
     if (message.workerId !== undefined && message.workerId !== "") {
-      writer.uint32(26).string(message.workerId);
+      writer.uint32(10).string(message.workerId);
+    }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      writer.uint32(18).string(message.nonceId);
     }
     return writer;
   },
@@ -1471,11 +1440,11 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.status = reader.int32() as any;
+          message.workerId = reader.string();
           continue;
         }
         case 2: {
@@ -1483,15 +1452,7 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
             break;
           }
 
-          message.message = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.workerId = reader.string();
+          message.nonceId = reader.string();
           continue;
         }
       }
@@ -1505,26 +1466,26 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
 
   fromJSON(object: any): RegisterWorkerResponse {
     return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
       workerId: isSet(object.workerId)
         ? globalThis.String(object.workerId)
         : isSet(object.worker_id)
         ? globalThis.String(object.worker_id)
+        : "",
+      nonceId: isSet(object.nonceId)
+        ? globalThis.String(object.nonceId)
+        : isSet(object.nonce_id)
+        ? globalThis.String(object.nonce_id)
         : "",
     };
   },
 
   toJSON(message: RegisterWorkerResponse): unknown {
     const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
-    }
     if (message.workerId !== undefined && message.workerId !== "") {
       obj.workerId = message.workerId;
+    }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      obj.nonceId = message.nonceId;
     }
     return obj;
   },
@@ -1534,9 +1495,8 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
   },
   fromPartial<I extends Exact<DeepPartial<RegisterWorkerResponse>, I>>(object: I): RegisterWorkerResponse {
     const message = createBaseRegisterWorkerResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
     message.workerId = object.workerId ?? "";
+    message.nonceId = object.nonceId ?? "";
     return message;
   },
 };
@@ -1606,19 +1566,13 @@ export const GetNonceRequest: MessageFns<GetNonceRequest> = {
 };
 
 function createBaseGetNonceResponse(): GetNonceResponse {
-  return { status: 0, message: "", challenge: Buffer.alloc(0) };
+  return { challenge: Buffer.alloc(0) };
 }
 
 export const GetNonceResponse: MessageFns<GetNonceResponse> = {
   encode(message: GetNonceResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
     if (message.challenge !== undefined && message.challenge.length !== 0) {
-      writer.uint32(26).bytes(message.challenge);
+      writer.uint32(10).bytes(message.challenge);
     }
     return writer;
   },
@@ -1631,23 +1585,7 @@ export const GetNonceResponse: MessageFns<GetNonceResponse> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
+          if (tag !== 10) {
             break;
           }
 
@@ -1664,21 +1602,11 @@ export const GetNonceResponse: MessageFns<GetNonceResponse> = {
   },
 
   fromJSON(object: any): GetNonceResponse {
-    return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-      challenge: isSet(object.challenge) ? Buffer.from(bytesFromBase64(object.challenge)) : Buffer.alloc(0),
-    };
+    return { challenge: isSet(object.challenge) ? Buffer.from(bytesFromBase64(object.challenge)) : Buffer.alloc(0) };
   },
 
   toJSON(message: GetNonceResponse): unknown {
     const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
-    }
     if (message.challenge !== undefined && message.challenge.length !== 0) {
       obj.challenge = base64FromBytes(message.challenge);
     }
@@ -1690,15 +1618,13 @@ export const GetNonceResponse: MessageFns<GetNonceResponse> = {
   },
   fromPartial<I extends Exact<DeepPartial<GetNonceResponse>, I>>(object: I): GetNonceResponse {
     const message = createBaseGetNonceResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
     message.challenge = object.challenge ?? Buffer.alloc(0);
     return message;
   },
 };
 
 function createBaseCheckNonceRequest(): CheckNonceRequest {
-  return { signedChallenge: Buffer.alloc(0), workerId: "" };
+  return { signedChallenge: Buffer.alloc(0), workerId: "", nonceId: "" };
 }
 
 export const CheckNonceRequest: MessageFns<CheckNonceRequest> = {
@@ -1708,6 +1634,9 @@ export const CheckNonceRequest: MessageFns<CheckNonceRequest> = {
     }
     if (message.workerId !== undefined && message.workerId !== "") {
       writer.uint32(18).string(message.workerId);
+    }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      writer.uint32(26).string(message.nonceId);
     }
     return writer;
   },
@@ -1735,6 +1664,14 @@ export const CheckNonceRequest: MessageFns<CheckNonceRequest> = {
           message.workerId = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.nonceId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1756,6 +1693,11 @@ export const CheckNonceRequest: MessageFns<CheckNonceRequest> = {
         : isSet(object.worker_id)
         ? globalThis.String(object.worker_id)
         : "",
+      nonceId: isSet(object.nonceId)
+        ? globalThis.String(object.nonceId)
+        : isSet(object.nonce_id)
+        ? globalThis.String(object.nonce_id)
+        : "",
     };
   },
 
@@ -1767,6 +1709,9 @@ export const CheckNonceRequest: MessageFns<CheckNonceRequest> = {
     if (message.workerId !== undefined && message.workerId !== "") {
       obj.workerId = message.workerId;
     }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      obj.nonceId = message.nonceId;
+    }
     return obj;
   },
 
@@ -1777,27 +1722,22 @@ export const CheckNonceRequest: MessageFns<CheckNonceRequest> = {
     const message = createBaseCheckNonceRequest();
     message.signedChallenge = object.signedChallenge ?? Buffer.alloc(0);
     message.workerId = object.workerId ?? "";
+    message.nonceId = object.nonceId ?? "";
     return message;
   },
 };
 
 function createBaseCheckNonceResponse(): CheckNonceResponse {
-  return { status: 0, message: "", expiresAt: undefined, accessKey: "" };
+  return { expiresAt: undefined, accessKey: "" };
 }
 
 export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
   encode(message: CheckNonceResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
     if (message.expiresAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.expiresAt), writer.uint32(26).fork()).join();
+      Timestamp.encode(toTimestamp(message.expiresAt), writer.uint32(10).fork()).join();
     }
     if (message.accessKey !== undefined && message.accessKey !== "") {
-      writer.uint32(34).string(message.accessKey);
+      writer.uint32(18).string(message.accessKey);
     }
     return writer;
   },
@@ -1810,31 +1750,15 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
+          if (tag !== 10) {
             break;
           }
 
           message.expiresAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           continue;
         }
-        case 4: {
-          if (tag !== 34) {
+        case 2: {
+          if (tag !== 18) {
             break;
           }
 
@@ -1852,8 +1776,6 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
 
   fromJSON(object: any): CheckNonceResponse {
     return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
       expiresAt: isSet(object.expiresAt)
         ? fromJsonTimestamp(object.expiresAt)
         : isSet(object.expires_at)
@@ -1869,12 +1791,6 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
 
   toJSON(message: CheckNonceResponse): unknown {
     const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
-    }
     if (message.expiresAt !== undefined) {
       obj.expiresAt = message.expiresAt.toISOString();
     }
@@ -1889,8 +1805,6 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
   },
   fromPartial<I extends Exact<DeepPartial<CheckNonceResponse>, I>>(object: I): CheckNonceResponse {
     const message = createBaseCheckNonceResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
     message.expiresAt = object.expiresAt ?? undefined;
     message.accessKey = object.accessKey ?? "";
     return message;
@@ -2043,17 +1957,11 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
 };
 
 function createBaseRegisterWorkerSnapshotResponse(): RegisterWorkerSnapshotResponse {
-  return { status: 0, message: "" };
+  return {};
 }
 
 export const RegisterWorkerSnapshotResponse: MessageFns<RegisterWorkerSnapshotResponse> = {
-  encode(message: RegisterWorkerSnapshotResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
+  encode(_: RegisterWorkerSnapshotResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
@@ -2064,22 +1972,6 @@ export const RegisterWorkerSnapshotResponse: MessageFns<RegisterWorkerSnapshotRe
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2089,33 +1981,20 @@ export const RegisterWorkerSnapshotResponse: MessageFns<RegisterWorkerSnapshotRe
     return message;
   },
 
-  fromJSON(object: any): RegisterWorkerSnapshotResponse {
-    return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-    };
+  fromJSON(_: any): RegisterWorkerSnapshotResponse {
+    return {};
   },
 
-  toJSON(message: RegisterWorkerSnapshotResponse): unknown {
+  toJSON(_: RegisterWorkerSnapshotResponse): unknown {
     const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
-    }
     return obj;
   },
 
   create<I extends Exact<DeepPartial<RegisterWorkerSnapshotResponse>, I>>(base?: I): RegisterWorkerSnapshotResponse {
     return RegisterWorkerSnapshotResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RegisterWorkerSnapshotResponse>, I>>(
-    object: I,
-  ): RegisterWorkerSnapshotResponse {
+  fromPartial<I extends Exact<DeepPartial<RegisterWorkerSnapshotResponse>, I>>(_: I): RegisterWorkerSnapshotResponse {
     const message = createBaseRegisterWorkerSnapshotResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
     return message;
   },
 };
@@ -2213,17 +2092,11 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
 };
 
 function createBaseRegisterServingResponse(): RegisterServingResponse {
-  return { status: 0, message: "" };
+  return {};
 }
 
 export const RegisterServingResponse: MessageFns<RegisterServingResponse> = {
-  encode(message: RegisterServingResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
+  encode(_: RegisterServingResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
@@ -2234,22 +2107,6 @@ export const RegisterServingResponse: MessageFns<RegisterServingResponse> = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2259,31 +2116,20 @@ export const RegisterServingResponse: MessageFns<RegisterServingResponse> = {
     return message;
   },
 
-  fromJSON(object: any): RegisterServingResponse {
-    return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-    };
+  fromJSON(_: any): RegisterServingResponse {
+    return {};
   },
 
-  toJSON(message: RegisterServingResponse): unknown {
+  toJSON(_: RegisterServingResponse): unknown {
     const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
-    }
     return obj;
   },
 
   create<I extends Exact<DeepPartial<RegisterServingResponse>, I>>(base?: I): RegisterServingResponse {
     return RegisterServingResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RegisterServingResponse>, I>>(object: I): RegisterServingResponse {
+  fromPartial<I extends Exact<DeepPartial<RegisterServingResponse>, I>>(_: I): RegisterServingResponse {
     const message = createBaseRegisterServingResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
     return message;
   },
 };
