@@ -246,7 +246,7 @@ export interface DataFunction {
    * This model must be satisfied by the execution model of the owning workflow.
    */
   inputModel?:
-    | string
+    | Buffer
     | undefined;
   /**
    * OutputModel is a marshalled JSON schema describing a single output record.
@@ -254,7 +254,7 @@ export interface DataFunction {
    * orchestrator for caching. Validated once at retrieval time.
    */
   outputModel?:
-    | string
+    | Buffer
     | undefined;
   /**
    * Settings governs the lifecycle and retention of data produced by this
@@ -286,14 +286,14 @@ export interface Task {
    * the task's accepted input. Validation and pointer extensions are not enforced.
    */
   inputModel?:
-    | string
+    | Buffer
     | undefined;
   /**
    * OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
    * the task's output. Validation and pointer extensions are not enforced.
    */
   outputModel?:
-    | string
+    | Buffer
     | undefined;
   /** RequiredDataFunctions lists all data functions this task depends on. */
   requiredDataFunctions?: string[] | undefined;
@@ -358,7 +358,7 @@ export interface Workflow {
    * parameters that must be provided at workflow trigger time.
    */
   inputModel?:
-    | string
+    | Buffer
     | undefined;
   /**
    * HaltOnFailure instructs the orchestrator to stop parallel task execution
@@ -732,7 +732,7 @@ export interface OrderByStatement {
 }
 
 function createBaseDataFunction(): DataFunction {
-  return { name: "", hash: "", inputModel: "", outputModel: "", settings: undefined };
+  return { name: "", hash: "", inputModel: Buffer.alloc(0), outputModel: Buffer.alloc(0), settings: undefined };
 }
 
 export const DataFunction: MessageFns<DataFunction> = {
@@ -743,11 +743,11 @@ export const DataFunction: MessageFns<DataFunction> = {
     if (message.hash !== undefined && message.hash !== "") {
       writer.uint32(18).string(message.hash);
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(26).string(message.inputModel);
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      writer.uint32(26).bytes(message.inputModel);
     }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      writer.uint32(34).string(message.outputModel);
+    if (message.outputModel !== undefined && message.outputModel.length !== 0) {
+      writer.uint32(34).bytes(message.outputModel);
     }
     if (message.settings !== undefined) {
       DataFunctionSettings.encode(message.settings, writer.uint32(42).fork()).join();
@@ -783,7 +783,7 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.inputModel = reader.string();
+          message.inputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 4: {
@@ -791,7 +791,7 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.outputModel = reader.string();
+          message.outputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 5: {
@@ -815,8 +815,8 @@ export const DataFunction: MessageFns<DataFunction> = {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       hash: isSet(object.hash) ? globalThis.String(object.hash) : "",
-      inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
-      outputModel: isSet(object.outputModel) ? globalThis.String(object.outputModel) : "",
+      inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
+      outputModel: isSet(object.outputModel) ? Buffer.from(bytesFromBase64(object.outputModel)) : Buffer.alloc(0),
       settings: isSet(object.settings) ? DataFunctionSettings.fromJSON(object.settings) : undefined,
     };
   },
@@ -829,11 +829,11 @@ export const DataFunction: MessageFns<DataFunction> = {
     if (message.hash !== undefined && message.hash !== "") {
       obj.hash = message.hash;
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      obj.inputModel = message.inputModel;
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      obj.inputModel = base64FromBytes(message.inputModel);
     }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      obj.outputModel = message.outputModel;
+    if (message.outputModel !== undefined && message.outputModel.length !== 0) {
+      obj.outputModel = base64FromBytes(message.outputModel);
     }
     if (message.settings !== undefined) {
       obj.settings = DataFunctionSettings.toJSON(message.settings);
@@ -848,8 +848,8 @@ export const DataFunction: MessageFns<DataFunction> = {
     const message = createBaseDataFunction();
     message.name = object.name ?? "";
     message.hash = object.hash ?? "";
-    message.inputModel = object.inputModel ?? "";
-    message.outputModel = object.outputModel ?? "";
+    message.inputModel = object.inputModel ?? Buffer.alloc(0);
+    message.outputModel = object.outputModel ?? Buffer.alloc(0);
     message.settings = (object.settings !== undefined && object.settings !== null)
       ? DataFunctionSettings.fromPartial(object.settings)
       : undefined;
@@ -863,8 +863,8 @@ function createBaseTask(): Task {
     name: "",
     description: "",
     executionSettings: undefined,
-    inputModel: "",
-    outputModel: "",
+    inputModel: Buffer.alloc(0),
+    outputModel: Buffer.alloc(0),
     requiredDataFunctions: [],
   };
 }
@@ -883,11 +883,11 @@ export const Task: MessageFns<Task> = {
     if (message.executionSettings !== undefined) {
       TaskExecutionSettings.encode(message.executionSettings, writer.uint32(34).fork()).join();
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(42).string(message.inputModel);
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      writer.uint32(42).bytes(message.inputModel);
     }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      writer.uint32(50).string(message.outputModel);
+    if (message.outputModel !== undefined && message.outputModel.length !== 0) {
+      writer.uint32(50).bytes(message.outputModel);
     }
     if (message.requiredDataFunctions !== undefined && message.requiredDataFunctions.length !== 0) {
       for (const v of message.requiredDataFunctions) {
@@ -941,7 +941,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          message.inputModel = reader.string();
+          message.inputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 6: {
@@ -949,7 +949,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          message.outputModel = reader.string();
+          message.outputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 7: {
@@ -980,8 +980,8 @@ export const Task: MessageFns<Task> = {
       executionSettings: isSet(object.executionSettings)
         ? TaskExecutionSettings.fromJSON(object.executionSettings)
         : undefined,
-      inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
-      outputModel: isSet(object.outputModel) ? globalThis.String(object.outputModel) : "",
+      inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
+      outputModel: isSet(object.outputModel) ? Buffer.from(bytesFromBase64(object.outputModel)) : Buffer.alloc(0),
       requiredDataFunctions: globalThis.Array.isArray(object?.requiredDataFunctions)
         ? object.requiredDataFunctions.map((e: any) => globalThis.String(e))
         : [],
@@ -1002,11 +1002,11 @@ export const Task: MessageFns<Task> = {
     if (message.executionSettings !== undefined) {
       obj.executionSettings = TaskExecutionSettings.toJSON(message.executionSettings);
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      obj.inputModel = message.inputModel;
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      obj.inputModel = base64FromBytes(message.inputModel);
     }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      obj.outputModel = message.outputModel;
+    if (message.outputModel !== undefined && message.outputModel.length !== 0) {
+      obj.outputModel = base64FromBytes(message.outputModel);
     }
     if (message.requiredDataFunctions?.length) {
       obj.requiredDataFunctions = message.requiredDataFunctions;
@@ -1025,8 +1025,8 @@ export const Task: MessageFns<Task> = {
     message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)
       ? TaskExecutionSettings.fromPartial(object.executionSettings)
       : undefined;
-    message.inputModel = object.inputModel ?? "";
-    message.outputModel = object.outputModel ?? "";
+    message.inputModel = object.inputModel ?? Buffer.alloc(0);
+    message.outputModel = object.outputModel ?? Buffer.alloc(0);
     message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => e) || [];
     return message;
   },
@@ -1179,7 +1179,7 @@ function createBaseWorkflow(): Workflow {
     workflowHash: "",
     edges: [],
     executionSettings: undefined,
-    inputModel: "",
+    inputModel: Buffer.alloc(0),
     haltOnFailure: false,
   };
 }
@@ -1203,8 +1203,8 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.executionSettings !== undefined) {
       WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(42).fork()).join();
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(50).string(message.inputModel);
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      writer.uint32(50).bytes(message.inputModel);
     }
     if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
       writer.uint32(56).bool(message.haltOnFailure);
@@ -1267,7 +1267,7 @@ export const Workflow: MessageFns<Workflow> = {
             break;
           }
 
-          message.inputModel = reader.string();
+          message.inputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 7: {
@@ -1296,7 +1296,7 @@ export const Workflow: MessageFns<Workflow> = {
       executionSettings: isSet(object.executionSettings)
         ? WorkflowExecutionSettings.fromJSON(object.executionSettings)
         : undefined,
-      inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
+      inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
       haltOnFailure: isSet(object.haltOnFailure) ? globalThis.Boolean(object.haltOnFailure) : false,
     };
   },
@@ -1318,8 +1318,8 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.executionSettings !== undefined) {
       obj.executionSettings = WorkflowExecutionSettings.toJSON(message.executionSettings);
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      obj.inputModel = message.inputModel;
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      obj.inputModel = base64FromBytes(message.inputModel);
     }
     if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
       obj.haltOnFailure = message.haltOnFailure;
@@ -1339,7 +1339,7 @@ export const Workflow: MessageFns<Workflow> = {
     message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)
       ? WorkflowExecutionSettings.fromPartial(object.executionSettings)
       : undefined;
-    message.inputModel = object.inputModel ?? "";
+    message.inputModel = object.inputModel ?? Buffer.alloc(0);
     message.haltOnFailure = object.haltOnFailure ?? false;
     return message;
   },

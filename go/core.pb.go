@@ -211,11 +211,11 @@ type DataFunction struct {
 	Hash string `protobuf:"bytes,2,opt,name=hash,proto3" json:"hash,omitempty"`
 	// InputModel is a marshalled JSON schema describing the accepted input.
 	// This model must be satisfied by the execution model of the owning workflow.
-	InputModel string `protobuf:"bytes,3,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
+	InputModel []byte `protobuf:"bytes,3,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
 	// OutputModel is a marshalled JSON schema describing a single output record.
 	// The data function produces an array of this schema, streamed to the
 	// orchestrator for caching. Validated once at retrieval time.
-	OutputModel string `protobuf:"bytes,4,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
+	OutputModel []byte `protobuf:"bytes,4,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
 	// Settings governs the lifecycle and retention of data produced by this
 	// data function.
 	Settings      *DataFunctionSettings `protobuf:"bytes,5,opt,name=settings,proto3" json:"settings,omitempty"`
@@ -267,18 +267,18 @@ func (x *DataFunction) GetHash() string {
 	return ""
 }
 
-func (x *DataFunction) GetInputModel() string {
+func (x *DataFunction) GetInputModel() []byte {
 	if x != nil {
 		return x.InputModel
 	}
-	return ""
+	return nil
 }
 
-func (x *DataFunction) GetOutputModel() string {
+func (x *DataFunction) GetOutputModel() []byte {
 	if x != nil {
 		return x.OutputModel
 	}
-	return ""
+	return nil
 }
 
 func (x *DataFunction) GetSettings() *DataFunctionSettings {
@@ -301,10 +301,10 @@ type Task struct {
 	ExecutionSettings *TaskExecutionSettings `protobuf:"bytes,4,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
 	// InputModel is a marshalled JSON schema (JSON Schema Standard) describing
 	// the task's accepted input. Validation and pointer extensions are not enforced.
-	InputModel string `protobuf:"bytes,5,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
+	InputModel []byte `protobuf:"bytes,5,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
 	// OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
 	// the task's output. Validation and pointer extensions are not enforced.
-	OutputModel string `protobuf:"bytes,6,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
+	OutputModel []byte `protobuf:"bytes,6,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
 	// RequiredDataFunctions lists all data functions this task depends on.
 	RequiredDataFunctions []string `protobuf:"bytes,7,rep,name=requiredDataFunctions,proto3" json:"requiredDataFunctions,omitempty"`
 	unknownFields         protoimpl.UnknownFields
@@ -369,18 +369,18 @@ func (x *Task) GetExecutionSettings() *TaskExecutionSettings {
 	return nil
 }
 
-func (x *Task) GetInputModel() string {
+func (x *Task) GetInputModel() []byte {
 	if x != nil {
 		return x.InputModel
 	}
-	return ""
+	return nil
 }
 
-func (x *Task) GetOutputModel() string {
+func (x *Task) GetOutputModel() []byte {
 	if x != nil {
 		return x.OutputModel
 	}
-	return ""
+	return nil
 }
 
 func (x *Task) GetRequiredDataFunctions() []string {
@@ -498,7 +498,7 @@ type Workflow struct {
 	ExecutionSettings *WorkflowExecutionSettings `protobuf:"bytes,5,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
 	// InputModel is a marshalled JSON schema describing the
 	// parameters that must be provided at workflow trigger time.
-	InputModel string `protobuf:"bytes,6,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
+	InputModel []byte `protobuf:"bytes,6,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
 	// HaltOnFailure instructs the orchestrator to stop parallel task execution
 	// if any task encounters a failure.
 	HaltOnFailure bool `protobuf:"varint,7,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
@@ -571,11 +571,11 @@ func (x *Workflow) GetExecutionSettings() *WorkflowExecutionSettings {
 	return nil
 }
 
-func (x *Workflow) GetInputModel() string {
+func (x *Workflow) GetInputModel() []byte {
 	if x != nil {
 		return x.InputModel
 	}
-	return ""
+	return nil
 }
 
 func (x *Workflow) GetHaltOnFailure() bool {
@@ -2108,9 +2108,9 @@ const file_core_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
 	"\x04hash\x18\x02 \x01(\tR\x04hash\x12\x1e\n" +
 	"\n" +
-	"inputModel\x18\x03 \x01(\tR\n" +
+	"inputModel\x18\x03 \x01(\fR\n" +
 	"inputModel\x12 \n" +
-	"\voutputModel\x18\x04 \x01(\tR\voutputModel\x121\n" +
+	"\voutputModel\x18\x04 \x01(\fR\voutputModel\x121\n" +
 	"\bsettings\x18\x05 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"\x96\x02\n" +
 	"\x04Task\x12\x1a\n" +
 	"\btaskHash\x18\x01 \x01(\tR\btaskHash\x12\x12\n" +
@@ -2118,9 +2118,9 @@ const file_core_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12D\n" +
 	"\x11executionSettings\x18\x04 \x01(\v2\x16.TaskExecutionSettingsR\x11executionSettings\x12\x1e\n" +
 	"\n" +
-	"inputModel\x18\x05 \x01(\tR\n" +
+	"inputModel\x18\x05 \x01(\fR\n" +
 	"inputModel\x12 \n" +
-	"\voutputModel\x18\x06 \x01(\tR\voutputModel\x124\n" +
+	"\voutputModel\x18\x06 \x01(\fR\voutputModel\x124\n" +
 	"\x15requiredDataFunctions\x18\a \x03(\tR\x15requiredDataFunctions\"\xe2\x01\n" +
 	"\fWorkflowEdge\x12\"\n" +
 	"\ffromTaskName\x18\x01 \x01(\tR\ffromTaskName\x12\"\n" +
@@ -2140,7 +2140,7 @@ const file_core_proto_rawDesc = "" +
 	"\x05edges\x18\x04 \x03(\v2\r.WorkflowEdgeR\x05edges\x12H\n" +
 	"\x11executionSettings\x18\x05 \x01(\v2\x1a.WorkflowExecutionSettingsR\x11executionSettings\x12\x1e\n" +
 	"\n" +
-	"inputModel\x18\x06 \x01(\tR\n" +
+	"inputModel\x18\x06 \x01(\fR\n" +
 	"inputModel\x12$\n" +
 	"\rhaltOnFailure\x18\a \x01(\bR\rhaltOnFailure\"6\n" +
 	"\x15RegisterWorkerRequest\x12\x1d\n" +

@@ -64,10 +64,10 @@ class DataFunction(_message.Message):
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
     name: str
     hash: str
-    inputModel: str
-    outputModel: str
+    inputModel: bytes
+    outputModel: bytes
     settings: _shared_pb2.DataFunctionSettings
-    def __init__(self, name: _Optional[str] = ..., hash: _Optional[str] = ..., inputModel: _Optional[str] = ..., outputModel: _Optional[str] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., hash: _Optional[str] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
 
 class Task(_message.Message):
     __slots__ = ("taskHash", "name", "description", "executionSettings", "inputModel", "outputModel", "requiredDataFunctions")
@@ -82,10 +82,10 @@ class Task(_message.Message):
     name: str
     description: str
     executionSettings: _shared_pb2.TaskExecutionSettings
-    inputModel: str
-    outputModel: str
+    inputModel: bytes
+    outputModel: bytes
     requiredDataFunctions: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[str] = ..., outputModel: _Optional[str] = ..., requiredDataFunctions: _Optional[_Iterable[str]] = ...) -> None: ...
+    def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., requiredDataFunctions: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class WorkflowEdge(_message.Message):
     __slots__ = ("fromTaskName", "fromTaskHash", "fromTaskWorker", "toTaskName", "toTaskHash", "toTaskWorker")
@@ -117,9 +117,9 @@ class Workflow(_message.Message):
     workflowHash: str
     edges: _containers.RepeatedCompositeFieldContainer[WorkflowEdge]
     executionSettings: _shared_pb2.WorkflowExecutionSettings
-    inputModel: str
+    inputModel: bytes
     haltOnFailure: bool
-    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[str] = ..., haltOnFailure: bool = ...) -> None: ...
+    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., haltOnFailure: bool = ...) -> None: ...
 
 class RegisterWorkerRequest(_message.Message):
     __slots__ = ("public_key",)
