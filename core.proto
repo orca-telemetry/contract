@@ -201,20 +201,17 @@ message CheckNonceResponse {
 // RegisterWorkerSnapshot RPC
 // ============================================================
 message RegisterWorkerSnapshotRequest {
-  // ID is the globally unique ID of the worker
-  string id = 1;
-
   // GitCommitHash is the current git commit
-  string gitCommitHash = 2;
+  string gitCommitHash = 1;
 
   // Datafunctions is an array of data functions
-  repeated DataFunction dataFunctions = 3;
+  repeated DataFunction dataFunctions = 2;
 
   // Tasks is an array of tasks
-  repeated Task tasks = 4;
+  repeated Task tasks = 3;
 
   // Workflows is an array of workflows
-  repeated Workflow workflows = 5;
+  repeated Workflow workflows = 4;
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
@@ -225,14 +222,11 @@ message RegisterWorkerSnapshotResponse {}
 // ============================================================
 // RegisterServingStatus message
 message RegisterServingRequest {
-  // Name of the worker
-  string name = 1;
-
   // Connection URL from the perspective of the core orchestrator
-  string connectionUrl = 2;
+  string connectionUrl = 1;
 
   // Explicit flag stating whether the worker is serving
-  bool isServing = 3;
+  bool isServing = 2;
 };
 
 // RegisterServingResponse message

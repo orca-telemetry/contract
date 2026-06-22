@@ -438,10 +438,6 @@ export interface CheckNonceResponse {
  * ============================================================
  */
 export interface RegisterWorkerSnapshotRequest {
-  /** ID is the globally unique ID of the worker */
-  id?:
-    | string
-    | undefined;
   /** GitCommitHash is the current git commit */
   gitCommitHash?:
     | string
@@ -469,10 +465,6 @@ export interface RegisterWorkerSnapshotResponse {
  * RegisterServingStatus message
  */
 export interface RegisterServingRequest {
-  /** Name of the worker */
-  name?:
-    | string
-    | undefined;
   /** Connection URL from the perspective of the core orchestrator */
   connectionUrl?:
     | string
@@ -1812,30 +1804,27 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
 };
 
 function createBaseRegisterWorkerSnapshotRequest(): RegisterWorkerSnapshotRequest {
-  return { id: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [] };
+  return { gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [] };
 }
 
 export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotRequest> = {
   encode(message: RegisterWorkerSnapshotRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.id !== undefined && message.id !== "") {
-      writer.uint32(10).string(message.id);
-    }
     if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      writer.uint32(18).string(message.gitCommitHash);
+      writer.uint32(10).string(message.gitCommitHash);
     }
     if (message.dataFunctions !== undefined && message.dataFunctions.length !== 0) {
       for (const v of message.dataFunctions) {
-        DataFunction.encode(v!, writer.uint32(26).fork()).join();
+        DataFunction.encode(v!, writer.uint32(18).fork()).join();
       }
     }
     if (message.tasks !== undefined && message.tasks.length !== 0) {
       for (const v of message.tasks) {
-        Task.encode(v!, writer.uint32(34).fork()).join();
+        Task.encode(v!, writer.uint32(26).fork()).join();
       }
     }
     if (message.workflows !== undefined && message.workflows.length !== 0) {
       for (const v of message.workflows) {
-        Workflow.encode(v!, writer.uint32(42).fork()).join();
+        Workflow.encode(v!, writer.uint32(34).fork()).join();
       }
     }
     return writer;
@@ -1853,19 +1842,11 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
             break;
           }
 
-          message.id = reader.string();
+          message.gitCommitHash = reader.string();
           continue;
         }
         case 2: {
           if (tag !== 18) {
-            break;
-          }
-
-          message.gitCommitHash = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
             break;
           }
 
@@ -1875,8 +1856,8 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
           }
           continue;
         }
-        case 4: {
-          if (tag !== 34) {
+        case 3: {
+          if (tag !== 26) {
             break;
           }
 
@@ -1886,8 +1867,8 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
           }
           continue;
         }
-        case 5: {
-          if (tag !== 42) {
+        case 4: {
+          if (tag !== 34) {
             break;
           }
 
@@ -1908,7 +1889,6 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
 
   fromJSON(object: any): RegisterWorkerSnapshotRequest {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
       gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
       dataFunctions: globalThis.Array.isArray(object?.dataFunctions)
         ? object.dataFunctions.map((e: any) => DataFunction.fromJSON(e))
@@ -1922,9 +1902,6 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
 
   toJSON(message: RegisterWorkerSnapshotRequest): unknown {
     const obj: any = {};
-    if (message.id !== undefined && message.id !== "") {
-      obj.id = message.id;
-    }
     if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
       obj.gitCommitHash = message.gitCommitHash;
     }
@@ -1947,7 +1924,6 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
     object: I,
   ): RegisterWorkerSnapshotRequest {
     const message = createBaseRegisterWorkerSnapshotRequest();
-    message.id = object.id ?? "";
     message.gitCommitHash = object.gitCommitHash ?? "";
     message.dataFunctions = object.dataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
     message.tasks = object.tasks?.map((e) => Task.fromPartial(e)) || [];
@@ -2000,19 +1976,16 @@ export const RegisterWorkerSnapshotResponse: MessageFns<RegisterWorkerSnapshotRe
 };
 
 function createBaseRegisterServingRequest(): RegisterServingRequest {
-  return { name: "", connectionUrl: "", isServing: false };
+  return { connectionUrl: "", isServing: false };
 }
 
 export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
   encode(message: RegisterServingRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.name !== undefined && message.name !== "") {
-      writer.uint32(10).string(message.name);
-    }
     if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
-      writer.uint32(18).string(message.connectionUrl);
+      writer.uint32(10).string(message.connectionUrl);
     }
     if (message.isServing !== undefined && message.isServing !== false) {
-      writer.uint32(24).bool(message.isServing);
+      writer.uint32(16).bool(message.isServing);
     }
     return writer;
   },
@@ -2029,19 +2002,11 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
             break;
           }
 
-          message.name = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
           message.connectionUrl = reader.string();
           continue;
         }
-        case 3: {
-          if (tag !== 24) {
+        case 2: {
+          if (tag !== 16) {
             break;
           }
 
@@ -2059,7 +2024,6 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
 
   fromJSON(object: any): RegisterServingRequest {
     return {
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
       connectionUrl: isSet(object.connectionUrl) ? globalThis.String(object.connectionUrl) : "",
       isServing: isSet(object.isServing) ? globalThis.Boolean(object.isServing) : false,
     };
@@ -2067,9 +2031,6 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
 
   toJSON(message: RegisterServingRequest): unknown {
     const obj: any = {};
-    if (message.name !== undefined && message.name !== "") {
-      obj.name = message.name;
-    }
     if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
       obj.connectionUrl = message.connectionUrl;
     }
@@ -2084,7 +2045,6 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
   },
   fromPartial<I extends Exact<DeepPartial<RegisterServingRequest>, I>>(object: I): RegisterServingRequest {
     const message = createBaseRegisterServingRequest();
-    message.name = object.name ?? "";
     message.connectionUrl = object.connectionUrl ?? "";
     message.isServing = object.isServing ?? false;
     return message;

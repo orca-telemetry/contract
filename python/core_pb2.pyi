@@ -166,32 +166,28 @@ class CheckNonceResponse(_message.Message):
     def __init__(self, expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_key: _Optional[bytes] = ...) -> None: ...
 
 class RegisterWorkerSnapshotRequest(_message.Message):
-    __slots__ = ("id", "gitCommitHash", "dataFunctions", "tasks", "workflows")
-    ID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("gitCommitHash", "dataFunctions", "tasks", "workflows")
     GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
     DATAFUNCTIONS_FIELD_NUMBER: _ClassVar[int]
     TASKS_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWS_FIELD_NUMBER: _ClassVar[int]
-    id: str
     gitCommitHash: str
     dataFunctions: _containers.RepeatedCompositeFieldContainer[DataFunction]
     tasks: _containers.RepeatedCompositeFieldContainer[Task]
     workflows: _containers.RepeatedCompositeFieldContainer[Workflow]
-    def __init__(self, id: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ...) -> None: ...
+    def __init__(self, gitCommitHash: _Optional[str] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ...) -> None: ...
 
 class RegisterWorkerSnapshotResponse(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
 
 class RegisterServingRequest(_message.Message):
-    __slots__ = ("name", "connectionUrl", "isServing")
-    NAME_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("connectionUrl", "isServing")
     CONNECTIONURL_FIELD_NUMBER: _ClassVar[int]
     ISSERVING_FIELD_NUMBER: _ClassVar[int]
-    name: str
     connectionUrl: str
     isServing: bool
-    def __init__(self, name: _Optional[str] = ..., connectionUrl: _Optional[str] = ..., isServing: bool = ...) -> None: ...
+    def __init__(self, connectionUrl: _Optional[str] = ..., isServing: bool = ...) -> None: ...
 
 class RegisterServingResponse(_message.Message):
     __slots__ = ()

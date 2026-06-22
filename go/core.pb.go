@@ -907,16 +907,14 @@ func (x *CheckNonceResponse) GetAccessKey() []byte {
 // ============================================================
 type RegisterWorkerSnapshotRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// ID is the globally unique ID of the worker
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// GitCommitHash is the current git commit
-	GitCommitHash string `protobuf:"bytes,2,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
+	GitCommitHash string `protobuf:"bytes,1,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
 	// Datafunctions is an array of data functions
-	DataFunctions []*DataFunction `protobuf:"bytes,3,rep,name=dataFunctions,proto3" json:"dataFunctions,omitempty"`
+	DataFunctions []*DataFunction `protobuf:"bytes,2,rep,name=dataFunctions,proto3" json:"dataFunctions,omitempty"`
 	// Tasks is an array of tasks
-	Tasks []*Task `protobuf:"bytes,4,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	Tasks []*Task `protobuf:"bytes,3,rep,name=tasks,proto3" json:"tasks,omitempty"`
 	// Workflows is an array of workflows
-	Workflows     []*Workflow `protobuf:"bytes,5,rep,name=workflows,proto3" json:"workflows,omitempty"`
+	Workflows     []*Workflow `protobuf:"bytes,4,rep,name=workflows,proto3" json:"workflows,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -949,13 +947,6 @@ func (x *RegisterWorkerSnapshotRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RegisterWorkerSnapshotRequest.ProtoReflect.Descriptor instead.
 func (*RegisterWorkerSnapshotRequest) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *RegisterWorkerSnapshotRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
 }
 
 func (x *RegisterWorkerSnapshotRequest) GetGitCommitHash() string {
@@ -1029,12 +1020,10 @@ func (*RegisterWorkerSnapshotResponse) Descriptor() ([]byte, []int) {
 // RegisterServingStatus message
 type RegisterServingRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Name of the worker
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Connection URL from the perspective of the core orchestrator
-	ConnectionUrl string `protobuf:"bytes,2,opt,name=connectionUrl,proto3" json:"connectionUrl,omitempty"`
+	ConnectionUrl string `protobuf:"bytes,1,opt,name=connectionUrl,proto3" json:"connectionUrl,omitempty"`
 	// Explicit flag stating whether the worker is serving
-	IsServing     bool `protobuf:"varint,3,opt,name=isServing,proto3" json:"isServing,omitempty"`
+	IsServing     bool `protobuf:"varint,2,opt,name=isServing,proto3" json:"isServing,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1067,13 +1056,6 @@ func (x *RegisterServingRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RegisterServingRequest.ProtoReflect.Descriptor instead.
 func (*RegisterServingRequest) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *RegisterServingRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
 }
 
 func (x *RegisterServingRequest) GetConnectionUrl() string {
@@ -2179,18 +2161,16 @@ const file_core_proto_rawDesc = "" +
 	"\n" +
 	"expires_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x1d\n" +
 	"\n" +
-	"access_key\x18\x02 \x01(\fR\taccessKey\"\xd0\x01\n" +
-	"\x1dRegisterWorkerSnapshotRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12$\n" +
-	"\rgitCommitHash\x18\x02 \x01(\tR\rgitCommitHash\x123\n" +
-	"\rdataFunctions\x18\x03 \x03(\v2\r.DataFunctionR\rdataFunctions\x12\x1b\n" +
-	"\x05tasks\x18\x04 \x03(\v2\x05.TaskR\x05tasks\x12'\n" +
-	"\tworkflows\x18\x05 \x03(\v2\t.WorkflowR\tworkflows\" \n" +
-	"\x1eRegisterWorkerSnapshotResponse\"p\n" +
-	"\x16RegisterServingRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12$\n" +
-	"\rconnectionUrl\x18\x02 \x01(\tR\rconnectionUrl\x12\x1c\n" +
-	"\tisServing\x18\x03 \x01(\bR\tisServing\"\x19\n" +
+	"access_key\x18\x02 \x01(\fR\taccessKey\"\xc0\x01\n" +
+	"\x1dRegisterWorkerSnapshotRequest\x12$\n" +
+	"\rgitCommitHash\x18\x01 \x01(\tR\rgitCommitHash\x123\n" +
+	"\rdataFunctions\x18\x02 \x03(\v2\r.DataFunctionR\rdataFunctions\x12\x1b\n" +
+	"\x05tasks\x18\x03 \x03(\v2\x05.TaskR\x05tasks\x12'\n" +
+	"\tworkflows\x18\x04 \x03(\v2\t.WorkflowR\tworkflows\" \n" +
+	"\x1eRegisterWorkerSnapshotResponse\"\\\n" +
+	"\x16RegisterServingRequest\x12$\n" +
+	"\rconnectionUrl\x18\x01 \x01(\tR\rconnectionUrl\x12\x1c\n" +
+	"\tisServing\x18\x02 \x01(\bR\tisServing\"\x19\n" +
 	"\x17RegisterServingResponse\"\xf7\x01\n" +
 	"\x16TriggerWorkflowRequest\x12\"\n" +
 	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12A\n" +
