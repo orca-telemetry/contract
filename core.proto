@@ -68,6 +68,16 @@ message DataFunction {
   DataFunctionSettings settings = 5;
 }
 
+// A data function representation that is required to globally reference a data
+// function
+message DataFunctionWithWorkerId {
+  // The unique ID of the worker the data function is owned by
+  string worker_id = 1;
+
+  // The data function definition
+  DataFunction data_function = 2;
+}
+
 // Task defines a registered task and its execution configuration.
 message Task {
   // TaskHash is the hash of the AST segment corresponding to this task.
@@ -91,7 +101,7 @@ message Task {
   bytes outputModel = 6;
 
   // RequiredDataFunctions lists all data functions this task depends on.
-  repeated DataFunction requiredDataFunctions = 7;
+  repeated DataFunctionWithWorkerId requiredDataFunctions = 7;
 }
 
 // WorkflowEdge defines the relationship between two tasks in the workflow.

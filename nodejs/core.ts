@@ -263,6 +263,19 @@ export interface DataFunction {
   settings?: DataFunctionSettings | undefined;
 }
 
+/**
+ * A data function representation that is required to globally reference a data
+ * function
+ */
+export interface DataFunctionWithWorkerId {
+  /** The unique ID of the worker the data function is owned by */
+  workerId?:
+    | string
+    | undefined;
+  /** The data function definition */
+  dataFunction?: DataFunction | undefined;
+}
+
 /** Task defines a registered task and its execution configuration. */
 export interface Task {
   /** TaskHash is the hash of the AST segment corresponding to this task. */
@@ -296,7 +309,7 @@ export interface Task {
     | Buffer
     | undefined;
   /** RequiredDataFunctions lists all data functions this task depends on. */
-  requiredDataFunctions?: DataFunction[] | undefined;
+  requiredDataFunctions?: DataFunctionWithWorkerId[] | undefined;
 }
 
 /**
@@ -857,6 +870,92 @@ export const DataFunction: MessageFns<DataFunction> = {
   },
 };
 
+function createBaseDataFunctionWithWorkerId(): DataFunctionWithWorkerId {
+  return { workerId: "", dataFunction: undefined };
+}
+
+export const DataFunctionWithWorkerId: MessageFns<DataFunctionWithWorkerId> = {
+  encode(message: DataFunctionWithWorkerId, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.workerId !== undefined && message.workerId !== "") {
+      writer.uint32(10).string(message.workerId);
+    }
+    if (message.dataFunction !== undefined) {
+      DataFunction.encode(message.dataFunction, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DataFunctionWithWorkerId {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDataFunctionWithWorkerId();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.workerId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.dataFunction = DataFunction.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DataFunctionWithWorkerId {
+    return {
+      workerId: isSet(object.workerId)
+        ? globalThis.String(object.workerId)
+        : isSet(object.worker_id)
+        ? globalThis.String(object.worker_id)
+        : "",
+      dataFunction: isSet(object.dataFunction)
+        ? DataFunction.fromJSON(object.dataFunction)
+        : isSet(object.data_function)
+        ? DataFunction.fromJSON(object.data_function)
+        : undefined,
+    };
+  },
+
+  toJSON(message: DataFunctionWithWorkerId): unknown {
+    const obj: any = {};
+    if (message.workerId !== undefined && message.workerId !== "") {
+      obj.workerId = message.workerId;
+    }
+    if (message.dataFunction !== undefined) {
+      obj.dataFunction = DataFunction.toJSON(message.dataFunction);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DataFunctionWithWorkerId>, I>>(base?: I): DataFunctionWithWorkerId {
+    return DataFunctionWithWorkerId.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DataFunctionWithWorkerId>, I>>(object: I): DataFunctionWithWorkerId {
+    const message = createBaseDataFunctionWithWorkerId();
+    message.workerId = object.workerId ?? "";
+    message.dataFunction = (object.dataFunction !== undefined && object.dataFunction !== null)
+      ? DataFunction.fromPartial(object.dataFunction)
+      : undefined;
+    return message;
+  },
+};
+
 function createBaseTask(): Task {
   return {
     taskHash: "",
@@ -891,7 +990,7 @@ export const Task: MessageFns<Task> = {
     }
     if (message.requiredDataFunctions !== undefined && message.requiredDataFunctions.length !== 0) {
       for (const v of message.requiredDataFunctions) {
-        DataFunction.encode(v!, writer.uint32(58).fork()).join();
+        DataFunctionWithWorkerId.encode(v!, writer.uint32(58).fork()).join();
       }
     }
     return writer;
@@ -957,7 +1056,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          const el = DataFunction.decode(reader, reader.uint32());
+          const el = DataFunctionWithWorkerId.decode(reader, reader.uint32());
           if (el !== undefined) {
             message.requiredDataFunctions!.push(el);
           }
@@ -983,7 +1082,7 @@ export const Task: MessageFns<Task> = {
       inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
       outputModel: isSet(object.outputModel) ? Buffer.from(bytesFromBase64(object.outputModel)) : Buffer.alloc(0),
       requiredDataFunctions: globalThis.Array.isArray(object?.requiredDataFunctions)
-        ? object.requiredDataFunctions.map((e: any) => DataFunction.fromJSON(e))
+        ? object.requiredDataFunctions.map((e: any) => DataFunctionWithWorkerId.fromJSON(e))
         : [],
     };
   },
@@ -1009,7 +1108,7 @@ export const Task: MessageFns<Task> = {
       obj.outputModel = base64FromBytes(message.outputModel);
     }
     if (message.requiredDataFunctions?.length) {
-      obj.requiredDataFunctions = message.requiredDataFunctions.map((e) => DataFunction.toJSON(e));
+      obj.requiredDataFunctions = message.requiredDataFunctions.map((e) => DataFunctionWithWorkerId.toJSON(e));
     }
     return obj;
   },
@@ -1027,7 +1126,8 @@ export const Task: MessageFns<Task> = {
       : undefined;
     message.inputModel = object.inputModel ?? Buffer.alloc(0);
     message.outputModel = object.outputModel ?? Buffer.alloc(0);
-    message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
+    message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => DataFunctionWithWorkerId.fromPartial(e)) ||
+      [];
     return message;
   },
 };
