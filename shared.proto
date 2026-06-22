@@ -48,18 +48,18 @@ message DataFunctionSettings {
   // TTL controls how long produced data is retained.
   // 0 = clean up immediately after DAG execution of all dependent tasks completes.
   // >0 = retention duration in seconds.
-  int64 ttl = 1;
+  int32 ttl = 1;
 
   // Timeout is the maximum duration (in seconds) allowed for the data
   // function's full lifecycle.
-  int64 timeout = 2;
+  int32 timeout = 2;
 }
 
 // TaskExecutionSettings governs how a task is executed and retried.
 message TaskExecutionSettings {
   // ExecutionTimeout is the maximum duration (in seconds) allowed for a
   // single task execution attempt.
-  int64 executionTimeout = 1;
+  int32 executionTimeout = 1;
 
   // RetryCount is the number of times the task should be retried on failure.
   int32 retryCount = 2;
@@ -69,7 +69,7 @@ message TaskExecutionSettings {
 
   // Deadline is an SLA value in seconds. If execution exceeds this deadline,
   // an alert is raised against this task's execution status.
-  int64 deadline = 4;
+  int32 deadline = 4;
 }
 
 // RequiredPastResult describes a prior task result that must be available

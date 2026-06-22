@@ -234,10 +234,10 @@ type DataFunctionSettings struct {
 	// TTL controls how long produced data is retained.
 	// 0 = clean up immediately after DAG execution of all dependent tasks completes.
 	// >0 = retention duration in seconds.
-	Ttl int64 `protobuf:"varint,1,opt,name=ttl,proto3" json:"ttl,omitempty"`
+	Ttl int32 `protobuf:"varint,1,opt,name=ttl,proto3" json:"ttl,omitempty"`
 	// Timeout is the maximum duration (in seconds) allowed for the data
 	// function's full lifecycle.
-	Timeout       int64 `protobuf:"varint,2,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	Timeout       int32 `protobuf:"varint,2,opt,name=timeout,proto3" json:"timeout,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -272,14 +272,14 @@ func (*DataFunctionSettings) Descriptor() ([]byte, []int) {
 	return file_shared_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *DataFunctionSettings) GetTtl() int64 {
+func (x *DataFunctionSettings) GetTtl() int32 {
 	if x != nil {
 		return x.Ttl
 	}
 	return 0
 }
 
-func (x *DataFunctionSettings) GetTimeout() int64 {
+func (x *DataFunctionSettings) GetTimeout() int32 {
 	if x != nil {
 		return x.Timeout
 	}
@@ -291,14 +291,14 @@ type TaskExecutionSettings struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// ExecutionTimeout is the maximum duration (in seconds) allowed for a
 	// single task execution attempt.
-	ExecutionTimeout int64 `protobuf:"varint,1,opt,name=executionTimeout,proto3" json:"executionTimeout,omitempty"`
+	ExecutionTimeout int32 `protobuf:"varint,1,opt,name=executionTimeout,proto3" json:"executionTimeout,omitempty"`
 	// RetryCount is the number of times the task should be retried on failure.
 	RetryCount int32 `protobuf:"varint,2,opt,name=retryCount,proto3" json:"retryCount,omitempty"`
 	// BackoffStrategy defines whether retries use linear or exponential backoff.
 	BackoffStrategy BackoffStrategy `protobuf:"varint,3,opt,name=backoffStrategy,proto3,enum=BackoffStrategy" json:"backoffStrategy,omitempty"`
 	// Deadline is an SLA value in seconds. If execution exceeds this deadline,
 	// an alert is raised against this task's execution status.
-	Deadline      int64 `protobuf:"varint,4,opt,name=deadline,proto3" json:"deadline,omitempty"`
+	Deadline      int32 `protobuf:"varint,4,opt,name=deadline,proto3" json:"deadline,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -333,7 +333,7 @@ func (*TaskExecutionSettings) Descriptor() ([]byte, []int) {
 	return file_shared_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *TaskExecutionSettings) GetExecutionTimeout() int64 {
+func (x *TaskExecutionSettings) GetExecutionTimeout() int32 {
 	if x != nil {
 		return x.ExecutionTimeout
 	}
@@ -354,7 +354,7 @@ func (x *TaskExecutionSettings) GetBackoffStrategy() BackoffStrategy {
 	return BackoffStrategy_BACKOFF_STRATEGY_UNSPECIFIED
 }
 
-func (x *TaskExecutionSettings) GetDeadline() int64 {
+func (x *TaskExecutionSettings) GetDeadline() int32 {
 	if x != nil {
 		return x.Deadline
 	}
@@ -546,15 +546,15 @@ const file_shared_proto_rawDesc = "" +
 	"\n" +
 	"\fshared.proto\"B\n" +
 	"\x14DataFunctionSettings\x12\x10\n" +
-	"\x03ttl\x18\x01 \x01(\x03R\x03ttl\x12\x18\n" +
-	"\atimeout\x18\x02 \x01(\x03R\atimeout\"\xbb\x01\n" +
+	"\x03ttl\x18\x01 \x01(\x05R\x03ttl\x12\x18\n" +
+	"\atimeout\x18\x02 \x01(\x05R\atimeout\"\xbb\x01\n" +
 	"\x15TaskExecutionSettings\x12*\n" +
-	"\x10executionTimeout\x18\x01 \x01(\x03R\x10executionTimeout\x12\x1e\n" +
+	"\x10executionTimeout\x18\x01 \x01(\x05R\x10executionTimeout\x12\x1e\n" +
 	"\n" +
 	"retryCount\x18\x02 \x01(\x05R\n" +
 	"retryCount\x12:\n" +
 	"\x0fbackoffStrategy\x18\x03 \x01(\x0e2\x10.BackoffStrategyR\x0fbackoffStrategy\x12\x1a\n" +
-	"\bdeadline\x18\x04 \x01(\x03R\bdeadline\"z\n" +
+	"\bdeadline\x18\x04 \x01(\x05R\bdeadline\"z\n" +
 	"\x12RequiredPastResult\x12\x1a\n" +
 	"\btaskName\x18\x01 \x01(\tR\btaskName\x12(\n" +
 	"\x0fexecutionParams\x18\x02 \x01(\tR\x0fexecutionParams\x12\x1e\n" +
