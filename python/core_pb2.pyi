@@ -8,6 +8,11 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class WorkflowSource(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    WORKER: _ClassVar[WorkflowSource]
+    UNDEFINED: _ClassVar[WorkflowSource]
+
 class Comparator(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     COMPARATOR_UNSPECIFIED: _ClassVar[Comparator]
@@ -35,6 +40,8 @@ class SortDirection(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     SORT_DIRECTION_UNSPECIFIED: _ClassVar[SortDirection]
     ASC: _ClassVar[SortDirection]
     DESC: _ClassVar[SortDirection]
+WORKER: WorkflowSource
+UNDEFINED: WorkflowSource
 COMPARATOR_UNSPECIFIED: Comparator
 EQ: Comparator
 NEQ: Comparator
@@ -69,13 +76,15 @@ class DataFunction(_message.Message):
     settings: _shared_pb2.DataFunctionSettings
     def __init__(self, name: _Optional[str] = ..., hash: _Optional[str] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
 
-class DataFunctionWithWorkerId(_message.Message):
-    __slots__ = ("worker_id", "data_function")
-    WORKER_ID_FIELD_NUMBER: _ClassVar[int]
-    DATA_FUNCTION_FIELD_NUMBER: _ClassVar[int]
-    worker_id: str
-    data_function: DataFunction
-    def __init__(self, worker_id: _Optional[str] = ..., data_function: _Optional[_Union[DataFunction, _Mapping]] = ...) -> None: ...
+class DataFunctionReference(_message.Message):
+    __slots__ = ("df_name", "df_ast_hash", "df_worker_id")
+    DF_NAME_FIELD_NUMBER: _ClassVar[int]
+    DF_AST_HASH_FIELD_NUMBER: _ClassVar[int]
+    DF_WORKER_ID_FIELD_NUMBER: _ClassVar[int]
+    df_name: str
+    df_ast_hash: str
+    df_worker_id: str
+    def __init__(self, df_name: _Optional[str] = ..., df_ast_hash: _Optional[str] = ..., df_worker_id: _Optional[str] = ...) -> None: ...
 
 class Task(_message.Message):
     __slots__ = ("taskHash", "name", "description", "executionSettings", "inputModel", "outputModel", "requiredDataFunctions")
@@ -92,8 +101,8 @@ class Task(_message.Message):
     executionSettings: _shared_pb2.TaskExecutionSettings
     inputModel: bytes
     outputModel: bytes
-    requiredDataFunctions: _containers.RepeatedCompositeFieldContainer[DataFunctionWithWorkerId]
-    def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., requiredDataFunctions: _Optional[_Iterable[_Union[DataFunctionWithWorkerId, _Mapping]]] = ...) -> None: ...
+    requiredDataFunctions: _containers.RepeatedCompositeFieldContainer[DataFunctionReference]
+    def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., requiredDataFunctions: _Optional[_Iterable[_Union[DataFunctionReference, _Mapping]]] = ...) -> None: ...
 
 class WorkflowEdge(_message.Message):
     __slots__ = ("fromTaskName", "fromTaskHash", "fromTaskWorker", "toTaskName", "toTaskHash", "toTaskWorker")
@@ -112,7 +121,7 @@ class WorkflowEdge(_message.Message):
     def __init__(self, fromTaskName: _Optional[str] = ..., fromTaskHash: _Optional[str] = ..., fromTaskWorker: _Optional[str] = ..., toTaskName: _Optional[str] = ..., toTaskHash: _Optional[str] = ..., toTaskWorker: _Optional[str] = ...) -> None: ...
 
 class Workflow(_message.Message):
-    __slots__ = ("workflowName", "description", "workflowHash", "edges", "executionSettings", "inputModel", "haltOnFailure")
+    __slots__ = ("workflowName", "description", "workflowHash", "edges", "executionSettings", "inputModel", "haltOnFailure", "workflowSource")
     WORKFLOWNAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWHASH_FIELD_NUMBER: _ClassVar[int]
@@ -120,6 +129,7 @@ class Workflow(_message.Message):
     EXECUTIONSETTINGS_FIELD_NUMBER: _ClassVar[int]
     INPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     HALTONFAILURE_FIELD_NUMBER: _ClassVar[int]
+    WORKFLOWSOURCE_FIELD_NUMBER: _ClassVar[int]
     workflowName: str
     description: str
     workflowHash: str
@@ -127,7 +137,8 @@ class Workflow(_message.Message):
     executionSettings: _shared_pb2.WorkflowExecutionSettings
     inputModel: bytes
     haltOnFailure: bool
-    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., haltOnFailure: bool = ...) -> None: ...
+    workflowSource: WorkflowSource
+    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., haltOnFailure: bool = ..., workflowSource: _Optional[_Union[WorkflowSource, str]] = ...) -> None: ...
 
 class RegisterWorkerRequest(_message.Message):
     __slots__ = ("public_key",)

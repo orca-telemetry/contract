@@ -39,6 +39,39 @@ import {
 
 export const protobufPackage = "";
 
+export enum WorkflowSource {
+  WORKER = 0,
+  UNDEFINED = 1,
+  UNRECOGNIZED = -1,
+}
+
+export function workflowSourceFromJSON(object: any): WorkflowSource {
+  switch (object) {
+    case 0:
+    case "WORKER":
+      return WorkflowSource.WORKER;
+    case 1:
+    case "UNDEFINED":
+      return WorkflowSource.UNDEFINED;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return WorkflowSource.UNRECOGNIZED;
+  }
+}
+
+export function workflowSourceToJSON(object: WorkflowSource): string {
+  switch (object) {
+    case WorkflowSource.WORKER:
+      return "WORKER";
+    case WorkflowSource.UNDEFINED:
+      return "UNDEFINED";
+    case WorkflowSource.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 /** The comparator to apply in a LeafFilter. */
 export enum Comparator {
   COMPARATOR_UNSPECIFIED = 0,
@@ -267,13 +300,17 @@ export interface DataFunction {
  * A data function representation that is required to globally reference a data
  * function
  */
-export interface DataFunctionWithWorkerId {
-  /** The unique ID of the worker the data function is owned by */
-  workerId?:
+export interface DataFunctionReference {
+  /** The data function name */
+  dfName?:
     | string
     | undefined;
-  /** The data function definition */
-  dataFunction?: DataFunction | undefined;
+  /** Hash of the ast segment of the datafunction */
+  dfAstHash?:
+    | string
+    | undefined;
+  /** Worker ID of the datafunction */
+  dfWorkerId?: string | undefined;
 }
 
 /** Task defines a registered task and its execution configuration. */
@@ -309,7 +346,7 @@ export interface Task {
     | Buffer
     | undefined;
   /** RequiredDataFunctions lists all data functions this task depends on. */
-  requiredDataFunctions?: DataFunctionWithWorkerId[] | undefined;
+  requiredDataFunctions?: DataFunctionReference[] | undefined;
 }
 
 /**
@@ -377,7 +414,11 @@ export interface Workflow {
    * HaltOnFailure instructs the orchestrator to stop parallel task execution
    * if any task encounters a failure.
    */
-  haltOnFailure?: boolean | undefined;
+  haltOnFailure?:
+    | boolean
+    | undefined;
+  /** Where the workflow was defined */
+  workflowSource?: WorkflowSource | undefined;
 }
 
 /**
@@ -870,25 +911,28 @@ export const DataFunction: MessageFns<DataFunction> = {
   },
 };
 
-function createBaseDataFunctionWithWorkerId(): DataFunctionWithWorkerId {
-  return { workerId: "", dataFunction: undefined };
+function createBaseDataFunctionReference(): DataFunctionReference {
+  return { dfName: "", dfAstHash: "", dfWorkerId: "" };
 }
 
-export const DataFunctionWithWorkerId: MessageFns<DataFunctionWithWorkerId> = {
-  encode(message: DataFunctionWithWorkerId, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.workerId !== undefined && message.workerId !== "") {
-      writer.uint32(10).string(message.workerId);
+export const DataFunctionReference: MessageFns<DataFunctionReference> = {
+  encode(message: DataFunctionReference, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.dfName !== undefined && message.dfName !== "") {
+      writer.uint32(10).string(message.dfName);
     }
-    if (message.dataFunction !== undefined) {
-      DataFunction.encode(message.dataFunction, writer.uint32(18).fork()).join();
+    if (message.dfAstHash !== undefined && message.dfAstHash !== "") {
+      writer.uint32(18).string(message.dfAstHash);
+    }
+    if (message.dfWorkerId !== undefined && message.dfWorkerId !== "") {
+      writer.uint32(26).string(message.dfWorkerId);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): DataFunctionWithWorkerId {
+  decode(input: BinaryReader | Uint8Array, length?: number): DataFunctionReference {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseDataFunctionWithWorkerId();
+    const message = createBaseDataFunctionReference();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -897,7 +941,7 @@ export const DataFunctionWithWorkerId: MessageFns<DataFunctionWithWorkerId> = {
             break;
           }
 
-          message.workerId = reader.string();
+          message.dfName = reader.string();
           continue;
         }
         case 2: {
@@ -905,7 +949,15 @@ export const DataFunctionWithWorkerId: MessageFns<DataFunctionWithWorkerId> = {
             break;
           }
 
-          message.dataFunction = DataFunction.decode(reader, reader.uint32());
+          message.dfAstHash = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.dfWorkerId = reader.string();
           continue;
         }
       }
@@ -917,41 +969,48 @@ export const DataFunctionWithWorkerId: MessageFns<DataFunctionWithWorkerId> = {
     return message;
   },
 
-  fromJSON(object: any): DataFunctionWithWorkerId {
+  fromJSON(object: any): DataFunctionReference {
     return {
-      workerId: isSet(object.workerId)
-        ? globalThis.String(object.workerId)
-        : isSet(object.worker_id)
-        ? globalThis.String(object.worker_id)
+      dfName: isSet(object.dfName)
+        ? globalThis.String(object.dfName)
+        : isSet(object.df_name)
+        ? globalThis.String(object.df_name)
         : "",
-      dataFunction: isSet(object.dataFunction)
-        ? DataFunction.fromJSON(object.dataFunction)
-        : isSet(object.data_function)
-        ? DataFunction.fromJSON(object.data_function)
-        : undefined,
+      dfAstHash: isSet(object.dfAstHash)
+        ? globalThis.String(object.dfAstHash)
+        : isSet(object.df_ast_hash)
+        ? globalThis.String(object.df_ast_hash)
+        : "",
+      dfWorkerId: isSet(object.dfWorkerId)
+        ? globalThis.String(object.dfWorkerId)
+        : isSet(object.df_worker_id)
+        ? globalThis.String(object.df_worker_id)
+        : "",
     };
   },
 
-  toJSON(message: DataFunctionWithWorkerId): unknown {
+  toJSON(message: DataFunctionReference): unknown {
     const obj: any = {};
-    if (message.workerId !== undefined && message.workerId !== "") {
-      obj.workerId = message.workerId;
+    if (message.dfName !== undefined && message.dfName !== "") {
+      obj.dfName = message.dfName;
     }
-    if (message.dataFunction !== undefined) {
-      obj.dataFunction = DataFunction.toJSON(message.dataFunction);
+    if (message.dfAstHash !== undefined && message.dfAstHash !== "") {
+      obj.dfAstHash = message.dfAstHash;
+    }
+    if (message.dfWorkerId !== undefined && message.dfWorkerId !== "") {
+      obj.dfWorkerId = message.dfWorkerId;
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<DataFunctionWithWorkerId>, I>>(base?: I): DataFunctionWithWorkerId {
-    return DataFunctionWithWorkerId.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<DataFunctionReference>, I>>(base?: I): DataFunctionReference {
+    return DataFunctionReference.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<DataFunctionWithWorkerId>, I>>(object: I): DataFunctionWithWorkerId {
-    const message = createBaseDataFunctionWithWorkerId();
-    message.workerId = object.workerId ?? "";
-    message.dataFunction = (object.dataFunction !== undefined && object.dataFunction !== null)
-      ? DataFunction.fromPartial(object.dataFunction)
-      : undefined;
+  fromPartial<I extends Exact<DeepPartial<DataFunctionReference>, I>>(object: I): DataFunctionReference {
+    const message = createBaseDataFunctionReference();
+    message.dfName = object.dfName ?? "";
+    message.dfAstHash = object.dfAstHash ?? "";
+    message.dfWorkerId = object.dfWorkerId ?? "";
     return message;
   },
 };
@@ -990,7 +1049,7 @@ export const Task: MessageFns<Task> = {
     }
     if (message.requiredDataFunctions !== undefined && message.requiredDataFunctions.length !== 0) {
       for (const v of message.requiredDataFunctions) {
-        DataFunctionWithWorkerId.encode(v!, writer.uint32(58).fork()).join();
+        DataFunctionReference.encode(v!, writer.uint32(58).fork()).join();
       }
     }
     return writer;
@@ -1056,7 +1115,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          const el = DataFunctionWithWorkerId.decode(reader, reader.uint32());
+          const el = DataFunctionReference.decode(reader, reader.uint32());
           if (el !== undefined) {
             message.requiredDataFunctions!.push(el);
           }
@@ -1082,7 +1141,7 @@ export const Task: MessageFns<Task> = {
       inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
       outputModel: isSet(object.outputModel) ? Buffer.from(bytesFromBase64(object.outputModel)) : Buffer.alloc(0),
       requiredDataFunctions: globalThis.Array.isArray(object?.requiredDataFunctions)
-        ? object.requiredDataFunctions.map((e: any) => DataFunctionWithWorkerId.fromJSON(e))
+        ? object.requiredDataFunctions.map((e: any) => DataFunctionReference.fromJSON(e))
         : [],
     };
   },
@@ -1108,7 +1167,7 @@ export const Task: MessageFns<Task> = {
       obj.outputModel = base64FromBytes(message.outputModel);
     }
     if (message.requiredDataFunctions?.length) {
-      obj.requiredDataFunctions = message.requiredDataFunctions.map((e) => DataFunctionWithWorkerId.toJSON(e));
+      obj.requiredDataFunctions = message.requiredDataFunctions.map((e) => DataFunctionReference.toJSON(e));
     }
     return obj;
   },
@@ -1126,7 +1185,7 @@ export const Task: MessageFns<Task> = {
       : undefined;
     message.inputModel = object.inputModel ?? Buffer.alloc(0);
     message.outputModel = object.outputModel ?? Buffer.alloc(0);
-    message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => DataFunctionWithWorkerId.fromPartial(e)) ||
+    message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => DataFunctionReference.fromPartial(e)) ||
       [];
     return message;
   },
@@ -1281,6 +1340,7 @@ function createBaseWorkflow(): Workflow {
     executionSettings: undefined,
     inputModel: Buffer.alloc(0),
     haltOnFailure: false,
+    workflowSource: 0,
   };
 }
 
@@ -1308,6 +1368,9 @@ export const Workflow: MessageFns<Workflow> = {
     }
     if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
       writer.uint32(56).bool(message.haltOnFailure);
+    }
+    if (message.workflowSource !== undefined && message.workflowSource !== 0) {
+      writer.uint32(64).int32(message.workflowSource);
     }
     return writer;
   },
@@ -1378,6 +1441,14 @@ export const Workflow: MessageFns<Workflow> = {
           message.haltOnFailure = reader.bool();
           continue;
         }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.workflowSource = reader.int32() as any;
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1398,6 +1469,7 @@ export const Workflow: MessageFns<Workflow> = {
         : undefined,
       inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
       haltOnFailure: isSet(object.haltOnFailure) ? globalThis.Boolean(object.haltOnFailure) : false,
+      workflowSource: isSet(object.workflowSource) ? workflowSourceFromJSON(object.workflowSource) : 0,
     };
   },
 
@@ -1424,6 +1496,9 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
       obj.haltOnFailure = message.haltOnFailure;
     }
+    if (message.workflowSource !== undefined && message.workflowSource !== 0) {
+      obj.workflowSource = workflowSourceToJSON(message.workflowSource);
+    }
     return obj;
   },
 
@@ -1441,6 +1516,7 @@ export const Workflow: MessageFns<Workflow> = {
       : undefined;
     message.inputModel = object.inputModel ?? Buffer.alloc(0);
     message.haltOnFailure = object.haltOnFailure ?? false;
+    message.workflowSource = object.workflowSource ?? 0;
     return message;
   },
 };

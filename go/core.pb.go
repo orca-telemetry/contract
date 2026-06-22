@@ -22,6 +22,52 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type WorkflowSource int32
+
+const (
+	WorkflowSource_WORKER    WorkflowSource = 0
+	WorkflowSource_UNDEFINED WorkflowSource = 1
+)
+
+// Enum value maps for WorkflowSource.
+var (
+	WorkflowSource_name = map[int32]string{
+		0: "WORKER",
+		1: "UNDEFINED",
+	}
+	WorkflowSource_value = map[string]int32{
+		"WORKER":    0,
+		"UNDEFINED": 1,
+	}
+)
+
+func (x WorkflowSource) Enum() *WorkflowSource {
+	p := new(WorkflowSource)
+	*p = x
+	return p
+}
+
+func (x WorkflowSource) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (WorkflowSource) Descriptor() protoreflect.EnumDescriptor {
+	return file_core_proto_enumTypes[0].Descriptor()
+}
+
+func (WorkflowSource) Type() protoreflect.EnumType {
+	return &file_core_proto_enumTypes[0]
+}
+
+func (x WorkflowSource) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use WorkflowSource.Descriptor instead.
+func (WorkflowSource) EnumDescriptor() ([]byte, []int) {
+	return file_core_proto_rawDescGZIP(), []int{0}
+}
+
 // The comparator to apply in a LeafFilter.
 type Comparator int32
 
@@ -86,11 +132,11 @@ func (x Comparator) String() string {
 }
 
 func (Comparator) Descriptor() protoreflect.EnumDescriptor {
-	return file_core_proto_enumTypes[0].Descriptor()
+	return file_core_proto_enumTypes[1].Descriptor()
 }
 
 func (Comparator) Type() protoreflect.EnumType {
-	return &file_core_proto_enumTypes[0]
+	return &file_core_proto_enumTypes[1]
 }
 
 func (x Comparator) Number() protoreflect.EnumNumber {
@@ -99,7 +145,7 @@ func (x Comparator) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Comparator.Descriptor instead.
 func (Comparator) EnumDescriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{0}
+	return file_core_proto_rawDescGZIP(), []int{1}
 }
 
 // Identifies which data source a key belongs to, used in OrderByStatement.
@@ -136,11 +182,11 @@ func (x DataSource) String() string {
 }
 
 func (DataSource) Descriptor() protoreflect.EnumDescriptor {
-	return file_core_proto_enumTypes[1].Descriptor()
+	return file_core_proto_enumTypes[2].Descriptor()
 }
 
 func (DataSource) Type() protoreflect.EnumType {
-	return &file_core_proto_enumTypes[1]
+	return &file_core_proto_enumTypes[2]
 }
 
 func (x DataSource) Number() protoreflect.EnumNumber {
@@ -149,7 +195,7 @@ func (x DataSource) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DataSource.Descriptor instead.
 func (DataSource) EnumDescriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{1}
+	return file_core_proto_rawDescGZIP(), []int{2}
 }
 
 // Sort direction for an OrderByStatement.
@@ -186,11 +232,11 @@ func (x SortDirection) String() string {
 }
 
 func (SortDirection) Descriptor() protoreflect.EnumDescriptor {
-	return file_core_proto_enumTypes[2].Descriptor()
+	return file_core_proto_enumTypes[3].Descriptor()
 }
 
 func (SortDirection) Type() protoreflect.EnumType {
-	return &file_core_proto_enumTypes[2]
+	return &file_core_proto_enumTypes[3]
 }
 
 func (x SortDirection) Number() protoreflect.EnumNumber {
@@ -199,7 +245,7 @@ func (x SortDirection) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SortDirection.Descriptor instead.
 func (SortDirection) EnumDescriptor() ([]byte, []int) {
-	return file_core_proto_rawDescGZIP(), []int{2}
+	return file_core_proto_rawDescGZIP(), []int{3}
 }
 
 // DataFunction defines a registered data function and its metadata.
@@ -290,30 +336,32 @@ func (x *DataFunction) GetSettings() *DataFunctionSettings {
 
 // A data function representation that is required to globally reference a data
 // function
-type DataFunctionWithWorkerId struct {
+type DataFunctionReference struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The unique ID of the worker the data function is owned by
-	WorkerId string `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
-	// The data function definition
-	DataFunction  *DataFunction `protobuf:"bytes,2,opt,name=data_function,json=dataFunction,proto3" json:"data_function,omitempty"`
+	// The data function name
+	DfName string `protobuf:"bytes,1,opt,name=df_name,json=dfName,proto3" json:"df_name,omitempty"`
+	// Hash of the ast segment of the datafunction
+	DfAstHash string `protobuf:"bytes,2,opt,name=df_ast_hash,json=dfAstHash,proto3" json:"df_ast_hash,omitempty"`
+	// Worker ID of the datafunction
+	DfWorkerId    string `protobuf:"bytes,3,opt,name=df_worker_id,json=dfWorkerId,proto3" json:"df_worker_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *DataFunctionWithWorkerId) Reset() {
-	*x = DataFunctionWithWorkerId{}
+func (x *DataFunctionReference) Reset() {
+	*x = DataFunctionReference{}
 	mi := &file_core_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DataFunctionWithWorkerId) String() string {
+func (x *DataFunctionReference) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DataFunctionWithWorkerId) ProtoMessage() {}
+func (*DataFunctionReference) ProtoMessage() {}
 
-func (x *DataFunctionWithWorkerId) ProtoReflect() protoreflect.Message {
+func (x *DataFunctionReference) ProtoReflect() protoreflect.Message {
 	mi := &file_core_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -325,23 +373,30 @@ func (x *DataFunctionWithWorkerId) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DataFunctionWithWorkerId.ProtoReflect.Descriptor instead.
-func (*DataFunctionWithWorkerId) Descriptor() ([]byte, []int) {
+// Deprecated: Use DataFunctionReference.ProtoReflect.Descriptor instead.
+func (*DataFunctionReference) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *DataFunctionWithWorkerId) GetWorkerId() string {
+func (x *DataFunctionReference) GetDfName() string {
 	if x != nil {
-		return x.WorkerId
+		return x.DfName
 	}
 	return ""
 }
 
-func (x *DataFunctionWithWorkerId) GetDataFunction() *DataFunction {
+func (x *DataFunctionReference) GetDfAstHash() string {
 	if x != nil {
-		return x.DataFunction
+		return x.DfAstHash
 	}
-	return nil
+	return ""
+}
+
+func (x *DataFunctionReference) GetDfWorkerId() string {
+	if x != nil {
+		return x.DfWorkerId
+	}
+	return ""
 }
 
 // Task defines a registered task and its execution configuration.
@@ -362,7 +417,7 @@ type Task struct {
 	// the task's output. Validation and pointer extensions are not enforced.
 	OutputModel []byte `protobuf:"bytes,6,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
 	// RequiredDataFunctions lists all data functions this task depends on.
-	RequiredDataFunctions []*DataFunctionWithWorkerId `protobuf:"bytes,7,rep,name=requiredDataFunctions,proto3" json:"requiredDataFunctions,omitempty"`
+	RequiredDataFunctions []*DataFunctionReference `protobuf:"bytes,7,rep,name=requiredDataFunctions,proto3" json:"requiredDataFunctions,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -439,7 +494,7 @@ func (x *Task) GetOutputModel() []byte {
 	return nil
 }
 
-func (x *Task) GetRequiredDataFunctions() []*DataFunctionWithWorkerId {
+func (x *Task) GetRequiredDataFunctions() []*DataFunctionReference {
 	if x != nil {
 		return x.RequiredDataFunctions
 	}
@@ -558,8 +613,10 @@ type Workflow struct {
 	// HaltOnFailure instructs the orchestrator to stop parallel task execution
 	// if any task encounters a failure.
 	HaltOnFailure bool `protobuf:"varint,7,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Where the workflow was defined
+	WorkflowSource WorkflowSource `protobuf:"varint,8,opt,name=workflowSource,proto3,enum=WorkflowSource" json:"workflowSource,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *Workflow) Reset() {
@@ -639,6 +696,13 @@ func (x *Workflow) GetHaltOnFailure() bool {
 		return x.HaltOnFailure
 	}
 	return false
+}
+
+func (x *Workflow) GetWorkflowSource() WorkflowSource {
+	if x != nil {
+		return x.WorkflowSource
+	}
+	return WorkflowSource_WORKER
 }
 
 // ============================================================
@@ -2167,10 +2231,12 @@ const file_core_proto_rawDesc = "" +
 	"inputModel\x18\x03 \x01(\fR\n" +
 	"inputModel\x12 \n" +
 	"\voutputModel\x18\x04 \x01(\fR\voutputModel\x121\n" +
-	"\bsettings\x18\x05 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"k\n" +
-	"\x18DataFunctionWithWorkerId\x12\x1b\n" +
-	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x122\n" +
-	"\rdata_function\x18\x02 \x01(\v2\r.DataFunctionR\fdataFunction\"\xb1\x02\n" +
+	"\bsettings\x18\x05 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"r\n" +
+	"\x15DataFunctionReference\x12\x17\n" +
+	"\adf_name\x18\x01 \x01(\tR\x06dfName\x12\x1e\n" +
+	"\vdf_ast_hash\x18\x02 \x01(\tR\tdfAstHash\x12 \n" +
+	"\fdf_worker_id\x18\x03 \x01(\tR\n" +
+	"dfWorkerId\"\xae\x02\n" +
 	"\x04Task\x12\x1a\n" +
 	"\btaskHash\x18\x01 \x01(\tR\btaskHash\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -2179,8 +2245,8 @@ const file_core_proto_rawDesc = "" +
 	"\n" +
 	"inputModel\x18\x05 \x01(\fR\n" +
 	"inputModel\x12 \n" +
-	"\voutputModel\x18\x06 \x01(\fR\voutputModel\x12O\n" +
-	"\x15requiredDataFunctions\x18\a \x03(\v2\x19.DataFunctionWithWorkerIdR\x15requiredDataFunctions\"\xe2\x01\n" +
+	"\voutputModel\x18\x06 \x01(\fR\voutputModel\x12L\n" +
+	"\x15requiredDataFunctions\x18\a \x03(\v2\x16.DataFunctionReferenceR\x15requiredDataFunctions\"\xe2\x01\n" +
 	"\fWorkflowEdge\x12\"\n" +
 	"\ffromTaskName\x18\x01 \x01(\tR\ffromTaskName\x12\"\n" +
 	"\ffromTaskHash\x18\x02 \x01(\tR\ffromTaskHash\x12&\n" +
@@ -2191,7 +2257,7 @@ const file_core_proto_rawDesc = "" +
 	"\n" +
 	"toTaskHash\x18\x05 \x01(\tR\n" +
 	"toTaskHash\x12\"\n" +
-	"\ftoTaskWorker\x18\x06 \x01(\tR\ftoTaskWorker\"\xa9\x02\n" +
+	"\ftoTaskWorker\x18\x06 \x01(\tR\ftoTaskWorker\"\xe2\x02\n" +
 	"\bWorkflow\x12\"\n" +
 	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\"\n" +
@@ -2201,7 +2267,8 @@ const file_core_proto_rawDesc = "" +
 	"\n" +
 	"inputModel\x18\x06 \x01(\fR\n" +
 	"inputModel\x12$\n" +
-	"\rhaltOnFailure\x18\a \x01(\bR\rhaltOnFailure\"6\n" +
+	"\rhaltOnFailure\x18\a \x01(\bR\rhaltOnFailure\x127\n" +
+	"\x0eworkflowSource\x18\b \x01(\x0e2\x0f.WorkflowSourceR\x0eworkflowSource\"6\n" +
 	"\x15RegisterWorkerRequest\x12\x1d\n" +
 	"\n" +
 	"public_key\x18\x01 \x01(\fR\tpublicKey\"P\n" +
@@ -2302,7 +2369,11 @@ const file_core_proto_rawDesc = "" +
 	"\x10OrderByStatement\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12#\n" +
 	"\x06source\x18\x02 \x01(\x0e2\v.DataSourceR\x06source\x12,\n" +
-	"\tdirection\x18\x03 \x01(\x0e2\x0e.SortDirectionR\tdirection*\xa5\x01\n" +
+	"\tdirection\x18\x03 \x01(\x0e2\x0e.SortDirectionR\tdirection*+\n" +
+	"\x0eWorkflowSource\x12\n" +
+	"\n" +
+	"\x06WORKER\x10\x00\x12\r\n" +
+	"\tUNDEFINED\x10\x01*\xa5\x01\n" +
 	"\n" +
 	"Comparator\x12\x1a\n" +
 	"\x16COMPARATOR_UNSPECIFIED\x10\x00\x12\x06\n" +
@@ -2358,101 +2429,102 @@ func file_core_proto_rawDescGZIP() []byte {
 	return file_core_proto_rawDescData
 }
 
-var file_core_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_core_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
 var file_core_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_core_proto_goTypes = []any{
-	(Comparator)(0),                                // 0: Comparator
-	(DataSource)(0),                                // 1: DataSource
-	(SortDirection)(0),                             // 2: SortDirection
-	(*DataFunction)(nil),                           // 3: DataFunction
-	(*DataFunctionWithWorkerId)(nil),               // 4: DataFunctionWithWorkerId
-	(*Task)(nil),                                   // 5: Task
-	(*WorkflowEdge)(nil),                           // 6: WorkflowEdge
-	(*Workflow)(nil),                               // 7: Workflow
-	(*RegisterWorkerRequest)(nil),                  // 8: RegisterWorkerRequest
-	(*RegisterWorkerResponse)(nil),                 // 9: RegisterWorkerResponse
-	(*GetNonceRequest)(nil),                        // 10: GetNonceRequest
-	(*GetNonceResponse)(nil),                       // 11: GetNonceResponse
-	(*CheckNonceRequest)(nil),                      // 12: CheckNonceRequest
-	(*CheckNonceResponse)(nil),                     // 13: CheckNonceResponse
-	(*RegisterWorkerSnapshotRequest)(nil),          // 14: RegisterWorkerSnapshotRequest
-	(*RegisterWorkerSnapshotResponse)(nil),         // 15: RegisterWorkerSnapshotResponse
-	(*RegisterServingRequest)(nil),                 // 16: RegisterServingRequest
-	(*RegisterServingResponse)(nil),                // 17: RegisterServingResponse
-	(*TriggerWorkflowRequest)(nil),                 // 18: TriggerWorkflowRequest
-	(*TriggerWorkflowResponse)(nil),                // 19: TriggerWorkflowResponse
-	(*RegisterDataFunctionCompletionRequest)(nil),  // 20: RegisterDataFunctionCompletionRequest
-	(*RegisterDataFunctionCompletionResponse)(nil), // 21: RegisterDataFunctionCompletionResponse
-	(*RegisterTaskResultRequest)(nil),              // 22: RegisterTaskResultRequest
-	(*RegisterTaskResultResponse)(nil),             // 23: RegisterTaskResultResponse
-	(*ExposeStateRequest)(nil),                     // 24: ExposeStateRequest
-	(*ExposeStateResponse)(nil),                    // 25: ExposeStateResponse
-	(*QueryTaskRequest)(nil),                       // 26: QueryTaskRequest
-	(*QueryTaskResponse)(nil),                      // 27: QueryTaskResponse
-	(*TaskResult)(nil),                             // 28: TaskResult
-	(*FilterGroup)(nil),                            // 29: FilterGroup
-	(*LeafFilter)(nil),                             // 30: LeafFilter
-	(*StringList)(nil),                             // 31: StringList
-	(*OrderByStatement)(nil),                       // 32: OrderByStatement
-	(*DataFunctionSettings)(nil),                   // 33: DataFunctionSettings
-	(*TaskExecutionSettings)(nil),                  // 34: TaskExecutionSettings
-	(*WorkflowExecutionSettings)(nil),              // 35: WorkflowExecutionSettings
-	(*timestamppb.Timestamp)(nil),                  // 36: google.protobuf.Timestamp
-	(TriggerSource)(0),                             // 37: TriggerSource
-	(TriggerStatus)(0),                             // 38: TriggerStatus
-	(ExecutionStatus)(0),                           // 39: ExecutionStatus
-	(*ComputeMetrics)(nil),                         // 40: ComputeMetrics
+	(WorkflowSource)(0),                            // 0: WorkflowSource
+	(Comparator)(0),                                // 1: Comparator
+	(DataSource)(0),                                // 2: DataSource
+	(SortDirection)(0),                             // 3: SortDirection
+	(*DataFunction)(nil),                           // 4: DataFunction
+	(*DataFunctionReference)(nil),                  // 5: DataFunctionReference
+	(*Task)(nil),                                   // 6: Task
+	(*WorkflowEdge)(nil),                           // 7: WorkflowEdge
+	(*Workflow)(nil),                               // 8: Workflow
+	(*RegisterWorkerRequest)(nil),                  // 9: RegisterWorkerRequest
+	(*RegisterWorkerResponse)(nil),                 // 10: RegisterWorkerResponse
+	(*GetNonceRequest)(nil),                        // 11: GetNonceRequest
+	(*GetNonceResponse)(nil),                       // 12: GetNonceResponse
+	(*CheckNonceRequest)(nil),                      // 13: CheckNonceRequest
+	(*CheckNonceResponse)(nil),                     // 14: CheckNonceResponse
+	(*RegisterWorkerSnapshotRequest)(nil),          // 15: RegisterWorkerSnapshotRequest
+	(*RegisterWorkerSnapshotResponse)(nil),         // 16: RegisterWorkerSnapshotResponse
+	(*RegisterServingRequest)(nil),                 // 17: RegisterServingRequest
+	(*RegisterServingResponse)(nil),                // 18: RegisterServingResponse
+	(*TriggerWorkflowRequest)(nil),                 // 19: TriggerWorkflowRequest
+	(*TriggerWorkflowResponse)(nil),                // 20: TriggerWorkflowResponse
+	(*RegisterDataFunctionCompletionRequest)(nil),  // 21: RegisterDataFunctionCompletionRequest
+	(*RegisterDataFunctionCompletionResponse)(nil), // 22: RegisterDataFunctionCompletionResponse
+	(*RegisterTaskResultRequest)(nil),              // 23: RegisterTaskResultRequest
+	(*RegisterTaskResultResponse)(nil),             // 24: RegisterTaskResultResponse
+	(*ExposeStateRequest)(nil),                     // 25: ExposeStateRequest
+	(*ExposeStateResponse)(nil),                    // 26: ExposeStateResponse
+	(*QueryTaskRequest)(nil),                       // 27: QueryTaskRequest
+	(*QueryTaskResponse)(nil),                      // 28: QueryTaskResponse
+	(*TaskResult)(nil),                             // 29: TaskResult
+	(*FilterGroup)(nil),                            // 30: FilterGroup
+	(*LeafFilter)(nil),                             // 31: LeafFilter
+	(*StringList)(nil),                             // 32: StringList
+	(*OrderByStatement)(nil),                       // 33: OrderByStatement
+	(*DataFunctionSettings)(nil),                   // 34: DataFunctionSettings
+	(*TaskExecutionSettings)(nil),                  // 35: TaskExecutionSettings
+	(*WorkflowExecutionSettings)(nil),              // 36: WorkflowExecutionSettings
+	(*timestamppb.Timestamp)(nil),                  // 37: google.protobuf.Timestamp
+	(TriggerSource)(0),                             // 38: TriggerSource
+	(TriggerStatus)(0),                             // 39: TriggerStatus
+	(ExecutionStatus)(0),                           // 40: ExecutionStatus
+	(*ComputeMetrics)(nil),                         // 41: ComputeMetrics
 }
 var file_core_proto_depIdxs = []int32{
-	33, // 0: DataFunction.settings:type_name -> DataFunctionSettings
-	3,  // 1: DataFunctionWithWorkerId.data_function:type_name -> DataFunction
-	34, // 2: Task.executionSettings:type_name -> TaskExecutionSettings
-	4,  // 3: Task.requiredDataFunctions:type_name -> DataFunctionWithWorkerId
-	6,  // 4: Workflow.edges:type_name -> WorkflowEdge
-	35, // 5: Workflow.executionSettings:type_name -> WorkflowExecutionSettings
-	36, // 6: CheckNonceResponse.expires_at:type_name -> google.protobuf.Timestamp
-	3,  // 7: RegisterWorkerSnapshotRequest.dataFunctions:type_name -> DataFunction
-	5,  // 8: RegisterWorkerSnapshotRequest.tasks:type_name -> Task
-	7,  // 9: RegisterWorkerSnapshotRequest.workflows:type_name -> Workflow
-	36, // 10: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
-	37, // 11: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
-	38, // 12: TriggerWorkflowResponse.status:type_name -> TriggerStatus
-	39, // 13: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
-	39, // 14: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
-	40, // 15: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
-	36, // 16: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
-	5,  // 17: ExposeStateResponse.tasks:type_name -> Task
-	7,  // 18: ExposeStateResponse.workflows:type_name -> Workflow
-	3,  // 19: ExposeStateResponse.dataFunctions:type_name -> DataFunction
-	29, // 20: QueryTaskRequest.execution_parameter_filters:type_name -> FilterGroup
-	29, // 21: QueryTaskRequest.result_filters:type_name -> FilterGroup
-	32, // 22: QueryTaskRequest.order_by:type_name -> OrderByStatement
-	28, // 23: QueryTaskResponse.results:type_name -> TaskResult
-	30, // 24: FilterGroup.filters:type_name -> LeafFilter
-	0,  // 25: LeafFilter.comparator:type_name -> Comparator
-	31, // 26: LeafFilter.values:type_name -> StringList
-	1,  // 27: OrderByStatement.source:type_name -> DataSource
-	2,  // 28: OrderByStatement.direction:type_name -> SortDirection
-	8,  // 29: Core.RegisterWorker:input_type -> RegisterWorkerRequest
-	10, // 30: Core.GetNonce:input_type -> GetNonceRequest
-	12, // 31: Core.CheckNonce:input_type -> CheckNonceRequest
-	14, // 32: Core.RegisterWorkerSnapshot:input_type -> RegisterWorkerSnapshotRequest
-	16, // 33: Core.RegisterServing:input_type -> RegisterServingRequest
-	18, // 34: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
-	20, // 35: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
-	22, // 36: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
-	24, // 37: Core.ExposeState:input_type -> ExposeStateRequest
-	26, // 38: Core.QueryTaskResult:input_type -> QueryTaskRequest
-	9,  // 39: Core.RegisterWorker:output_type -> RegisterWorkerResponse
-	11, // 40: Core.GetNonce:output_type -> GetNonceResponse
-	13, // 41: Core.CheckNonce:output_type -> CheckNonceResponse
-	15, // 42: Core.RegisterWorkerSnapshot:output_type -> RegisterWorkerSnapshotResponse
-	17, // 43: Core.RegisterServing:output_type -> RegisterServingResponse
-	19, // 44: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
-	21, // 45: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
-	23, // 46: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
-	25, // 47: Core.ExposeState:output_type -> ExposeStateResponse
-	27, // 48: Core.QueryTaskResult:output_type -> QueryTaskResponse
+	34, // 0: DataFunction.settings:type_name -> DataFunctionSettings
+	35, // 1: Task.executionSettings:type_name -> TaskExecutionSettings
+	5,  // 2: Task.requiredDataFunctions:type_name -> DataFunctionReference
+	7,  // 3: Workflow.edges:type_name -> WorkflowEdge
+	36, // 4: Workflow.executionSettings:type_name -> WorkflowExecutionSettings
+	0,  // 5: Workflow.workflowSource:type_name -> WorkflowSource
+	37, // 6: CheckNonceResponse.expires_at:type_name -> google.protobuf.Timestamp
+	4,  // 7: RegisterWorkerSnapshotRequest.dataFunctions:type_name -> DataFunction
+	6,  // 8: RegisterWorkerSnapshotRequest.tasks:type_name -> Task
+	8,  // 9: RegisterWorkerSnapshotRequest.workflows:type_name -> Workflow
+	37, // 10: TriggerWorkflowRequest.logicalDate:type_name -> google.protobuf.Timestamp
+	38, // 11: TriggerWorkflowRequest.triggerSource:type_name -> TriggerSource
+	39, // 12: TriggerWorkflowResponse.status:type_name -> TriggerStatus
+	40, // 13: RegisterDataFunctionCompletionRequest.status:type_name -> ExecutionStatus
+	40, // 14: RegisterTaskResultRequest.status:type_name -> ExecutionStatus
+	41, // 15: RegisterTaskResultRequest.computeMetrics:type_name -> ComputeMetrics
+	37, // 16: ExposeStateRequest.timestamp:type_name -> google.protobuf.Timestamp
+	6,  // 17: ExposeStateResponse.tasks:type_name -> Task
+	8,  // 18: ExposeStateResponse.workflows:type_name -> Workflow
+	4,  // 19: ExposeStateResponse.dataFunctions:type_name -> DataFunction
+	30, // 20: QueryTaskRequest.execution_parameter_filters:type_name -> FilterGroup
+	30, // 21: QueryTaskRequest.result_filters:type_name -> FilterGroup
+	33, // 22: QueryTaskRequest.order_by:type_name -> OrderByStatement
+	29, // 23: QueryTaskResponse.results:type_name -> TaskResult
+	31, // 24: FilterGroup.filters:type_name -> LeafFilter
+	1,  // 25: LeafFilter.comparator:type_name -> Comparator
+	32, // 26: LeafFilter.values:type_name -> StringList
+	2,  // 27: OrderByStatement.source:type_name -> DataSource
+	3,  // 28: OrderByStatement.direction:type_name -> SortDirection
+	9,  // 29: Core.RegisterWorker:input_type -> RegisterWorkerRequest
+	11, // 30: Core.GetNonce:input_type -> GetNonceRequest
+	13, // 31: Core.CheckNonce:input_type -> CheckNonceRequest
+	15, // 32: Core.RegisterWorkerSnapshot:input_type -> RegisterWorkerSnapshotRequest
+	17, // 33: Core.RegisterServing:input_type -> RegisterServingRequest
+	19, // 34: Core.TriggerWorkflow:input_type -> TriggerWorkflowRequest
+	21, // 35: Core.RegisterDataFunctionResult:input_type -> RegisterDataFunctionCompletionRequest
+	23, // 36: Core.RegisterTaskResult:input_type -> RegisterTaskResultRequest
+	25, // 37: Core.ExposeState:input_type -> ExposeStateRequest
+	27, // 38: Core.QueryTaskResult:input_type -> QueryTaskRequest
+	10, // 39: Core.RegisterWorker:output_type -> RegisterWorkerResponse
+	12, // 40: Core.GetNonce:output_type -> GetNonceResponse
+	14, // 41: Core.CheckNonce:output_type -> CheckNonceResponse
+	16, // 42: Core.RegisterWorkerSnapshot:output_type -> RegisterWorkerSnapshotResponse
+	18, // 43: Core.RegisterServing:output_type -> RegisterServingResponse
+	20, // 44: Core.TriggerWorkflow:output_type -> TriggerWorkflowResponse
+	22, // 45: Core.RegisterDataFunctionResult:output_type -> RegisterDataFunctionCompletionResponse
+	24, // 46: Core.RegisterTaskResult:output_type -> RegisterTaskResultResponse
+	26, // 47: Core.ExposeState:output_type -> ExposeStateResponse
+	28, // 48: Core.QueryTaskResult:output_type -> QueryTaskResponse
 	39, // [39:49] is the sub-list for method output_type
 	29, // [29:39] is the sub-list for method input_type
 	29, // [29:29] is the sub-list for extension type_name
@@ -2479,7 +2551,7 @@ func file_core_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_core_proto_rawDesc), len(file_core_proto_rawDesc)),
-			NumEnums:      3,
+			NumEnums:      4,
 			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   1,
