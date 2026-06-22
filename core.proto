@@ -91,7 +91,7 @@ message Task {
   bytes outputModel = 6;
 
   // RequiredDataFunctions lists all data functions this task depends on.
-  repeated string requiredDataFunctions = 7;
+  repeated DataFunction requiredDataFunctions = 7;
 }
 
 // WorkflowEdge defines the relationship between two tasks in the workflow.

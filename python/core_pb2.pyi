@@ -84,8 +84,8 @@ class Task(_message.Message):
     executionSettings: _shared_pb2.TaskExecutionSettings
     inputModel: bytes
     outputModel: bytes
-    requiredDataFunctions: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., requiredDataFunctions: _Optional[_Iterable[str]] = ...) -> None: ...
+    requiredDataFunctions: _containers.RepeatedCompositeFieldContainer[DataFunction]
+    def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., requiredDataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ...) -> None: ...
 
 class WorkflowEdge(_message.Message):
     __slots__ = ("fromTaskName", "fromTaskHash", "fromTaskWorker", "toTaskName", "toTaskHash", "toTaskWorker")

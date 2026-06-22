@@ -296,7 +296,7 @@ export interface Task {
     | Buffer
     | undefined;
   /** RequiredDataFunctions lists all data functions this task depends on. */
-  requiredDataFunctions?: string[] | undefined;
+  requiredDataFunctions?: DataFunction[] | undefined;
 }
 
 /**
@@ -891,7 +891,7 @@ export const Task: MessageFns<Task> = {
     }
     if (message.requiredDataFunctions !== undefined && message.requiredDataFunctions.length !== 0) {
       for (const v of message.requiredDataFunctions) {
-        writer.uint32(58).string(v!);
+        DataFunction.encode(v!, writer.uint32(58).fork()).join();
       }
     }
     return writer;
@@ -957,7 +957,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          const el = reader.string();
+          const el = DataFunction.decode(reader, reader.uint32());
           if (el !== undefined) {
             message.requiredDataFunctions!.push(el);
           }
@@ -983,7 +983,7 @@ export const Task: MessageFns<Task> = {
       inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
       outputModel: isSet(object.outputModel) ? Buffer.from(bytesFromBase64(object.outputModel)) : Buffer.alloc(0),
       requiredDataFunctions: globalThis.Array.isArray(object?.requiredDataFunctions)
-        ? object.requiredDataFunctions.map((e: any) => globalThis.String(e))
+        ? object.requiredDataFunctions.map((e: any) => DataFunction.fromJSON(e))
         : [],
     };
   },
@@ -1009,7 +1009,7 @@ export const Task: MessageFns<Task> = {
       obj.outputModel = base64FromBytes(message.outputModel);
     }
     if (message.requiredDataFunctions?.length) {
-      obj.requiredDataFunctions = message.requiredDataFunctions;
+      obj.requiredDataFunctions = message.requiredDataFunctions.map((e) => DataFunction.toJSON(e));
     }
     return obj;
   },
@@ -1027,7 +1027,7 @@ export const Task: MessageFns<Task> = {
       : undefined;
     message.inputModel = object.inputModel ?? Buffer.alloc(0);
     message.outputModel = object.outputModel ?? Buffer.alloc(0);
-    message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => e) || [];
+    message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
     return message;
   },
 };
