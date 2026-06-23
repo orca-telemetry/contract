@@ -96,6 +96,10 @@ message WorkflowExecutionSettings {
   // ConcurrencyLimit caps the number of tasks that may execute in
   // parallel at any point in time.
   int32 concurrencyLimit = 2;
+
+  // HaltOnFailure instructs the orchestrator to stop parallel task execution
+  // if any task encounters a failure.
+  bool haltOnFailure = 3;
 }
 
 // ComputeMetrics captures resource consumption for a single task execution.

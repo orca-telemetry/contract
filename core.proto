@@ -156,12 +156,9 @@ message Workflow {
   // parameters that must be provided at workflow trigger time.
   bytes inputModel = 6;
 
-  // HaltOnFailure instructs the orchestrator to stop parallel task execution
-  // if any task encounters a failure.
-  bool haltOnFailure = 7;
 
   // Where the workflow was defined
-  WorkflowSource workflowSource = 8;
+  WorkflowSource workflowSource = 7;
 }
 
 
