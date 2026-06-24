@@ -270,10 +270,6 @@ export interface DataFunction {
   name?:
     | string
     | undefined;
-  /** Hash is the hash of the AST segment that defines the data function. */
-  hash?:
-    | string
-    | undefined;
   /**
    * InputModel is a marshalled JSON schema describing the accepted input.
    * This model must be satisfied by the execution model of the owning workflow.
@@ -305,18 +301,14 @@ export interface DataFunctionReference {
   dfName?:
     | string
     | undefined;
-  /** Hash of the ast segment of the datafunction */
-  dfAstHash?:
-    | string
-    | undefined;
   /** Worker ID of the datafunction */
   dfWorkerId?: string | undefined;
 }
 
 /** Task defines a registered task and its execution configuration. */
 export interface Task {
-  /** TaskHash is the hash of the AST segment corresponding to this task. */
-  taskHash?:
+  /** GitCommitHash is the commit where this task was registered */
+  gitCommitHash?:
     | string
     | undefined;
   /** Name is the unique name of this task. */
@@ -358,24 +350,24 @@ export interface WorkflowEdge {
   fromTaskName?:
     | string
     | undefined;
-  /** The hash of the AST segment of the task */
-  fromTaskHash?:
+  /** The git commit of the task */
+  fromTaskGitCommitHash?:
     | string
     | undefined;
-  /** The worker that implements the task */
-  fromTaskWorker?:
+  /** The ID of the worker that implements the task */
+  fromTaskWorkerId?:
     | string
     | undefined;
   /** The name of the task going from */
   toTaskName?:
     | string
     | undefined;
-  /** The hash of the AST segment of the task */
-  toTaskHash?:
+  /** The git commit of the task */
+  toTaskGitCommitHash?:
     | string
     | undefined;
-  /** The worker that implements the task */
-  toTaskWorker?: string | undefined;
+  /** The ID of the worker that implements the task */
+  toTaskWorkerId?: string | undefined;
 }
 
 /** Workflow defines a registered workflow, its task graph, and runtime settings. */
@@ -409,13 +401,6 @@ export interface Workflow {
    */
   inputModel?:
     | Buffer
-    | undefined;
-  /**
-   * HaltOnFailure instructs the orchestrator to stop parallel task execution
-   * if any task encounters a failure.
-   */
-  haltOnFailure?:
-    | boolean
     | undefined;
   /** Where the workflow was defined */
   workflowSource?: WorkflowSource | undefined;
@@ -786,7 +771,7 @@ export interface OrderByStatement {
 }
 
 function createBaseDataFunction(): DataFunction {
-  return { name: "", hash: "", inputModel: Buffer.alloc(0), outputModel: Buffer.alloc(0), settings: undefined };
+  return { name: "", inputModel: Buffer.alloc(0), outputModel: Buffer.alloc(0), settings: undefined };
 }
 
 export const DataFunction: MessageFns<DataFunction> = {
@@ -794,17 +779,14 @@ export const DataFunction: MessageFns<DataFunction> = {
     if (message.name !== undefined && message.name !== "") {
       writer.uint32(10).string(message.name);
     }
-    if (message.hash !== undefined && message.hash !== "") {
-      writer.uint32(18).string(message.hash);
-    }
     if (message.inputModel !== undefined && message.inputModel.length !== 0) {
-      writer.uint32(26).bytes(message.inputModel);
+      writer.uint32(18).bytes(message.inputModel);
     }
     if (message.outputModel !== undefined && message.outputModel.length !== 0) {
-      writer.uint32(34).bytes(message.outputModel);
+      writer.uint32(26).bytes(message.outputModel);
     }
     if (message.settings !== undefined) {
-      DataFunctionSettings.encode(message.settings, writer.uint32(42).fork()).join();
+      DataFunctionSettings.encode(message.settings, writer.uint32(34).fork()).join();
     }
     return writer;
   },
@@ -829,7 +811,7 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.hash = reader.string();
+          message.inputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 3: {
@@ -837,19 +819,11 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.inputModel = Buffer.from(reader.bytes());
+          message.outputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 4: {
           if (tag !== 34) {
-            break;
-          }
-
-          message.outputModel = Buffer.from(reader.bytes());
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
             break;
           }
 
@@ -868,7 +842,6 @@ export const DataFunction: MessageFns<DataFunction> = {
   fromJSON(object: any): DataFunction {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
-      hash: isSet(object.hash) ? globalThis.String(object.hash) : "",
       inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
       outputModel: isSet(object.outputModel) ? Buffer.from(bytesFromBase64(object.outputModel)) : Buffer.alloc(0),
       settings: isSet(object.settings) ? DataFunctionSettings.fromJSON(object.settings) : undefined,
@@ -879,9 +852,6 @@ export const DataFunction: MessageFns<DataFunction> = {
     const obj: any = {};
     if (message.name !== undefined && message.name !== "") {
       obj.name = message.name;
-    }
-    if (message.hash !== undefined && message.hash !== "") {
-      obj.hash = message.hash;
     }
     if (message.inputModel !== undefined && message.inputModel.length !== 0) {
       obj.inputModel = base64FromBytes(message.inputModel);
@@ -901,7 +871,6 @@ export const DataFunction: MessageFns<DataFunction> = {
   fromPartial<I extends Exact<DeepPartial<DataFunction>, I>>(object: I): DataFunction {
     const message = createBaseDataFunction();
     message.name = object.name ?? "";
-    message.hash = object.hash ?? "";
     message.inputModel = object.inputModel ?? Buffer.alloc(0);
     message.outputModel = object.outputModel ?? Buffer.alloc(0);
     message.settings = (object.settings !== undefined && object.settings !== null)
@@ -912,7 +881,7 @@ export const DataFunction: MessageFns<DataFunction> = {
 };
 
 function createBaseDataFunctionReference(): DataFunctionReference {
-  return { dfName: "", dfAstHash: "", dfWorkerId: "" };
+  return { dfName: "", dfWorkerId: "" };
 }
 
 export const DataFunctionReference: MessageFns<DataFunctionReference> = {
@@ -920,11 +889,8 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
     if (message.dfName !== undefined && message.dfName !== "") {
       writer.uint32(10).string(message.dfName);
     }
-    if (message.dfAstHash !== undefined && message.dfAstHash !== "") {
-      writer.uint32(18).string(message.dfAstHash);
-    }
     if (message.dfWorkerId !== undefined && message.dfWorkerId !== "") {
-      writer.uint32(26).string(message.dfWorkerId);
+      writer.uint32(18).string(message.dfWorkerId);
     }
     return writer;
   },
@@ -949,14 +915,6 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
             break;
           }
 
-          message.dfAstHash = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
           message.dfWorkerId = reader.string();
           continue;
         }
@@ -976,11 +934,6 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
         : isSet(object.df_name)
         ? globalThis.String(object.df_name)
         : "",
-      dfAstHash: isSet(object.dfAstHash)
-        ? globalThis.String(object.dfAstHash)
-        : isSet(object.df_ast_hash)
-        ? globalThis.String(object.df_ast_hash)
-        : "",
       dfWorkerId: isSet(object.dfWorkerId)
         ? globalThis.String(object.dfWorkerId)
         : isSet(object.df_worker_id)
@@ -994,9 +947,6 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
     if (message.dfName !== undefined && message.dfName !== "") {
       obj.dfName = message.dfName;
     }
-    if (message.dfAstHash !== undefined && message.dfAstHash !== "") {
-      obj.dfAstHash = message.dfAstHash;
-    }
     if (message.dfWorkerId !== undefined && message.dfWorkerId !== "") {
       obj.dfWorkerId = message.dfWorkerId;
     }
@@ -1009,7 +959,6 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
   fromPartial<I extends Exact<DeepPartial<DataFunctionReference>, I>>(object: I): DataFunctionReference {
     const message = createBaseDataFunctionReference();
     message.dfName = object.dfName ?? "";
-    message.dfAstHash = object.dfAstHash ?? "";
     message.dfWorkerId = object.dfWorkerId ?? "";
     return message;
   },
@@ -1017,7 +966,7 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
 
 function createBaseTask(): Task {
   return {
-    taskHash: "",
+    gitCommitHash: "",
     name: "",
     description: "",
     executionSettings: undefined,
@@ -1029,8 +978,8 @@ function createBaseTask(): Task {
 
 export const Task: MessageFns<Task> = {
   encode(message: Task, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.taskHash !== undefined && message.taskHash !== "") {
-      writer.uint32(10).string(message.taskHash);
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      writer.uint32(10).string(message.gitCommitHash);
     }
     if (message.name !== undefined && message.name !== "") {
       writer.uint32(18).string(message.name);
@@ -1067,7 +1016,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          message.taskHash = reader.string();
+          message.gitCommitHash = reader.string();
           continue;
         }
         case 2: {
@@ -1132,7 +1081,7 @@ export const Task: MessageFns<Task> = {
 
   fromJSON(object: any): Task {
     return {
-      taskHash: isSet(object.taskHash) ? globalThis.String(object.taskHash) : "",
+      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       executionSettings: isSet(object.executionSettings)
@@ -1148,8 +1097,8 @@ export const Task: MessageFns<Task> = {
 
   toJSON(message: Task): unknown {
     const obj: any = {};
-    if (message.taskHash !== undefined && message.taskHash !== "") {
-      obj.taskHash = message.taskHash;
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      obj.gitCommitHash = message.gitCommitHash;
     }
     if (message.name !== undefined && message.name !== "") {
       obj.name = message.name;
@@ -1177,7 +1126,7 @@ export const Task: MessageFns<Task> = {
   },
   fromPartial<I extends Exact<DeepPartial<Task>, I>>(object: I): Task {
     const message = createBaseTask();
-    message.taskHash = object.taskHash ?? "";
+    message.gitCommitHash = object.gitCommitHash ?? "";
     message.name = object.name ?? "";
     message.description = object.description ?? "";
     message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)
@@ -1192,7 +1141,14 @@ export const Task: MessageFns<Task> = {
 };
 
 function createBaseWorkflowEdge(): WorkflowEdge {
-  return { fromTaskName: "", fromTaskHash: "", fromTaskWorker: "", toTaskName: "", toTaskHash: "", toTaskWorker: "" };
+  return {
+    fromTaskName: "",
+    fromTaskGitCommitHash: "",
+    fromTaskWorkerId: "",
+    toTaskName: "",
+    toTaskGitCommitHash: "",
+    toTaskWorkerId: "",
+  };
 }
 
 export const WorkflowEdge: MessageFns<WorkflowEdge> = {
@@ -1200,20 +1156,20 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
     if (message.fromTaskName !== undefined && message.fromTaskName !== "") {
       writer.uint32(10).string(message.fromTaskName);
     }
-    if (message.fromTaskHash !== undefined && message.fromTaskHash !== "") {
-      writer.uint32(18).string(message.fromTaskHash);
+    if (message.fromTaskGitCommitHash !== undefined && message.fromTaskGitCommitHash !== "") {
+      writer.uint32(18).string(message.fromTaskGitCommitHash);
     }
-    if (message.fromTaskWorker !== undefined && message.fromTaskWorker !== "") {
-      writer.uint32(26).string(message.fromTaskWorker);
+    if (message.fromTaskWorkerId !== undefined && message.fromTaskWorkerId !== "") {
+      writer.uint32(26).string(message.fromTaskWorkerId);
     }
     if (message.toTaskName !== undefined && message.toTaskName !== "") {
       writer.uint32(34).string(message.toTaskName);
     }
-    if (message.toTaskHash !== undefined && message.toTaskHash !== "") {
-      writer.uint32(42).string(message.toTaskHash);
+    if (message.toTaskGitCommitHash !== undefined && message.toTaskGitCommitHash !== "") {
+      writer.uint32(42).string(message.toTaskGitCommitHash);
     }
-    if (message.toTaskWorker !== undefined && message.toTaskWorker !== "") {
-      writer.uint32(50).string(message.toTaskWorker);
+    if (message.toTaskWorkerId !== undefined && message.toTaskWorkerId !== "") {
+      writer.uint32(50).string(message.toTaskWorkerId);
     }
     return writer;
   },
@@ -1238,7 +1194,7 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
             break;
           }
 
-          message.fromTaskHash = reader.string();
+          message.fromTaskGitCommitHash = reader.string();
           continue;
         }
         case 3: {
@@ -1246,7 +1202,7 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
             break;
           }
 
-          message.fromTaskWorker = reader.string();
+          message.fromTaskWorkerId = reader.string();
           continue;
         }
         case 4: {
@@ -1262,7 +1218,7 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
             break;
           }
 
-          message.toTaskHash = reader.string();
+          message.toTaskGitCommitHash = reader.string();
           continue;
         }
         case 6: {
@@ -1270,7 +1226,7 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
             break;
           }
 
-          message.toTaskWorker = reader.string();
+          message.toTaskWorkerId = reader.string();
           continue;
         }
       }
@@ -1285,11 +1241,11 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
   fromJSON(object: any): WorkflowEdge {
     return {
       fromTaskName: isSet(object.fromTaskName) ? globalThis.String(object.fromTaskName) : "",
-      fromTaskHash: isSet(object.fromTaskHash) ? globalThis.String(object.fromTaskHash) : "",
-      fromTaskWorker: isSet(object.fromTaskWorker) ? globalThis.String(object.fromTaskWorker) : "",
+      fromTaskGitCommitHash: isSet(object.fromTaskGitCommitHash) ? globalThis.String(object.fromTaskGitCommitHash) : "",
+      fromTaskWorkerId: isSet(object.fromTaskWorkerId) ? globalThis.String(object.fromTaskWorkerId) : "",
       toTaskName: isSet(object.toTaskName) ? globalThis.String(object.toTaskName) : "",
-      toTaskHash: isSet(object.toTaskHash) ? globalThis.String(object.toTaskHash) : "",
-      toTaskWorker: isSet(object.toTaskWorker) ? globalThis.String(object.toTaskWorker) : "",
+      toTaskGitCommitHash: isSet(object.toTaskGitCommitHash) ? globalThis.String(object.toTaskGitCommitHash) : "",
+      toTaskWorkerId: isSet(object.toTaskWorkerId) ? globalThis.String(object.toTaskWorkerId) : "",
     };
   },
 
@@ -1298,20 +1254,20 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
     if (message.fromTaskName !== undefined && message.fromTaskName !== "") {
       obj.fromTaskName = message.fromTaskName;
     }
-    if (message.fromTaskHash !== undefined && message.fromTaskHash !== "") {
-      obj.fromTaskHash = message.fromTaskHash;
+    if (message.fromTaskGitCommitHash !== undefined && message.fromTaskGitCommitHash !== "") {
+      obj.fromTaskGitCommitHash = message.fromTaskGitCommitHash;
     }
-    if (message.fromTaskWorker !== undefined && message.fromTaskWorker !== "") {
-      obj.fromTaskWorker = message.fromTaskWorker;
+    if (message.fromTaskWorkerId !== undefined && message.fromTaskWorkerId !== "") {
+      obj.fromTaskWorkerId = message.fromTaskWorkerId;
     }
     if (message.toTaskName !== undefined && message.toTaskName !== "") {
       obj.toTaskName = message.toTaskName;
     }
-    if (message.toTaskHash !== undefined && message.toTaskHash !== "") {
-      obj.toTaskHash = message.toTaskHash;
+    if (message.toTaskGitCommitHash !== undefined && message.toTaskGitCommitHash !== "") {
+      obj.toTaskGitCommitHash = message.toTaskGitCommitHash;
     }
-    if (message.toTaskWorker !== undefined && message.toTaskWorker !== "") {
-      obj.toTaskWorker = message.toTaskWorker;
+    if (message.toTaskWorkerId !== undefined && message.toTaskWorkerId !== "") {
+      obj.toTaskWorkerId = message.toTaskWorkerId;
     }
     return obj;
   },
@@ -1322,11 +1278,11 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
   fromPartial<I extends Exact<DeepPartial<WorkflowEdge>, I>>(object: I): WorkflowEdge {
     const message = createBaseWorkflowEdge();
     message.fromTaskName = object.fromTaskName ?? "";
-    message.fromTaskHash = object.fromTaskHash ?? "";
-    message.fromTaskWorker = object.fromTaskWorker ?? "";
+    message.fromTaskGitCommitHash = object.fromTaskGitCommitHash ?? "";
+    message.fromTaskWorkerId = object.fromTaskWorkerId ?? "";
     message.toTaskName = object.toTaskName ?? "";
-    message.toTaskHash = object.toTaskHash ?? "";
-    message.toTaskWorker = object.toTaskWorker ?? "";
+    message.toTaskGitCommitHash = object.toTaskGitCommitHash ?? "";
+    message.toTaskWorkerId = object.toTaskWorkerId ?? "";
     return message;
   },
 };
@@ -1339,7 +1295,6 @@ function createBaseWorkflow(): Workflow {
     edges: [],
     executionSettings: undefined,
     inputModel: Buffer.alloc(0),
-    haltOnFailure: false,
     workflowSource: 0,
   };
 }
@@ -1366,11 +1321,8 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.inputModel !== undefined && message.inputModel.length !== 0) {
       writer.uint32(50).bytes(message.inputModel);
     }
-    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
-      writer.uint32(56).bool(message.haltOnFailure);
-    }
     if (message.workflowSource !== undefined && message.workflowSource !== 0) {
-      writer.uint32(64).int32(message.workflowSource);
+      writer.uint32(56).int32(message.workflowSource);
     }
     return writer;
   },
@@ -1438,14 +1390,6 @@ export const Workflow: MessageFns<Workflow> = {
             break;
           }
 
-          message.haltOnFailure = reader.bool();
-          continue;
-        }
-        case 8: {
-          if (tag !== 64) {
-            break;
-          }
-
           message.workflowSource = reader.int32() as any;
           continue;
         }
@@ -1468,7 +1412,6 @@ export const Workflow: MessageFns<Workflow> = {
         ? WorkflowExecutionSettings.fromJSON(object.executionSettings)
         : undefined,
       inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
-      haltOnFailure: isSet(object.haltOnFailure) ? globalThis.Boolean(object.haltOnFailure) : false,
       workflowSource: isSet(object.workflowSource) ? workflowSourceFromJSON(object.workflowSource) : 0,
     };
   },
@@ -1493,9 +1436,6 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.inputModel !== undefined && message.inputModel.length !== 0) {
       obj.inputModel = base64FromBytes(message.inputModel);
     }
-    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
-      obj.haltOnFailure = message.haltOnFailure;
-    }
     if (message.workflowSource !== undefined && message.workflowSource !== 0) {
       obj.workflowSource = workflowSourceToJSON(message.workflowSource);
     }
@@ -1515,7 +1455,6 @@ export const Workflow: MessageFns<Workflow> = {
       ? WorkflowExecutionSettings.fromPartial(object.executionSettings)
       : undefined;
     message.inputModel = object.inputModel ?? Buffer.alloc(0);
-    message.haltOnFailure = object.haltOnFailure ?? false;
     message.workflowSource = object.workflowSource ?? 0;
     return message;
   },

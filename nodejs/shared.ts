@@ -261,7 +261,14 @@ export interface WorkflowExecutionSettings {
    * ConcurrencyLimit caps the number of tasks that may execute in
    * parallel at any point in time.
    */
-  concurrencyLimit?: number | undefined;
+  concurrencyLimit?:
+    | number
+    | undefined;
+  /**
+   * HaltOnFailure instructs the orchestrator to stop parallel task execution
+   * if any task encounters a failure.
+   */
+  haltOnFailure?: boolean | undefined;
 }
 
 /** ComputeMetrics captures resource consumption for a single task execution. */
@@ -551,7 +558,7 @@ export const RequiredPastResult: MessageFns<RequiredPastResult> = {
 };
 
 function createBaseWorkflowExecutionSettings(): WorkflowExecutionSettings {
-  return { priorityQueue: [], concurrencyLimit: 0 };
+  return { priorityQueue: [], concurrencyLimit: 0, haltOnFailure: false };
 }
 
 export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = {
@@ -563,6 +570,9 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
     }
     if (message.concurrencyLimit !== undefined && message.concurrencyLimit !== 0) {
       writer.uint32(16).int32(message.concurrencyLimit);
+    }
+    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
+      writer.uint32(24).bool(message.haltOnFailure);
     }
     return writer;
   },
@@ -593,6 +603,14 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
           message.concurrencyLimit = reader.int32();
           continue;
         }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.haltOnFailure = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -608,6 +626,7 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
         ? object.priorityQueue.map((e: any) => globalThis.String(e))
         : [],
       concurrencyLimit: isSet(object.concurrencyLimit) ? globalThis.Number(object.concurrencyLimit) : 0,
+      haltOnFailure: isSet(object.haltOnFailure) ? globalThis.Boolean(object.haltOnFailure) : false,
     };
   },
 
@@ -619,6 +638,9 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
     if (message.concurrencyLimit !== undefined && message.concurrencyLimit !== 0) {
       obj.concurrencyLimit = Math.round(message.concurrencyLimit);
     }
+    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
+      obj.haltOnFailure = message.haltOnFailure;
+    }
     return obj;
   },
 
@@ -629,6 +651,7 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
     const message = createBaseWorkflowExecutionSettings();
     message.priorityQueue = object.priorityQueue?.map((e) => e) || [];
     message.concurrencyLimit = object.concurrencyLimit ?? 0;
+    message.haltOnFailure = object.haltOnFailure ?? false;
     return message;
   },
 };

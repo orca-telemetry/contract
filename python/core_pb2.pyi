@@ -63,72 +63,67 @@ ASC: SortDirection
 DESC: SortDirection
 
 class DataFunction(_message.Message):
-    __slots__ = ("name", "hash", "inputModel", "outputModel", "settings")
+    __slots__ = ("name", "inputModel", "outputModel", "settings")
     NAME_FIELD_NUMBER: _ClassVar[int]
-    HASH_FIELD_NUMBER: _ClassVar[int]
     INPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     OUTPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
     name: str
-    hash: str
     inputModel: bytes
     outputModel: bytes
     settings: _shared_pb2.DataFunctionSettings
-    def __init__(self, name: _Optional[str] = ..., hash: _Optional[str] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
 
 class DataFunctionReference(_message.Message):
-    __slots__ = ("df_name", "df_ast_hash", "df_worker_id")
+    __slots__ = ("df_name", "df_worker_id")
     DF_NAME_FIELD_NUMBER: _ClassVar[int]
-    DF_AST_HASH_FIELD_NUMBER: _ClassVar[int]
     DF_WORKER_ID_FIELD_NUMBER: _ClassVar[int]
     df_name: str
-    df_ast_hash: str
     df_worker_id: str
-    def __init__(self, df_name: _Optional[str] = ..., df_ast_hash: _Optional[str] = ..., df_worker_id: _Optional[str] = ...) -> None: ...
+    def __init__(self, df_name: _Optional[str] = ..., df_worker_id: _Optional[str] = ...) -> None: ...
 
 class Task(_message.Message):
-    __slots__ = ("taskHash", "name", "description", "executionSettings", "inputModel", "outputModel", "requiredDataFunctions")
-    TASKHASH_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("gitCommitHash", "name", "description", "executionSettings", "inputModel", "outputModel", "requiredDataFunctions")
+    GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     EXECUTIONSETTINGS_FIELD_NUMBER: _ClassVar[int]
     INPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     OUTPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     REQUIREDDATAFUNCTIONS_FIELD_NUMBER: _ClassVar[int]
-    taskHash: str
+    gitCommitHash: str
     name: str
     description: str
     executionSettings: _shared_pb2.TaskExecutionSettings
     inputModel: bytes
     outputModel: bytes
     requiredDataFunctions: _containers.RepeatedCompositeFieldContainer[DataFunctionReference]
-    def __init__(self, taskHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., requiredDataFunctions: _Optional[_Iterable[_Union[DataFunctionReference, _Mapping]]] = ...) -> None: ...
+    def __init__(self, gitCommitHash: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., executionSettings: _Optional[_Union[_shared_pb2.TaskExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., requiredDataFunctions: _Optional[_Iterable[_Union[DataFunctionReference, _Mapping]]] = ...) -> None: ...
 
 class WorkflowEdge(_message.Message):
-    __slots__ = ("fromTaskName", "fromTaskHash", "fromTaskWorker", "toTaskName", "toTaskHash", "toTaskWorker")
+    __slots__ = ("fromTaskName", "fromTaskGitCommitHash", "fromTaskWorkerId", "toTaskName", "toTaskGitCommitHash", "toTaskWorkerId")
     FROMTASKNAME_FIELD_NUMBER: _ClassVar[int]
-    FROMTASKHASH_FIELD_NUMBER: _ClassVar[int]
-    FROMTASKWORKER_FIELD_NUMBER: _ClassVar[int]
+    FROMTASKGITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
+    FROMTASKWORKERID_FIELD_NUMBER: _ClassVar[int]
     TOTASKNAME_FIELD_NUMBER: _ClassVar[int]
-    TOTASKHASH_FIELD_NUMBER: _ClassVar[int]
-    TOTASKWORKER_FIELD_NUMBER: _ClassVar[int]
+    TOTASKGITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
+    TOTASKWORKERID_FIELD_NUMBER: _ClassVar[int]
     fromTaskName: str
-    fromTaskHash: str
-    fromTaskWorker: str
+    fromTaskGitCommitHash: str
+    fromTaskWorkerId: str
     toTaskName: str
-    toTaskHash: str
-    toTaskWorker: str
-    def __init__(self, fromTaskName: _Optional[str] = ..., fromTaskHash: _Optional[str] = ..., fromTaskWorker: _Optional[str] = ..., toTaskName: _Optional[str] = ..., toTaskHash: _Optional[str] = ..., toTaskWorker: _Optional[str] = ...) -> None: ...
+    toTaskGitCommitHash: str
+    toTaskWorkerId: str
+    def __init__(self, fromTaskName: _Optional[str] = ..., fromTaskGitCommitHash: _Optional[str] = ..., fromTaskWorkerId: _Optional[str] = ..., toTaskName: _Optional[str] = ..., toTaskGitCommitHash: _Optional[str] = ..., toTaskWorkerId: _Optional[str] = ...) -> None: ...
 
 class Workflow(_message.Message):
-    __slots__ = ("workflowName", "description", "workflowHash", "edges", "executionSettings", "inputModel", "haltOnFailure", "workflowSource")
+    __slots__ = ("workflowName", "description", "workflowHash", "edges", "executionSettings", "inputModel", "workflowSource")
     WORKFLOWNAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWHASH_FIELD_NUMBER: _ClassVar[int]
     EDGES_FIELD_NUMBER: _ClassVar[int]
     EXECUTIONSETTINGS_FIELD_NUMBER: _ClassVar[int]
     INPUTMODEL_FIELD_NUMBER: _ClassVar[int]
-    HALTONFAILURE_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWSOURCE_FIELD_NUMBER: _ClassVar[int]
     workflowName: str
     description: str
@@ -136,9 +131,8 @@ class Workflow(_message.Message):
     edges: _containers.RepeatedCompositeFieldContainer[WorkflowEdge]
     executionSettings: _shared_pb2.WorkflowExecutionSettings
     inputModel: bytes
-    haltOnFailure: bool
     workflowSource: WorkflowSource
-    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., haltOnFailure: bool = ..., workflowSource: _Optional[_Union[WorkflowSource, str]] = ...) -> None: ...
+    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., workflowSource: _Optional[_Union[WorkflowSource, str]] = ...) -> None: ...
 
 class RegisterWorkerRequest(_message.Message):
     __slots__ = ("public_key",)

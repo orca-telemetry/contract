@@ -253,18 +253,16 @@ type DataFunction struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Name is the globally unique identifier for this data function.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Hash is the hash of the AST segment that defines the data function.
-	Hash string `protobuf:"bytes,2,opt,name=hash,proto3" json:"hash,omitempty"`
 	// InputModel is a marshalled JSON schema describing the accepted input.
 	// This model must be satisfied by the execution model of the owning workflow.
-	InputModel []byte `protobuf:"bytes,3,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
+	InputModel []byte `protobuf:"bytes,2,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
 	// OutputModel is a marshalled JSON schema describing a single output record.
 	// The data function produces an array of this schema, streamed to the
 	// orchestrator for caching. Validated once at retrieval time.
-	OutputModel []byte `protobuf:"bytes,4,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
+	OutputModel []byte `protobuf:"bytes,3,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
 	// Settings governs the lifecycle and retention of data produced by this
 	// data function.
-	Settings      *DataFunctionSettings `protobuf:"bytes,5,opt,name=settings,proto3" json:"settings,omitempty"`
+	Settings      *DataFunctionSettings `protobuf:"bytes,4,opt,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -306,13 +304,6 @@ func (x *DataFunction) GetName() string {
 	return ""
 }
 
-func (x *DataFunction) GetHash() string {
-	if x != nil {
-		return x.Hash
-	}
-	return ""
-}
-
 func (x *DataFunction) GetInputModel() []byte {
 	if x != nil {
 		return x.InputModel
@@ -340,10 +331,8 @@ type DataFunctionReference struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The data function name
 	DfName string `protobuf:"bytes,1,opt,name=df_name,json=dfName,proto3" json:"df_name,omitempty"`
-	// Hash of the ast segment of the datafunction
-	DfAstHash string `protobuf:"bytes,2,opt,name=df_ast_hash,json=dfAstHash,proto3" json:"df_ast_hash,omitempty"`
 	// Worker ID of the datafunction
-	DfWorkerId    string `protobuf:"bytes,3,opt,name=df_worker_id,json=dfWorkerId,proto3" json:"df_worker_id,omitempty"`
+	DfWorkerId    string `protobuf:"bytes,2,opt,name=df_worker_id,json=dfWorkerId,proto3" json:"df_worker_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -385,13 +374,6 @@ func (x *DataFunctionReference) GetDfName() string {
 	return ""
 }
 
-func (x *DataFunctionReference) GetDfAstHash() string {
-	if x != nil {
-		return x.DfAstHash
-	}
-	return ""
-}
-
 func (x *DataFunctionReference) GetDfWorkerId() string {
 	if x != nil {
 		return x.DfWorkerId
@@ -402,8 +384,8 @@ func (x *DataFunctionReference) GetDfWorkerId() string {
 // Task defines a registered task and its execution configuration.
 type Task struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// TaskHash is the hash of the AST segment corresponding to this task.
-	TaskHash string `protobuf:"bytes,1,opt,name=taskHash,proto3" json:"taskHash,omitempty"`
+	// GitCommitHash is the commit where this task was registered
+	GitCommitHash string `protobuf:"bytes,1,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
 	// Name is the unique name of this task.
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// Description is a human-readable summary of the task's purpose.
@@ -452,9 +434,9 @@ func (*Task) Descriptor() ([]byte, []int) {
 	return file_core_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Task) GetTaskHash() string {
+func (x *Task) GetGitCommitHash() string {
 	if x != nil {
-		return x.TaskHash
+		return x.GitCommitHash
 	}
 	return ""
 }
@@ -507,18 +489,18 @@ type WorkflowEdge struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The name of the task going from
 	FromTaskName string `protobuf:"bytes,1,opt,name=fromTaskName,proto3" json:"fromTaskName,omitempty"`
-	// The hash of the AST segment of the task
-	FromTaskHash string `protobuf:"bytes,2,opt,name=fromTaskHash,proto3" json:"fromTaskHash,omitempty"`
-	// The worker that implements the task
-	FromTaskWorker string `protobuf:"bytes,3,opt,name=fromTaskWorker,proto3" json:"fromTaskWorker,omitempty"`
+	// The git commit of the task
+	FromTaskGitCommitHash string `protobuf:"bytes,2,opt,name=fromTaskGitCommitHash,proto3" json:"fromTaskGitCommitHash,omitempty"`
+	// The ID of the worker that implements the task
+	FromTaskWorkerId string `protobuf:"bytes,3,opt,name=fromTaskWorkerId,proto3" json:"fromTaskWorkerId,omitempty"`
 	// The name of the task going from
 	ToTaskName string `protobuf:"bytes,4,opt,name=toTaskName,proto3" json:"toTaskName,omitempty"`
-	// The hash of the AST segment of the task
-	ToTaskHash string `protobuf:"bytes,5,opt,name=toTaskHash,proto3" json:"toTaskHash,omitempty"`
-	// The worker that implements the task
-	ToTaskWorker  string `protobuf:"bytes,6,opt,name=toTaskWorker,proto3" json:"toTaskWorker,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// The git commit of the task
+	ToTaskGitCommitHash string `protobuf:"bytes,5,opt,name=toTaskGitCommitHash,proto3" json:"toTaskGitCommitHash,omitempty"`
+	// The ID of the worker that implements the task
+	ToTaskWorkerId string `protobuf:"bytes,6,opt,name=toTaskWorkerId,proto3" json:"toTaskWorkerId,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *WorkflowEdge) Reset() {
@@ -558,16 +540,16 @@ func (x *WorkflowEdge) GetFromTaskName() string {
 	return ""
 }
 
-func (x *WorkflowEdge) GetFromTaskHash() string {
+func (x *WorkflowEdge) GetFromTaskGitCommitHash() string {
 	if x != nil {
-		return x.FromTaskHash
+		return x.FromTaskGitCommitHash
 	}
 	return ""
 }
 
-func (x *WorkflowEdge) GetFromTaskWorker() string {
+func (x *WorkflowEdge) GetFromTaskWorkerId() string {
 	if x != nil {
-		return x.FromTaskWorker
+		return x.FromTaskWorkerId
 	}
 	return ""
 }
@@ -579,16 +561,16 @@ func (x *WorkflowEdge) GetToTaskName() string {
 	return ""
 }
 
-func (x *WorkflowEdge) GetToTaskHash() string {
+func (x *WorkflowEdge) GetToTaskGitCommitHash() string {
 	if x != nil {
-		return x.ToTaskHash
+		return x.ToTaskGitCommitHash
 	}
 	return ""
 }
 
-func (x *WorkflowEdge) GetToTaskWorker() string {
+func (x *WorkflowEdge) GetToTaskWorkerId() string {
 	if x != nil {
-		return x.ToTaskWorker
+		return x.ToTaskWorkerId
 	}
 	return ""
 }
@@ -610,11 +592,8 @@ type Workflow struct {
 	// InputModel is a marshalled JSON schema describing the
 	// parameters that must be provided at workflow trigger time.
 	InputModel []byte `protobuf:"bytes,6,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
-	// HaltOnFailure instructs the orchestrator to stop parallel task execution
-	// if any task encounters a failure.
-	HaltOnFailure bool `protobuf:"varint,7,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
 	// Where the workflow was defined
-	WorkflowSource WorkflowSource `protobuf:"varint,8,opt,name=workflowSource,proto3,enum=WorkflowSource" json:"workflowSource,omitempty"`
+	WorkflowSource WorkflowSource `protobuf:"varint,7,opt,name=workflowSource,proto3,enum=WorkflowSource" json:"workflowSource,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -689,13 +668,6 @@ func (x *Workflow) GetInputModel() []byte {
 		return x.InputModel
 	}
 	return nil
-}
-
-func (x *Workflow) GetHaltOnFailure() bool {
-	if x != nil {
-		return x.HaltOnFailure
-	}
-	return false
 }
 
 func (x *Workflow) GetWorkflowSource() WorkflowSource {
@@ -2223,22 +2195,20 @@ var File_core_proto protoreflect.FileDescriptor
 const file_core_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"core.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\fshared.proto\"\xab\x01\n" +
+	"core.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\fshared.proto\"\x97\x01\n" +
 	"\fDataFunction\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
-	"\x04hash\x18\x02 \x01(\tR\x04hash\x12\x1e\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1e\n" +
 	"\n" +
-	"inputModel\x18\x03 \x01(\fR\n" +
+	"inputModel\x18\x02 \x01(\fR\n" +
 	"inputModel\x12 \n" +
-	"\voutputModel\x18\x04 \x01(\fR\voutputModel\x121\n" +
-	"\bsettings\x18\x05 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"r\n" +
+	"\voutputModel\x18\x03 \x01(\fR\voutputModel\x121\n" +
+	"\bsettings\x18\x04 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"R\n" +
 	"\x15DataFunctionReference\x12\x17\n" +
-	"\adf_name\x18\x01 \x01(\tR\x06dfName\x12\x1e\n" +
-	"\vdf_ast_hash\x18\x02 \x01(\tR\tdfAstHash\x12 \n" +
-	"\fdf_worker_id\x18\x03 \x01(\tR\n" +
-	"dfWorkerId\"\xae\x02\n" +
-	"\x04Task\x12\x1a\n" +
-	"\btaskHash\x18\x01 \x01(\tR\btaskHash\x12\x12\n" +
+	"\adf_name\x18\x01 \x01(\tR\x06dfName\x12 \n" +
+	"\fdf_worker_id\x18\x02 \x01(\tR\n" +
+	"dfWorkerId\"\xb8\x02\n" +
+	"\x04Task\x12$\n" +
+	"\rgitCommitHash\x18\x01 \x01(\tR\rgitCommitHash\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12D\n" +
 	"\x11executionSettings\x18\x04 \x01(\v2\x16.TaskExecutionSettingsR\x11executionSettings\x12\x1e\n" +
@@ -2246,18 +2216,16 @@ const file_core_proto_rawDesc = "" +
 	"inputModel\x18\x05 \x01(\fR\n" +
 	"inputModel\x12 \n" +
 	"\voutputModel\x18\x06 \x01(\fR\voutputModel\x12L\n" +
-	"\x15requiredDataFunctions\x18\a \x03(\v2\x16.DataFunctionReferenceR\x15requiredDataFunctions\"\xe2\x01\n" +
+	"\x15requiredDataFunctions\x18\a \x03(\v2\x16.DataFunctionReferenceR\x15requiredDataFunctions\"\x8e\x02\n" +
 	"\fWorkflowEdge\x12\"\n" +
-	"\ffromTaskName\x18\x01 \x01(\tR\ffromTaskName\x12\"\n" +
-	"\ffromTaskHash\x18\x02 \x01(\tR\ffromTaskHash\x12&\n" +
-	"\x0efromTaskWorker\x18\x03 \x01(\tR\x0efromTaskWorker\x12\x1e\n" +
+	"\ffromTaskName\x18\x01 \x01(\tR\ffromTaskName\x124\n" +
+	"\x15fromTaskGitCommitHash\x18\x02 \x01(\tR\x15fromTaskGitCommitHash\x12*\n" +
+	"\x10fromTaskWorkerId\x18\x03 \x01(\tR\x10fromTaskWorkerId\x12\x1e\n" +
 	"\n" +
 	"toTaskName\x18\x04 \x01(\tR\n" +
-	"toTaskName\x12\x1e\n" +
-	"\n" +
-	"toTaskHash\x18\x05 \x01(\tR\n" +
-	"toTaskHash\x12\"\n" +
-	"\ftoTaskWorker\x18\x06 \x01(\tR\ftoTaskWorker\"\xe2\x02\n" +
+	"toTaskName\x120\n" +
+	"\x13toTaskGitCommitHash\x18\x05 \x01(\tR\x13toTaskGitCommitHash\x12&\n" +
+	"\x0etoTaskWorkerId\x18\x06 \x01(\tR\x0etoTaskWorkerId\"\xbc\x02\n" +
 	"\bWorkflow\x12\"\n" +
 	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\"\n" +
@@ -2266,9 +2234,8 @@ const file_core_proto_rawDesc = "" +
 	"\x11executionSettings\x18\x05 \x01(\v2\x1a.WorkflowExecutionSettingsR\x11executionSettings\x12\x1e\n" +
 	"\n" +
 	"inputModel\x18\x06 \x01(\fR\n" +
-	"inputModel\x12$\n" +
-	"\rhaltOnFailure\x18\a \x01(\bR\rhaltOnFailure\x127\n" +
-	"\x0eworkflowSource\x18\b \x01(\x0e2\x0f.WorkflowSourceR\x0eworkflowSource\"6\n" +
+	"inputModel\x127\n" +
+	"\x0eworkflowSource\x18\a \x01(\x0e2\x0f.WorkflowSourceR\x0eworkflowSource\"6\n" +
 	"\x15RegisterWorkerRequest\x12\x1d\n" +
 	"\n" +
 	"public_key\x18\x01 \x01(\fR\tpublicKey\"P\n" +

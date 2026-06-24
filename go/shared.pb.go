@@ -437,8 +437,11 @@ type WorkflowExecutionSettings struct {
 	// ConcurrencyLimit caps the number of tasks that may execute in
 	// parallel at any point in time.
 	ConcurrencyLimit int32 `protobuf:"varint,2,opt,name=concurrencyLimit,proto3" json:"concurrencyLimit,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// HaltOnFailure instructs the orchestrator to stop parallel task execution
+	// if any task encounters a failure.
+	HaltOnFailure bool `protobuf:"varint,3,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *WorkflowExecutionSettings) Reset() {
@@ -483,6 +486,13 @@ func (x *WorkflowExecutionSettings) GetConcurrencyLimit() int32 {
 		return x.ConcurrencyLimit
 	}
 	return 0
+}
+
+func (x *WorkflowExecutionSettings) GetHaltOnFailure() bool {
+	if x != nil {
+		return x.HaltOnFailure
+	}
+	return false
 }
 
 // ComputeMetrics captures resource consumption for a single task execution.
@@ -560,10 +570,11 @@ const file_shared_proto_rawDesc = "" +
 	"\x0fexecutionParams\x18\x02 \x01(\tR\x0fexecutionParams\x12\x1e\n" +
 	"\n" +
 	"taskResult\x18\x03 \x01(\tR\n" +
-	"taskResult\"m\n" +
+	"taskResult\"\x93\x01\n" +
 	"\x19WorkflowExecutionSettings\x12$\n" +
 	"\rpriorityQueue\x18\x01 \x03(\tR\rpriorityQueue\x12*\n" +
-	"\x10concurrencyLimit\x18\x02 \x01(\x05R\x10concurrencyLimit\"\\\n" +
+	"\x10concurrencyLimit\x18\x02 \x01(\x05R\x10concurrencyLimit\x12$\n" +
+	"\rhaltOnFailure\x18\x03 \x01(\bR\rhaltOnFailure\"\\\n" +
 	"\x0eComputeMetrics\x12\x1e\n" +
 	"\n" +
 	"cpuSeconds\x18\x01 \x01(\x01R\n" +

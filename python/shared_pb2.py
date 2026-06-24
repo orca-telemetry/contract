@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cshared.proto\"4\n\x14\x44\x61taFunctionSettings\x12\x0b\n\x03ttl\x18\x01 \x01(\x05\x12\x0f\n\x07timeout\x18\x02 \x01(\x05\"\x82\x01\n\x15TaskExecutionSettings\x12\x18\n\x10\x65xecutionTimeout\x18\x01 \x01(\x05\x12\x12\n\nretryCount\x18\x02 \x01(\x05\x12)\n\x0f\x62\x61\x63koffStrategy\x18\x03 \x01(\x0e\x32\x10.BackoffStrategy\x12\x10\n\x08\x64\x65\x61\x64line\x18\x04 \x01(\x05\"S\n\x12RequiredPastResult\x12\x10\n\x08taskName\x18\x01 \x01(\t\x12\x17\n\x0f\x65xecutionParams\x18\x02 \x01(\t\x12\x12\n\ntaskResult\x18\x03 \x01(\t\"L\n\x19WorkflowExecutionSettings\x12\x15\n\rpriorityQueue\x18\x01 \x03(\t\x12\x18\n\x10\x63oncurrencyLimit\x18\x02 \x01(\x05\">\n\x0e\x43omputeMetrics\x12\x12\n\ncpuSeconds\x18\x01 \x01(\x01\x12\x18\n\x10memoryGiBSeconds\x18\x02 \x01(\x01*\x93\x01\n\rTriggerSource\x12\x1e\n\x1aTRIGGER_SOURCE_UNSPECIFIED\x10\x00\x12\x17\n\x13TRIGGER_SOURCE_CRON\x10\x01\x12\x1a\n\x16TRIGGER_SOURCE_WEBHOOK\x10\x02\x12\x15\n\x11TRIGGER_SOURCE_UI\x10\x03\x12\x16\n\x12TRIGGER_SOURCE_CLI\x10\x04*i\n\rTriggerStatus\x12\x1e\n\x1aTRIGGER_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n\x17TRIGGER_STATUS_ACCEPTED\x10\x01\x12\x1b\n\x17TRIGGER_STATUS_REJECTED\x10\x02*q\n\x0f\x45xecutionStatus\x12 \n\x1c\x45XECUTION_STATUS_UNSPECIFIED\x10\x00\x12\x1f\n\x1b\x45XECUTION_STATUS_SUCCESSFUL\x10\x01\x12\x1b\n\x17\x45XECUTION_STATUS_FAILED\x10\x02*r\n\x0f\x42\x61\x63koffStrategy\x12 \n\x1c\x42\x41\x43KOFF_STRATEGY_UNSPECIFIED\x10\x00\x12\x1b\n\x17\x42\x41\x43KOFF_STRATEGY_LINEAR\x10\x01\x12 \n\x1c\x42\x41\x43KOFF_STRATEGY_EXPONENTIAL\x10\x02\x42*Z(github.com/orca-telemetry/contract/go/v2b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cshared.proto\"4\n\x14\x44\x61taFunctionSettings\x12\x0b\n\x03ttl\x18\x01 \x01(\x05\x12\x0f\n\x07timeout\x18\x02 \x01(\x05\"\x82\x01\n\x15TaskExecutionSettings\x12\x18\n\x10\x65xecutionTimeout\x18\x01 \x01(\x05\x12\x12\n\nretryCount\x18\x02 \x01(\x05\x12)\n\x0f\x62\x61\x63koffStrategy\x18\x03 \x01(\x0e\x32\x10.BackoffStrategy\x12\x10\n\x08\x64\x65\x61\x64line\x18\x04 \x01(\x05\"S\n\x12RequiredPastResult\x12\x10\n\x08taskName\x18\x01 \x01(\t\x12\x17\n\x0f\x65xecutionParams\x18\x02 \x01(\t\x12\x12\n\ntaskResult\x18\x03 \x01(\t\"c\n\x19WorkflowExecutionSettings\x12\x15\n\rpriorityQueue\x18\x01 \x03(\t\x12\x18\n\x10\x63oncurrencyLimit\x18\x02 \x01(\x05\x12\x15\n\rhaltOnFailure\x18\x03 \x01(\x08\">\n\x0e\x43omputeMetrics\x12\x12\n\ncpuSeconds\x18\x01 \x01(\x01\x12\x18\n\x10memoryGiBSeconds\x18\x02 \x01(\x01*\x93\x01\n\rTriggerSource\x12\x1e\n\x1aTRIGGER_SOURCE_UNSPECIFIED\x10\x00\x12\x17\n\x13TRIGGER_SOURCE_CRON\x10\x01\x12\x1a\n\x16TRIGGER_SOURCE_WEBHOOK\x10\x02\x12\x15\n\x11TRIGGER_SOURCE_UI\x10\x03\x12\x16\n\x12TRIGGER_SOURCE_CLI\x10\x04*i\n\rTriggerStatus\x12\x1e\n\x1aTRIGGER_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n\x17TRIGGER_STATUS_ACCEPTED\x10\x01\x12\x1b\n\x17TRIGGER_STATUS_REJECTED\x10\x02*q\n\x0f\x45xecutionStatus\x12 \n\x1c\x45XECUTION_STATUS_UNSPECIFIED\x10\x00\x12\x1f\n\x1b\x45XECUTION_STATUS_SUCCESSFUL\x10\x01\x12\x1b\n\x17\x45XECUTION_STATUS_FAILED\x10\x02*r\n\x0f\x42\x61\x63koffStrategy\x12 \n\x1c\x42\x41\x43KOFF_STRATEGY_UNSPECIFIED\x10\x00\x12\x1b\n\x17\x42\x41\x43KOFF_STRATEGY_LINEAR\x10\x01\x12 \n\x1c\x42\x41\x43KOFF_STRATEGY_EXPONENTIAL\x10\x02\x42*Z(github.com/orca-telemetry/contract/go/v2b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,14 +32,14 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'shared_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z(github.com/orca-telemetry/contract/go/v2'
-  _globals['_TRIGGERSOURCE']._serialized_start=431
-  _globals['_TRIGGERSOURCE']._serialized_end=578
-  _globals['_TRIGGERSTATUS']._serialized_start=580
-  _globals['_TRIGGERSTATUS']._serialized_end=685
-  _globals['_EXECUTIONSTATUS']._serialized_start=687
-  _globals['_EXECUTIONSTATUS']._serialized_end=800
-  _globals['_BACKOFFSTRATEGY']._serialized_start=802
-  _globals['_BACKOFFSTRATEGY']._serialized_end=916
+  _globals['_TRIGGERSOURCE']._serialized_start=454
+  _globals['_TRIGGERSOURCE']._serialized_end=601
+  _globals['_TRIGGERSTATUS']._serialized_start=603
+  _globals['_TRIGGERSTATUS']._serialized_end=708
+  _globals['_EXECUTIONSTATUS']._serialized_start=710
+  _globals['_EXECUTIONSTATUS']._serialized_end=823
+  _globals['_BACKOFFSTRATEGY']._serialized_start=825
+  _globals['_BACKOFFSTRATEGY']._serialized_end=939
   _globals['_DATAFUNCTIONSETTINGS']._serialized_start=16
   _globals['_DATAFUNCTIONSETTINGS']._serialized_end=68
   _globals['_TASKEXECUTIONSETTINGS']._serialized_start=71
@@ -47,7 +47,7 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_REQUIREDPASTRESULT']._serialized_start=203
   _globals['_REQUIREDPASTRESULT']._serialized_end=286
   _globals['_WORKFLOWEXECUTIONSETTINGS']._serialized_start=288
-  _globals['_WORKFLOWEXECUTIONSETTINGS']._serialized_end=364
-  _globals['_COMPUTEMETRICS']._serialized_start=366
-  _globals['_COMPUTEMETRICS']._serialized_end=428
+  _globals['_WORKFLOWEXECUTIONSETTINGS']._serialized_end=387
+  _globals['_COMPUTEMETRICS']._serialized_start=389
+  _globals['_COMPUTEMETRICS']._serialized_end=451
 # @@protoc_insertion_point(module_scope)

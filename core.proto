@@ -51,21 +51,18 @@ message DataFunction {
   // Name is the globally unique identifier for this data function.
   string name = 1;
 
-  // Hash is the hash of the AST segment that defines the data function.
-  string hash = 2;
-
   // InputModel is a marshalled JSON schema describing the accepted input.
   // This model must be satisfied by the execution model of the owning workflow.
-  bytes inputModel = 3;
+  bytes inputModel = 2;
 
   // OutputModel is a marshalled JSON schema describing a single output record.
   // The data function produces an array of this schema, streamed to the
   // orchestrator for caching. Validated once at retrieval time.
-  bytes outputModel = 4;
+  bytes outputModel = 3;
 
   // Settings governs the lifecycle and retention of data produced by this
   // data function.
-  DataFunctionSettings settings = 5;
+  DataFunctionSettings settings = 4;
 }
 
 // A data function representation that is required to globally reference a data
@@ -74,17 +71,14 @@ message DataFunctionReference {
   // The data function name
   string df_name = 1;
 
-  // Hash of the ast segment of the datafunction
-  string df_ast_hash = 2;
-
   // Worker ID of the datafunction
-  string df_worker_id = 3;
+  string df_worker_id = 2;
 }
 
 // Task defines a registered task and its execution configuration.
 message Task {
-  // TaskHash is the hash of the AST segment corresponding to this task.
-  string taskHash = 1;
+  // GitCommitHash is the commit where this task was registered
+  string gitCommitHash = 1;
 
   // Name is the unique name of this task.
   string name = 2;
@@ -113,20 +107,20 @@ message WorkflowEdge{
   // The name of the task going from
   string fromTaskName = 1;
 
-  // The hash of the AST segment of the task
-  string fromTaskHash = 2;
+  // The git commit of the task
+  string fromTaskGitCommitHash = 2;
 
-  // The worker that implements the task
-  string fromTaskWorker = 3;
+  // The ID of the worker that implements the task
+  string fromTaskWorkerId = 3;
 
   // The name of the task going from
   string toTaskName = 4;
 
-  // The hash of the AST segment of the task
-  string toTaskHash = 5;
+  // The git commit of the task
+  string toTaskGitCommitHash= 5;
 
-  // The worker that implements the task
-  string toTaskWorker = 6;
+  // The ID of the worker that implements the task
+  string toTaskWorkerId = 6;
 }
 
 enum WorkflowSource {

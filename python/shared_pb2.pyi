@@ -77,12 +77,14 @@ class RequiredPastResult(_message.Message):
     def __init__(self, taskName: _Optional[str] = ..., executionParams: _Optional[str] = ..., taskResult: _Optional[str] = ...) -> None: ...
 
 class WorkflowExecutionSettings(_message.Message):
-    __slots__ = ("priorityQueue", "concurrencyLimit")
+    __slots__ = ("priorityQueue", "concurrencyLimit", "haltOnFailure")
     PRIORITYQUEUE_FIELD_NUMBER: _ClassVar[int]
     CONCURRENCYLIMIT_FIELD_NUMBER: _ClassVar[int]
+    HALTONFAILURE_FIELD_NUMBER: _ClassVar[int]
     priorityQueue: _containers.RepeatedScalarFieldContainer[str]
     concurrencyLimit: int
-    def __init__(self, priorityQueue: _Optional[_Iterable[str]] = ..., concurrencyLimit: _Optional[int] = ...) -> None: ...
+    haltOnFailure: bool
+    def __init__(self, priorityQueue: _Optional[_Iterable[str]] = ..., concurrencyLimit: _Optional[int] = ..., haltOnFailure: bool = ...) -> None: ...
 
 class ComputeMetrics(_message.Message):
     __slots__ = ("cpuSeconds", "memoryGiBSeconds")
