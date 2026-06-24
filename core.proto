@@ -76,6 +76,9 @@ message DataFunctionReference {
 
   // Worker ID of the datafunction
   string df_worker_id = 2;
+
+  // The git commit hash of the data function
+  string df_git_commit_hash = 3;
 }
 
 // Task defines a registered task and its execution configuration.
@@ -216,17 +219,14 @@ message CheckNonceResponse {
 // RegisterWorkerSnapshot RPC
 // ============================================================
 message RegisterWorkerSnapshotRequest {
-  // GitCommitHash is the current git commit
-  string gitCommitHash = 1;
-
   // Datafunctions is an array of data functions
-  repeated DataFunction dataFunctions = 2;
+  repeated DataFunction dataFunctions = 1;
 
   // Tasks is an array of tasks
-  repeated Task tasks = 3;
+  repeated Task tasks = 2;
 
   // Workflows is an array of workflows
-  repeated Workflow workflows = 4;
+  repeated Workflow workflows = 3;
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.

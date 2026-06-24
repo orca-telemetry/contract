@@ -77,12 +77,14 @@ class DataFunction(_message.Message):
     def __init__(self, name: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
 
 class DataFunctionReference(_message.Message):
-    __slots__ = ("df_name", "df_worker_id")
+    __slots__ = ("df_name", "df_worker_id", "df_git_commit_hash")
     DF_NAME_FIELD_NUMBER: _ClassVar[int]
     DF_WORKER_ID_FIELD_NUMBER: _ClassVar[int]
+    DF_GIT_COMMIT_HASH_FIELD_NUMBER: _ClassVar[int]
     df_name: str
     df_worker_id: str
-    def __init__(self, df_name: _Optional[str] = ..., df_worker_id: _Optional[str] = ...) -> None: ...
+    df_git_commit_hash: str
+    def __init__(self, df_name: _Optional[str] = ..., df_worker_id: _Optional[str] = ..., df_git_commit_hash: _Optional[str] = ...) -> None: ...
 
 class Task(_message.Message):
     __slots__ = ("gitCommitHash", "name", "description", "executionSettings", "inputModel", "outputModel", "requiredDataFunctions")
@@ -181,16 +183,14 @@ class CheckNonceResponse(_message.Message):
     def __init__(self, expires_at: _Optional[_Union[_timestamp_pb2.Timestamp, _Mapping]] = ..., access_key: _Optional[bytes] = ...) -> None: ...
 
 class RegisterWorkerSnapshotRequest(_message.Message):
-    __slots__ = ("gitCommitHash", "dataFunctions", "tasks", "workflows")
-    GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("dataFunctions", "tasks", "workflows")
     DATAFUNCTIONS_FIELD_NUMBER: _ClassVar[int]
     TASKS_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWS_FIELD_NUMBER: _ClassVar[int]
-    gitCommitHash: str
     dataFunctions: _containers.RepeatedCompositeFieldContainer[DataFunction]
     tasks: _containers.RepeatedCompositeFieldContainer[Task]
     workflows: _containers.RepeatedCompositeFieldContainer[Workflow]
-    def __init__(self, gitCommitHash: _Optional[str] = ..., dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ...) -> None: ...
+    def __init__(self, dataFunctions: _Optional[_Iterable[_Union[DataFunction, _Mapping]]] = ..., tasks: _Optional[_Iterable[_Union[Task, _Mapping]]] = ..., workflows: _Optional[_Iterable[_Union[Workflow, _Mapping]]] = ...) -> None: ...
 
 class RegisterWorkerSnapshotResponse(_message.Message):
     __slots__ = ()

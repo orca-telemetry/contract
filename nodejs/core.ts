@@ -306,7 +306,11 @@ export interface DataFunctionReference {
     | string
     | undefined;
   /** Worker ID of the datafunction */
-  dfWorkerId?: string | undefined;
+  dfWorkerId?:
+    | string
+    | undefined;
+  /** The git commit hash of the data function */
+  dfGitCommitHash?: string | undefined;
 }
 
 /** Task defines a registered task and its execution configuration. */
@@ -481,10 +485,6 @@ export interface CheckNonceResponse {
  * ============================================================
  */
 export interface RegisterWorkerSnapshotRequest {
-  /** GitCommitHash is the current git commit */
-  gitCommitHash?:
-    | string
-    | undefined;
   /** Datafunctions is an array of data functions */
   dataFunctions?:
     | DataFunction[]
@@ -907,7 +907,7 @@ export const DataFunction: MessageFns<DataFunction> = {
 };
 
 function createBaseDataFunctionReference(): DataFunctionReference {
-  return { dfName: "", dfWorkerId: "" };
+  return { dfName: "", dfWorkerId: "", dfGitCommitHash: "" };
 }
 
 export const DataFunctionReference: MessageFns<DataFunctionReference> = {
@@ -917,6 +917,9 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
     }
     if (message.dfWorkerId !== undefined && message.dfWorkerId !== "") {
       writer.uint32(18).string(message.dfWorkerId);
+    }
+    if (message.dfGitCommitHash !== undefined && message.dfGitCommitHash !== "") {
+      writer.uint32(26).string(message.dfGitCommitHash);
     }
     return writer;
   },
@@ -944,6 +947,14 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
           message.dfWorkerId = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.dfGitCommitHash = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -965,6 +976,11 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
         : isSet(object.df_worker_id)
         ? globalThis.String(object.df_worker_id)
         : "",
+      dfGitCommitHash: isSet(object.dfGitCommitHash)
+        ? globalThis.String(object.dfGitCommitHash)
+        : isSet(object.df_git_commit_hash)
+        ? globalThis.String(object.df_git_commit_hash)
+        : "",
     };
   },
 
@@ -976,6 +992,9 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
     if (message.dfWorkerId !== undefined && message.dfWorkerId !== "") {
       obj.dfWorkerId = message.dfWorkerId;
     }
+    if (message.dfGitCommitHash !== undefined && message.dfGitCommitHash !== "") {
+      obj.dfGitCommitHash = message.dfGitCommitHash;
+    }
     return obj;
   },
 
@@ -986,6 +1005,7 @@ export const DataFunctionReference: MessageFns<DataFunctionReference> = {
     const message = createBaseDataFunctionReference();
     message.dfName = object.dfName ?? "";
     message.dfWorkerId = object.dfWorkerId ?? "";
+    message.dfGitCommitHash = object.dfGitCommitHash ?? "";
     return message;
   },
 };
@@ -1945,27 +1965,24 @@ export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
 };
 
 function createBaseRegisterWorkerSnapshotRequest(): RegisterWorkerSnapshotRequest {
-  return { gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [] };
+  return { dataFunctions: [], tasks: [], workflows: [] };
 }
 
 export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotRequest> = {
   encode(message: RegisterWorkerSnapshotRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      writer.uint32(10).string(message.gitCommitHash);
-    }
     if (message.dataFunctions !== undefined && message.dataFunctions.length !== 0) {
       for (const v of message.dataFunctions) {
-        DataFunction.encode(v!, writer.uint32(18).fork()).join();
+        DataFunction.encode(v!, writer.uint32(10).fork()).join();
       }
     }
     if (message.tasks !== undefined && message.tasks.length !== 0) {
       for (const v of message.tasks) {
-        Task.encode(v!, writer.uint32(26).fork()).join();
+        Task.encode(v!, writer.uint32(18).fork()).join();
       }
     }
     if (message.workflows !== undefined && message.workflows.length !== 0) {
       for (const v of message.workflows) {
-        Workflow.encode(v!, writer.uint32(34).fork()).join();
+        Workflow.encode(v!, writer.uint32(26).fork()).join();
       }
     }
     return writer;
@@ -1983,22 +2000,14 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
             break;
           }
 
-          message.gitCommitHash = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
           const el = DataFunction.decode(reader, reader.uint32());
           if (el !== undefined) {
             message.dataFunctions!.push(el);
           }
           continue;
         }
-        case 3: {
-          if (tag !== 26) {
+        case 2: {
+          if (tag !== 18) {
             break;
           }
 
@@ -2008,8 +2017,8 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
           }
           continue;
         }
-        case 4: {
-          if (tag !== 34) {
+        case 3: {
+          if (tag !== 26) {
             break;
           }
 
@@ -2030,7 +2039,6 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
 
   fromJSON(object: any): RegisterWorkerSnapshotRequest {
     return {
-      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
       dataFunctions: globalThis.Array.isArray(object?.dataFunctions)
         ? object.dataFunctions.map((e: any) => DataFunction.fromJSON(e))
         : [],
@@ -2043,9 +2051,6 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
 
   toJSON(message: RegisterWorkerSnapshotRequest): unknown {
     const obj: any = {};
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      obj.gitCommitHash = message.gitCommitHash;
-    }
     if (message.dataFunctions?.length) {
       obj.dataFunctions = message.dataFunctions.map((e) => DataFunction.toJSON(e));
     }
@@ -2065,7 +2070,6 @@ export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotReq
     object: I,
   ): RegisterWorkerSnapshotRequest {
     const message = createBaseRegisterWorkerSnapshotRequest();
-    message.gitCommitHash = object.gitCommitHash ?? "";
     message.dataFunctions = object.dataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
     message.tasks = object.tasks?.map((e) => Task.fromPartial(e)) || [];
     message.workflows = object.workflows?.map((e) => Workflow.fromPartial(e)) || [];
