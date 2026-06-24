@@ -63,16 +63,18 @@ ASC: SortDirection
 DESC: SortDirection
 
 class DataFunction(_message.Message):
-    __slots__ = ("name", "inputModel", "outputModel", "settings")
+    __slots__ = ("name", "gitCommitHash", "inputModel", "outputModel", "settings")
     NAME_FIELD_NUMBER: _ClassVar[int]
+    GITCOMMITHASH_FIELD_NUMBER: _ClassVar[int]
     INPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     OUTPUTMODEL_FIELD_NUMBER: _ClassVar[int]
     SETTINGS_FIELD_NUMBER: _ClassVar[int]
     name: str
+    gitCommitHash: str
     inputModel: bytes
     outputModel: bytes
     settings: _shared_pb2.DataFunctionSettings
-    def __init__(self, name: _Optional[str] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., gitCommitHash: _Optional[str] = ..., inputModel: _Optional[bytes] = ..., outputModel: _Optional[bytes] = ..., settings: _Optional[_Union[_shared_pb2.DataFunctionSettings, _Mapping]] = ...) -> None: ...
 
 class DataFunctionReference(_message.Message):
     __slots__ = ("df_name", "df_worker_id")

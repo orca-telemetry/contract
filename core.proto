@@ -51,18 +51,21 @@ message DataFunction {
   // Name is the globally unique identifier for this data function.
   string name = 1;
 
+  // The git commit hash of the data function
+  string gitCommitHash = 2;
+
   // InputModel is a marshalled JSON schema describing the accepted input.
   // This model must be satisfied by the execution model of the owning workflow.
-  bytes inputModel = 2;
+  bytes inputModel = 3;
 
   // OutputModel is a marshalled JSON schema describing a single output record.
   // The data function produces an array of this schema, streamed to the
   // orchestrator for caching. Validated once at retrieval time.
-  bytes outputModel = 3;
+  bytes outputModel = 4;
 
   // Settings governs the lifecycle and retention of data produced by this
   // data function.
-  DataFunctionSettings settings = 4;
+  DataFunctionSettings settings = 5;
 }
 
 // A data function representation that is required to globally reference a data

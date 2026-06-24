@@ -270,6 +270,10 @@ export interface DataFunction {
   name?:
     | string
     | undefined;
+  /** The git commit hash of the data function */
+  gitCommitHash?:
+    | string
+    | undefined;
   /**
    * InputModel is a marshalled JSON schema describing the accepted input.
    * This model must be satisfied by the execution model of the owning workflow.
@@ -771,7 +775,13 @@ export interface OrderByStatement {
 }
 
 function createBaseDataFunction(): DataFunction {
-  return { name: "", inputModel: Buffer.alloc(0), outputModel: Buffer.alloc(0), settings: undefined };
+  return {
+    name: "",
+    gitCommitHash: "",
+    inputModel: Buffer.alloc(0),
+    outputModel: Buffer.alloc(0),
+    settings: undefined,
+  };
 }
 
 export const DataFunction: MessageFns<DataFunction> = {
@@ -779,14 +789,17 @@ export const DataFunction: MessageFns<DataFunction> = {
     if (message.name !== undefined && message.name !== "") {
       writer.uint32(10).string(message.name);
     }
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      writer.uint32(18).string(message.gitCommitHash);
+    }
     if (message.inputModel !== undefined && message.inputModel.length !== 0) {
-      writer.uint32(18).bytes(message.inputModel);
+      writer.uint32(26).bytes(message.inputModel);
     }
     if (message.outputModel !== undefined && message.outputModel.length !== 0) {
-      writer.uint32(26).bytes(message.outputModel);
+      writer.uint32(34).bytes(message.outputModel);
     }
     if (message.settings !== undefined) {
-      DataFunctionSettings.encode(message.settings, writer.uint32(34).fork()).join();
+      DataFunctionSettings.encode(message.settings, writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -811,7 +824,7 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.inputModel = Buffer.from(reader.bytes());
+          message.gitCommitHash = reader.string();
           continue;
         }
         case 3: {
@@ -819,11 +832,19 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.outputModel = Buffer.from(reader.bytes());
+          message.inputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 4: {
           if (tag !== 34) {
+            break;
+          }
+
+          message.outputModel = Buffer.from(reader.bytes());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
             break;
           }
 
@@ -842,6 +863,7 @@ export const DataFunction: MessageFns<DataFunction> = {
   fromJSON(object: any): DataFunction {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
+      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
       inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
       outputModel: isSet(object.outputModel) ? Buffer.from(bytesFromBase64(object.outputModel)) : Buffer.alloc(0),
       settings: isSet(object.settings) ? DataFunctionSettings.fromJSON(object.settings) : undefined,
@@ -852,6 +874,9 @@ export const DataFunction: MessageFns<DataFunction> = {
     const obj: any = {};
     if (message.name !== undefined && message.name !== "") {
       obj.name = message.name;
+    }
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      obj.gitCommitHash = message.gitCommitHash;
     }
     if (message.inputModel !== undefined && message.inputModel.length !== 0) {
       obj.inputModel = base64FromBytes(message.inputModel);
@@ -871,6 +896,7 @@ export const DataFunction: MessageFns<DataFunction> = {
   fromPartial<I extends Exact<DeepPartial<DataFunction>, I>>(object: I): DataFunction {
     const message = createBaseDataFunction();
     message.name = object.name ?? "";
+    message.gitCommitHash = object.gitCommitHash ?? "";
     message.inputModel = object.inputModel ?? Buffer.alloc(0);
     message.outputModel = object.outputModel ?? Buffer.alloc(0);
     message.settings = (object.settings !== undefined && object.settings !== null)

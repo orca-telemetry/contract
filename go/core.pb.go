@@ -253,16 +253,18 @@ type DataFunction struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Name is the globally unique identifier for this data function.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The git commit hash of the data function
+	GitCommitHash string `protobuf:"bytes,2,opt,name=gitCommitHash,proto3" json:"gitCommitHash,omitempty"`
 	// InputModel is a marshalled JSON schema describing the accepted input.
 	// This model must be satisfied by the execution model of the owning workflow.
-	InputModel []byte `protobuf:"bytes,2,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
+	InputModel []byte `protobuf:"bytes,3,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
 	// OutputModel is a marshalled JSON schema describing a single output record.
 	// The data function produces an array of this schema, streamed to the
 	// orchestrator for caching. Validated once at retrieval time.
-	OutputModel []byte `protobuf:"bytes,3,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
+	OutputModel []byte `protobuf:"bytes,4,opt,name=outputModel,proto3" json:"outputModel,omitempty"`
 	// Settings governs the lifecycle and retention of data produced by this
 	// data function.
-	Settings      *DataFunctionSettings `protobuf:"bytes,4,opt,name=settings,proto3" json:"settings,omitempty"`
+	Settings      *DataFunctionSettings `protobuf:"bytes,5,opt,name=settings,proto3" json:"settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -300,6 +302,13 @@ func (*DataFunction) Descriptor() ([]byte, []int) {
 func (x *DataFunction) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *DataFunction) GetGitCommitHash() string {
+	if x != nil {
+		return x.GitCommitHash
 	}
 	return ""
 }
@@ -2195,14 +2204,15 @@ var File_core_proto protoreflect.FileDescriptor
 const file_core_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"core.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\fshared.proto\"\x97\x01\n" +
+	"core.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\fshared.proto\"\xbd\x01\n" +
 	"\fDataFunction\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1e\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12$\n" +
+	"\rgitCommitHash\x18\x02 \x01(\tR\rgitCommitHash\x12\x1e\n" +
 	"\n" +
-	"inputModel\x18\x02 \x01(\fR\n" +
+	"inputModel\x18\x03 \x01(\fR\n" +
 	"inputModel\x12 \n" +
-	"\voutputModel\x18\x03 \x01(\fR\voutputModel\x121\n" +
-	"\bsettings\x18\x04 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"R\n" +
+	"\voutputModel\x18\x04 \x01(\fR\voutputModel\x121\n" +
+	"\bsettings\x18\x05 \x01(\v2\x15.DataFunctionSettingsR\bsettings\"R\n" +
 	"\x15DataFunctionReference\x12\x17\n" +
 	"\adf_name\x18\x01 \x01(\tR\x06dfName\x12 \n" +
 	"\fdf_worker_id\x18\x02 \x01(\tR\n" +
