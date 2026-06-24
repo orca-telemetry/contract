@@ -600,18 +600,20 @@ type Workflow struct {
 	WorkflowName string `protobuf:"bytes,1,opt,name=workflowName,proto3" json:"workflowName,omitempty"`
 	// Description is a human-readable explanation of the workflow's purpose.
 	Description string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	// The git commit has of the workflow, if applicable
+	GitCommitHash string `protobuf:"bytes,3,opt,name=git_commit_hash,json=gitCommitHash,proto3" json:"git_commit_hash,omitempty"`
 	// WorkflowHash is a hash of the workflow structure, factoring in tasks,
 	// dependencies, and execution models.
-	WorkflowHash string `protobuf:"bytes,3,opt,name=workflowHash,proto3" json:"workflowHash,omitempty"`
+	WorkflowHash string `protobuf:"bytes,4,opt,name=workflowHash,proto3" json:"workflowHash,omitempty"`
 	// Edges defines the dependency relationships between tasks in this workflow.
-	Edges []*WorkflowEdge `protobuf:"bytes,4,rep,name=edges,proto3" json:"edges,omitempty"`
+	Edges []*WorkflowEdge `protobuf:"bytes,5,rep,name=edges,proto3" json:"edges,omitempty"`
 	// ExecutionSettings defines concurrency limits and task prioritisation.
-	ExecutionSettings *WorkflowExecutionSettings `protobuf:"bytes,5,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
+	ExecutionSettings *WorkflowExecutionSettings `protobuf:"bytes,6,opt,name=executionSettings,proto3" json:"executionSettings,omitempty"`
 	// InputModel is a marshalled JSON schema describing the
 	// parameters that must be provided at workflow trigger time.
-	InputModel []byte `protobuf:"bytes,6,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
+	InputModel []byte `protobuf:"bytes,7,opt,name=inputModel,proto3" json:"inputModel,omitempty"`
 	// Where the workflow was defined
-	WorkflowSource WorkflowSource `protobuf:"varint,7,opt,name=workflowSource,proto3,enum=WorkflowSource" json:"workflowSource,omitempty"`
+	WorkflowSource WorkflowSource `protobuf:"varint,8,opt,name=workflowSource,proto3,enum=WorkflowSource" json:"workflowSource,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -656,6 +658,13 @@ func (x *Workflow) GetWorkflowName() string {
 func (x *Workflow) GetDescription() string {
 	if x != nil {
 		return x.Description
+	}
+	return ""
+}
+
+func (x *Workflow) GetGitCommitHash() string {
+	if x != nil {
+		return x.GitCommitHash
 	}
 	return ""
 }
@@ -2236,17 +2245,18 @@ const file_core_proto_rawDesc = "" +
 	"toTaskName\x18\x04 \x01(\tR\n" +
 	"toTaskName\x120\n" +
 	"\x13toTaskGitCommitHash\x18\x05 \x01(\tR\x13toTaskGitCommitHash\x12&\n" +
-	"\x0etoTaskWorkerId\x18\x06 \x01(\tR\x0etoTaskWorkerId\"\xbc\x02\n" +
+	"\x0etoTaskWorkerId\x18\x06 \x01(\tR\x0etoTaskWorkerId\"\xe4\x02\n" +
 	"\bWorkflow\x12\"\n" +
 	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\"\n" +
-	"\fworkflowHash\x18\x03 \x01(\tR\fworkflowHash\x12#\n" +
-	"\x05edges\x18\x04 \x03(\v2\r.WorkflowEdgeR\x05edges\x12H\n" +
-	"\x11executionSettings\x18\x05 \x01(\v2\x1a.WorkflowExecutionSettingsR\x11executionSettings\x12\x1e\n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12&\n" +
+	"\x0fgit_commit_hash\x18\x03 \x01(\tR\rgitCommitHash\x12\"\n" +
+	"\fworkflowHash\x18\x04 \x01(\tR\fworkflowHash\x12#\n" +
+	"\x05edges\x18\x05 \x03(\v2\r.WorkflowEdgeR\x05edges\x12H\n" +
+	"\x11executionSettings\x18\x06 \x01(\v2\x1a.WorkflowExecutionSettingsR\x11executionSettings\x12\x1e\n" +
 	"\n" +
-	"inputModel\x18\x06 \x01(\fR\n" +
+	"inputModel\x18\a \x01(\fR\n" +
 	"inputModel\x127\n" +
-	"\x0eworkflowSource\x18\a \x01(\x0e2\x0f.WorkflowSourceR\x0eworkflowSource\"6\n" +
+	"\x0eworkflowSource\x18\b \x01(\x0e2\x0f.WorkflowSourceR\x0eworkflowSource\"6\n" +
 	"\x15RegisterWorkerRequest\x12\x1d\n" +
 	"\n" +
 	"public_key\x18\x01 \x01(\fR\tpublicKey\"P\n" +

@@ -127,6 +127,7 @@ message WorkflowEdge{
 
   // The ID of the worker that implements the task
   string toTaskWorkerId = 6;
+
 }
 
 enum WorkflowSource {
@@ -142,23 +143,26 @@ message Workflow {
   // Description is a human-readable explanation of the workflow's purpose.
   string description = 2;
 
+  // The git commit has of the workflow, if applicable
+  string git_commit_hash = 3;
+
   // WorkflowHash is a hash of the workflow structure, factoring in tasks,
   // dependencies, and execution models.
-  string workflowHash = 3;
+  string workflowHash = 4;
 
   // Edges defines the dependency relationships between tasks in this workflow.
-  repeated WorkflowEdge edges = 4;
+  repeated WorkflowEdge edges = 5;
 
   // ExecutionSettings defines concurrency limits and task prioritisation.
-  WorkflowExecutionSettings executionSettings = 5;
+  WorkflowExecutionSettings executionSettings = 6;
 
   // InputModel is a marshalled JSON schema describing the
   // parameters that must be provided at workflow trigger time.
-  bytes inputModel = 6;
+  bytes inputModel = 7;
 
 
   // Where the workflow was defined
-  WorkflowSource workflowSource = 7;
+  WorkflowSource workflowSource = 8;
 }
 
 

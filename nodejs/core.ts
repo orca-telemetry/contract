@@ -388,6 +388,10 @@ export interface Workflow {
   description?:
     | string
     | undefined;
+  /** The git commit has of the workflow, if applicable */
+  gitCommitHash?:
+    | string
+    | undefined;
   /**
    * WorkflowHash is a hash of the workflow structure, factoring in tasks,
    * dependencies, and execution models.
@@ -1337,6 +1341,7 @@ function createBaseWorkflow(): Workflow {
   return {
     workflowName: "",
     description: "",
+    gitCommitHash: "",
     workflowHash: "",
     edges: [],
     executionSettings: undefined,
@@ -1353,22 +1358,25 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.description !== undefined && message.description !== "") {
       writer.uint32(18).string(message.description);
     }
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      writer.uint32(26).string(message.gitCommitHash);
+    }
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
-      writer.uint32(26).string(message.workflowHash);
+      writer.uint32(34).string(message.workflowHash);
     }
     if (message.edges !== undefined && message.edges.length !== 0) {
       for (const v of message.edges) {
-        WorkflowEdge.encode(v!, writer.uint32(34).fork()).join();
+        WorkflowEdge.encode(v!, writer.uint32(42).fork()).join();
       }
     }
     if (message.executionSettings !== undefined) {
-      WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(42).fork()).join();
+      WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(50).fork()).join();
     }
     if (message.inputModel !== undefined && message.inputModel.length !== 0) {
-      writer.uint32(50).bytes(message.inputModel);
+      writer.uint32(58).bytes(message.inputModel);
     }
     if (message.workflowSource !== undefined && message.workflowSource !== 0) {
-      writer.uint32(56).int32(message.workflowSource);
+      writer.uint32(64).int32(message.workflowSource);
     }
     return writer;
   },
@@ -1401,11 +1409,19 @@ export const Workflow: MessageFns<Workflow> = {
             break;
           }
 
-          message.workflowHash = reader.string();
+          message.gitCommitHash = reader.string();
           continue;
         }
         case 4: {
           if (tag !== 34) {
+            break;
+          }
+
+          message.workflowHash = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
             break;
           }
 
@@ -1415,24 +1431,24 @@ export const Workflow: MessageFns<Workflow> = {
           }
           continue;
         }
-        case 5: {
-          if (tag !== 42) {
+        case 6: {
+          if (tag !== 50) {
             break;
           }
 
           message.executionSettings = WorkflowExecutionSettings.decode(reader, reader.uint32());
           continue;
         }
-        case 6: {
-          if (tag !== 50) {
+        case 7: {
+          if (tag !== 58) {
             break;
           }
 
           message.inputModel = Buffer.from(reader.bytes());
           continue;
         }
-        case 7: {
-          if (tag !== 56) {
+        case 8: {
+          if (tag !== 64) {
             break;
           }
 
@@ -1452,6 +1468,11 @@ export const Workflow: MessageFns<Workflow> = {
     return {
       workflowName: isSet(object.workflowName) ? globalThis.String(object.workflowName) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
+      gitCommitHash: isSet(object.gitCommitHash)
+        ? globalThis.String(object.gitCommitHash)
+        : isSet(object.git_commit_hash)
+        ? globalThis.String(object.git_commit_hash)
+        : "",
       workflowHash: isSet(object.workflowHash) ? globalThis.String(object.workflowHash) : "",
       edges: globalThis.Array.isArray(object?.edges) ? object.edges.map((e: any) => WorkflowEdge.fromJSON(e)) : [],
       executionSettings: isSet(object.executionSettings)
@@ -1469,6 +1490,9 @@ export const Workflow: MessageFns<Workflow> = {
     }
     if (message.description !== undefined && message.description !== "") {
       obj.description = message.description;
+    }
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      obj.gitCommitHash = message.gitCommitHash;
     }
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
       obj.workflowHash = message.workflowHash;
@@ -1495,6 +1519,7 @@ export const Workflow: MessageFns<Workflow> = {
     const message = createBaseWorkflow();
     message.workflowName = object.workflowName ?? "";
     message.description = object.description ?? "";
+    message.gitCommitHash = object.gitCommitHash ?? "";
     message.workflowHash = object.workflowHash ?? "";
     message.edges = object.edges?.map((e) => WorkflowEdge.fromPartial(e)) || [];
     message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)

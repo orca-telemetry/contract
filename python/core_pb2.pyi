@@ -121,9 +121,10 @@ class WorkflowEdge(_message.Message):
     def __init__(self, fromTaskName: _Optional[str] = ..., fromTaskGitCommitHash: _Optional[str] = ..., fromTaskWorkerId: _Optional[str] = ..., toTaskName: _Optional[str] = ..., toTaskGitCommitHash: _Optional[str] = ..., toTaskWorkerId: _Optional[str] = ...) -> None: ...
 
 class Workflow(_message.Message):
-    __slots__ = ("workflowName", "description", "workflowHash", "edges", "executionSettings", "inputModel", "workflowSource")
+    __slots__ = ("workflowName", "description", "git_commit_hash", "workflowHash", "edges", "executionSettings", "inputModel", "workflowSource")
     WORKFLOWNAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    GIT_COMMIT_HASH_FIELD_NUMBER: _ClassVar[int]
     WORKFLOWHASH_FIELD_NUMBER: _ClassVar[int]
     EDGES_FIELD_NUMBER: _ClassVar[int]
     EXECUTIONSETTINGS_FIELD_NUMBER: _ClassVar[int]
@@ -131,12 +132,13 @@ class Workflow(_message.Message):
     WORKFLOWSOURCE_FIELD_NUMBER: _ClassVar[int]
     workflowName: str
     description: str
+    git_commit_hash: str
     workflowHash: str
     edges: _containers.RepeatedCompositeFieldContainer[WorkflowEdge]
     executionSettings: _shared_pb2.WorkflowExecutionSettings
     inputModel: bytes
     workflowSource: WorkflowSource
-    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., workflowSource: _Optional[_Union[WorkflowSource, str]] = ...) -> None: ...
+    def __init__(self, workflowName: _Optional[str] = ..., description: _Optional[str] = ..., git_commit_hash: _Optional[str] = ..., workflowHash: _Optional[str] = ..., edges: _Optional[_Iterable[_Union[WorkflowEdge, _Mapping]]] = ..., executionSettings: _Optional[_Union[_shared_pb2.WorkflowExecutionSettings, _Mapping]] = ..., inputModel: _Optional[bytes] = ..., workflowSource: _Optional[_Union[WorkflowSource, str]] = ...) -> None: ...
 
 class RegisterWorkerRequest(_message.Message):
     __slots__ = ("public_key",)
