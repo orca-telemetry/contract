@@ -246,6 +246,9 @@ message RegisterServingRequest {
 
   // Explicit flag stating whether the worker is serving
   bool isServing = 2;
+
+  // The git commit hash of the current deployment
+  string commitHash = 3;
 };
 
 // RegisterServingResponse message

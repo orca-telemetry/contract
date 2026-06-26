@@ -199,12 +199,14 @@ class RegisterWorkerSnapshotResponse(_message.Message):
     def __init__(self) -> None: ...
 
 class RegisterServingRequest(_message.Message):
-    __slots__ = ("connectionUrl", "isServing")
+    __slots__ = ("connectionUrl", "isServing", "commitHash")
     CONNECTIONURL_FIELD_NUMBER: _ClassVar[int]
     ISSERVING_FIELD_NUMBER: _ClassVar[int]
+    COMMITHASH_FIELD_NUMBER: _ClassVar[int]
     connectionUrl: str
     isServing: bool
-    def __init__(self, connectionUrl: _Optional[str] = ..., isServing: bool = ...) -> None: ...
+    commitHash: str
+    def __init__(self, connectionUrl: _Optional[str] = ..., isServing: bool = ..., commitHash: _Optional[str] = ...) -> None: ...
 
 class RegisterServingResponse(_message.Message):
     __slots__ = ()

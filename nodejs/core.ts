@@ -517,7 +517,11 @@ export interface RegisterServingRequest {
     | string
     | undefined;
   /** Explicit flag stating whether the worker is serving */
-  isServing?: boolean | undefined;
+  isServing?:
+    | boolean
+    | undefined;
+  /** The git commit hash of the current deployment */
+  commitHash?: string | undefined;
 }
 
 /** RegisterServingResponse message */
@@ -2146,7 +2150,7 @@ export const RegisterWorkerSnapshotResponse: MessageFns<RegisterWorkerSnapshotRe
 };
 
 function createBaseRegisterServingRequest(): RegisterServingRequest {
-  return { connectionUrl: "", isServing: false };
+  return { connectionUrl: "", isServing: false, commitHash: "" };
 }
 
 export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
@@ -2156,6 +2160,9 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
     }
     if (message.isServing !== undefined && message.isServing !== false) {
       writer.uint32(16).bool(message.isServing);
+    }
+    if (message.commitHash !== undefined && message.commitHash !== "") {
+      writer.uint32(26).string(message.commitHash);
     }
     return writer;
   },
@@ -2183,6 +2190,14 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
           message.isServing = reader.bool();
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.commitHash = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2196,6 +2211,7 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
     return {
       connectionUrl: isSet(object.connectionUrl) ? globalThis.String(object.connectionUrl) : "",
       isServing: isSet(object.isServing) ? globalThis.Boolean(object.isServing) : false,
+      commitHash: isSet(object.commitHash) ? globalThis.String(object.commitHash) : "",
     };
   },
 
@@ -2207,6 +2223,9 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
     if (message.isServing !== undefined && message.isServing !== false) {
       obj.isServing = message.isServing;
     }
+    if (message.commitHash !== undefined && message.commitHash !== "") {
+      obj.commitHash = message.commitHash;
+    }
     return obj;
   },
 
@@ -2217,6 +2236,7 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
     const message = createBaseRegisterServingRequest();
     message.connectionUrl = object.connectionUrl ?? "";
     message.isServing = object.isServing ?? false;
+    message.commitHash = object.commitHash ?? "";
     return message;
   },
 };

@@ -1133,7 +1133,9 @@ type RegisterServingRequest struct {
 	// Connection URL from the perspective of the core orchestrator
 	ConnectionUrl string `protobuf:"bytes,1,opt,name=connectionUrl,proto3" json:"connectionUrl,omitempty"`
 	// Explicit flag stating whether the worker is serving
-	IsServing     bool `protobuf:"varint,2,opt,name=isServing,proto3" json:"isServing,omitempty"`
+	IsServing bool `protobuf:"varint,2,opt,name=isServing,proto3" json:"isServing,omitempty"`
+	// The git commit hash of the current deployment
+	CommitHash    string `protobuf:"bytes,3,opt,name=commitHash,proto3" json:"commitHash,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1180,6 +1182,13 @@ func (x *RegisterServingRequest) GetIsServing() bool {
 		return x.IsServing
 	}
 	return false
+}
+
+func (x *RegisterServingRequest) GetCommitHash() string {
+	if x != nil {
+		return x.CommitHash
+	}
+	return ""
 }
 
 // RegisterServingResponse message
@@ -2280,10 +2289,13 @@ const file_core_proto_rawDesc = "" +
 	"\rdataFunctions\x18\x01 \x03(\v2\r.DataFunctionR\rdataFunctions\x12\x1b\n" +
 	"\x05tasks\x18\x02 \x03(\v2\x05.TaskR\x05tasks\x12'\n" +
 	"\tworkflows\x18\x03 \x03(\v2\t.WorkflowR\tworkflows\" \n" +
-	"\x1eRegisterWorkerSnapshotResponse\"\\\n" +
+	"\x1eRegisterWorkerSnapshotResponse\"|\n" +
 	"\x16RegisterServingRequest\x12$\n" +
 	"\rconnectionUrl\x18\x01 \x01(\tR\rconnectionUrl\x12\x1c\n" +
-	"\tisServing\x18\x02 \x01(\bR\tisServing\"\x19\n" +
+	"\tisServing\x18\x02 \x01(\bR\tisServing\x12\x1e\n" +
+	"\n" +
+	"commitHash\x18\x03 \x01(\tR\n" +
+	"commitHash\"\x19\n" +
 	"\x17RegisterServingResponse\"\xf7\x01\n" +
 	"\x16TriggerWorkflowRequest\x12\"\n" +
 	"\fworkflowName\x18\x01 \x01(\tR\fworkflowName\x12A\n" +
