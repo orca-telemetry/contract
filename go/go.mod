@@ -1,9 +1,8 @@
-module github.com/orca-telemetry/contract/go
+module github.com/orca-telemetry/contract/go/v2
 
 go 1.25.3
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260209202127-80ab13bee0bf.1
 	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.11
 )

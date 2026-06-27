@@ -61,46 +61,6 @@ export function triggerSourceToJSON(object: TriggerSource): string {
   }
 }
 
-/** RegistrationStatus is the result of a registration RPC. */
-export enum RegistrationStatus {
-  REGISTRATION_STATUS_UNSPECIFIED = 0,
-  REGISTRATION_STATUS_SUCCESSFUL = 1,
-  REGISTRATION_STATUS_FAILED = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function registrationStatusFromJSON(object: any): RegistrationStatus {
-  switch (object) {
-    case 0:
-    case "REGISTRATION_STATUS_UNSPECIFIED":
-      return RegistrationStatus.REGISTRATION_STATUS_UNSPECIFIED;
-    case 1:
-    case "REGISTRATION_STATUS_SUCCESSFUL":
-      return RegistrationStatus.REGISTRATION_STATUS_SUCCESSFUL;
-    case 2:
-    case "REGISTRATION_STATUS_FAILED":
-      return RegistrationStatus.REGISTRATION_STATUS_FAILED;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return RegistrationStatus.UNRECOGNIZED;
-  }
-}
-
-export function registrationStatusToJSON(object: RegistrationStatus): string {
-  switch (object) {
-    case RegistrationStatus.REGISTRATION_STATUS_UNSPECIFIED:
-      return "REGISTRATION_STATUS_UNSPECIFIED";
-    case RegistrationStatus.REGISTRATION_STATUS_SUCCESSFUL:
-      return "REGISTRATION_STATUS_SUCCESSFUL";
-    case RegistrationStatus.REGISTRATION_STATUS_FAILED:
-      return "REGISTRATION_STATUS_FAILED";
-    case RegistrationStatus.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
 /** TriggerStatus is the result of a workflow trigger RPC. */
 export enum TriggerStatus {
   TRIGGER_STATUS_UNSPECIFIED = 0,
@@ -232,13 +192,13 @@ export interface DataFunctionSettings {
    * >0 = retention duration in seconds.
    */
   ttl?:
-    | string
+    | number
     | undefined;
   /**
    * Timeout is the maximum duration (in seconds) allowed for the data
    * function's full lifecycle.
    */
-  timeout?: string | undefined;
+  timeout?: number | undefined;
 }
 
 /** TaskExecutionSettings governs how a task is executed and retried. */
@@ -248,7 +208,7 @@ export interface TaskExecutionSettings {
    * single task execution attempt.
    */
   executionTimeout?:
-    | string
+    | number
     | undefined;
   /** RetryCount is the number of times the task should be retried on failure. */
   retryCount?:
@@ -262,7 +222,7 @@ export interface TaskExecutionSettings {
    * Deadline is an SLA value in seconds. If execution exceeds this deadline,
    * an alert is raised against this task's execution status.
    */
-  deadline?: string | undefined;
+  deadline?: number | undefined;
 }
 
 /**
@@ -301,7 +261,14 @@ export interface WorkflowExecutionSettings {
    * ConcurrencyLimit caps the number of tasks that may execute in
    * parallel at any point in time.
    */
-  concurrencyLimit?: number | undefined;
+  concurrencyLimit?:
+    | number
+    | undefined;
+  /**
+   * HaltOnFailure instructs the orchestrator to stop parallel task execution
+   * if any task encounters a failure.
+   */
+  haltOnFailure?: boolean | undefined;
 }
 
 /** ComputeMetrics captures resource consumption for a single task execution. */
@@ -315,16 +282,16 @@ export interface ComputeMetrics {
 }
 
 function createBaseDataFunctionSettings(): DataFunctionSettings {
-  return { ttl: "0", timeout: "0" };
+  return { ttl: 0, timeout: 0 };
 }
 
 export const DataFunctionSettings: MessageFns<DataFunctionSettings> = {
   encode(message: DataFunctionSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.ttl !== undefined && message.ttl !== "0") {
-      writer.uint32(8).int64(message.ttl);
+    if (message.ttl !== undefined && message.ttl !== 0) {
+      writer.uint32(8).int32(message.ttl);
     }
-    if (message.timeout !== undefined && message.timeout !== "0") {
-      writer.uint32(16).int64(message.timeout);
+    if (message.timeout !== undefined && message.timeout !== 0) {
+      writer.uint32(16).int32(message.timeout);
     }
     return writer;
   },
@@ -341,7 +308,7 @@ export const DataFunctionSettings: MessageFns<DataFunctionSettings> = {
             break;
           }
 
-          message.ttl = reader.int64().toString();
+          message.ttl = reader.int32();
           continue;
         }
         case 2: {
@@ -349,7 +316,7 @@ export const DataFunctionSettings: MessageFns<DataFunctionSettings> = {
             break;
           }
 
-          message.timeout = reader.int64().toString();
+          message.timeout = reader.int32();
           continue;
         }
       }
@@ -363,18 +330,18 @@ export const DataFunctionSettings: MessageFns<DataFunctionSettings> = {
 
   fromJSON(object: any): DataFunctionSettings {
     return {
-      ttl: isSet(object.ttl) ? globalThis.String(object.ttl) : "0",
-      timeout: isSet(object.timeout) ? globalThis.String(object.timeout) : "0",
+      ttl: isSet(object.ttl) ? globalThis.Number(object.ttl) : 0,
+      timeout: isSet(object.timeout) ? globalThis.Number(object.timeout) : 0,
     };
   },
 
   toJSON(message: DataFunctionSettings): unknown {
     const obj: any = {};
-    if (message.ttl !== undefined && message.ttl !== "0") {
-      obj.ttl = message.ttl;
+    if (message.ttl !== undefined && message.ttl !== 0) {
+      obj.ttl = Math.round(message.ttl);
     }
-    if (message.timeout !== undefined && message.timeout !== "0") {
-      obj.timeout = message.timeout;
+    if (message.timeout !== undefined && message.timeout !== 0) {
+      obj.timeout = Math.round(message.timeout);
     }
     return obj;
   },
@@ -384,20 +351,20 @@ export const DataFunctionSettings: MessageFns<DataFunctionSettings> = {
   },
   fromPartial<I extends Exact<DeepPartial<DataFunctionSettings>, I>>(object: I): DataFunctionSettings {
     const message = createBaseDataFunctionSettings();
-    message.ttl = object.ttl ?? "0";
-    message.timeout = object.timeout ?? "0";
+    message.ttl = object.ttl ?? 0;
+    message.timeout = object.timeout ?? 0;
     return message;
   },
 };
 
 function createBaseTaskExecutionSettings(): TaskExecutionSettings {
-  return { executionTimeout: "0", retryCount: 0, backoffStrategy: 0, deadline: "0" };
+  return { executionTimeout: 0, retryCount: 0, backoffStrategy: 0, deadline: 0 };
 }
 
 export const TaskExecutionSettings: MessageFns<TaskExecutionSettings> = {
   encode(message: TaskExecutionSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.executionTimeout !== undefined && message.executionTimeout !== "0") {
-      writer.uint32(8).int64(message.executionTimeout);
+    if (message.executionTimeout !== undefined && message.executionTimeout !== 0) {
+      writer.uint32(8).int32(message.executionTimeout);
     }
     if (message.retryCount !== undefined && message.retryCount !== 0) {
       writer.uint32(16).int32(message.retryCount);
@@ -405,8 +372,8 @@ export const TaskExecutionSettings: MessageFns<TaskExecutionSettings> = {
     if (message.backoffStrategy !== undefined && message.backoffStrategy !== 0) {
       writer.uint32(24).int32(message.backoffStrategy);
     }
-    if (message.deadline !== undefined && message.deadline !== "0") {
-      writer.uint32(32).int64(message.deadline);
+    if (message.deadline !== undefined && message.deadline !== 0) {
+      writer.uint32(32).int32(message.deadline);
     }
     return writer;
   },
@@ -423,7 +390,7 @@ export const TaskExecutionSettings: MessageFns<TaskExecutionSettings> = {
             break;
           }
 
-          message.executionTimeout = reader.int64().toString();
+          message.executionTimeout = reader.int32();
           continue;
         }
         case 2: {
@@ -447,7 +414,7 @@ export const TaskExecutionSettings: MessageFns<TaskExecutionSettings> = {
             break;
           }
 
-          message.deadline = reader.int64().toString();
+          message.deadline = reader.int32();
           continue;
         }
       }
@@ -461,17 +428,17 @@ export const TaskExecutionSettings: MessageFns<TaskExecutionSettings> = {
 
   fromJSON(object: any): TaskExecutionSettings {
     return {
-      executionTimeout: isSet(object.executionTimeout) ? globalThis.String(object.executionTimeout) : "0",
+      executionTimeout: isSet(object.executionTimeout) ? globalThis.Number(object.executionTimeout) : 0,
       retryCount: isSet(object.retryCount) ? globalThis.Number(object.retryCount) : 0,
       backoffStrategy: isSet(object.backoffStrategy) ? backoffStrategyFromJSON(object.backoffStrategy) : 0,
-      deadline: isSet(object.deadline) ? globalThis.String(object.deadline) : "0",
+      deadline: isSet(object.deadline) ? globalThis.Number(object.deadline) : 0,
     };
   },
 
   toJSON(message: TaskExecutionSettings): unknown {
     const obj: any = {};
-    if (message.executionTimeout !== undefined && message.executionTimeout !== "0") {
-      obj.executionTimeout = message.executionTimeout;
+    if (message.executionTimeout !== undefined && message.executionTimeout !== 0) {
+      obj.executionTimeout = Math.round(message.executionTimeout);
     }
     if (message.retryCount !== undefined && message.retryCount !== 0) {
       obj.retryCount = Math.round(message.retryCount);
@@ -479,8 +446,8 @@ export const TaskExecutionSettings: MessageFns<TaskExecutionSettings> = {
     if (message.backoffStrategy !== undefined && message.backoffStrategy !== 0) {
       obj.backoffStrategy = backoffStrategyToJSON(message.backoffStrategy);
     }
-    if (message.deadline !== undefined && message.deadline !== "0") {
-      obj.deadline = message.deadline;
+    if (message.deadline !== undefined && message.deadline !== 0) {
+      obj.deadline = Math.round(message.deadline);
     }
     return obj;
   },
@@ -490,10 +457,10 @@ export const TaskExecutionSettings: MessageFns<TaskExecutionSettings> = {
   },
   fromPartial<I extends Exact<DeepPartial<TaskExecutionSettings>, I>>(object: I): TaskExecutionSettings {
     const message = createBaseTaskExecutionSettings();
-    message.executionTimeout = object.executionTimeout ?? "0";
+    message.executionTimeout = object.executionTimeout ?? 0;
     message.retryCount = object.retryCount ?? 0;
     message.backoffStrategy = object.backoffStrategy ?? 0;
-    message.deadline = object.deadline ?? "0";
+    message.deadline = object.deadline ?? 0;
     return message;
   },
 };
@@ -591,7 +558,7 @@ export const RequiredPastResult: MessageFns<RequiredPastResult> = {
 };
 
 function createBaseWorkflowExecutionSettings(): WorkflowExecutionSettings {
-  return { priorityQueue: [], concurrencyLimit: 0 };
+  return { priorityQueue: [], concurrencyLimit: 0, haltOnFailure: false };
 }
 
 export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = {
@@ -603,6 +570,9 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
     }
     if (message.concurrencyLimit !== undefined && message.concurrencyLimit !== 0) {
       writer.uint32(16).int32(message.concurrencyLimit);
+    }
+    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
+      writer.uint32(24).bool(message.haltOnFailure);
     }
     return writer;
   },
@@ -633,6 +603,14 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
           message.concurrencyLimit = reader.int32();
           continue;
         }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.haltOnFailure = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -648,6 +626,7 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
         ? object.priorityQueue.map((e: any) => globalThis.String(e))
         : [],
       concurrencyLimit: isSet(object.concurrencyLimit) ? globalThis.Number(object.concurrencyLimit) : 0,
+      haltOnFailure: isSet(object.haltOnFailure) ? globalThis.Boolean(object.haltOnFailure) : false,
     };
   },
 
@@ -659,6 +638,9 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
     if (message.concurrencyLimit !== undefined && message.concurrencyLimit !== 0) {
       obj.concurrencyLimit = Math.round(message.concurrencyLimit);
     }
+    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
+      obj.haltOnFailure = message.haltOnFailure;
+    }
     return obj;
   },
 
@@ -669,6 +651,7 @@ export const WorkflowExecutionSettings: MessageFns<WorkflowExecutionSettings> = 
     const message = createBaseWorkflowExecutionSettings();
     message.priorityQueue = object.priorityQueue?.map((e) => e) || [];
     message.concurrencyLimit = object.concurrencyLimit ?? 0;
+    message.haltOnFailure = object.haltOnFailure ?? false;
     return message;
   },
 };

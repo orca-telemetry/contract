@@ -39,10 +39,25 @@ class CoreStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.RegisterWorkerSnapshot = channel.unary_unary(
-                '/Core/RegisterWorkerSnapshot',
+        self.RegisterWorker = channel.unary_unary(
+                '/Core/RegisterWorker',
                 request_serializer=core__pb2.RegisterWorkerRequest.SerializeToString,
                 response_deserializer=core__pb2.RegisterWorkerResponse.FromString,
+                _registered_method=True)
+        self.GetNonce = channel.unary_unary(
+                '/Core/GetNonce',
+                request_serializer=core__pb2.GetNonceRequest.SerializeToString,
+                response_deserializer=core__pb2.GetNonceResponse.FromString,
+                _registered_method=True)
+        self.CheckNonce = channel.unary_unary(
+                '/Core/CheckNonce',
+                request_serializer=core__pb2.CheckNonceRequest.SerializeToString,
+                response_deserializer=core__pb2.CheckNonceResponse.FromString,
+                _registered_method=True)
+        self.RegisterWorkerSnapshot = channel.unary_unary(
+                '/Core/RegisterWorkerSnapshot',
+                request_serializer=core__pb2.RegisterWorkerSnapshotRequest.SerializeToString,
+                response_deserializer=core__pb2.RegisterWorkerSnapshotResponse.FromString,
                 _registered_method=True)
         self.RegisterServing = channel.unary_unary(
                 '/Core/RegisterServing',
@@ -71,8 +86,8 @@ class CoreStub(object):
                 _registered_method=True)
         self.QueryTaskResult = channel.unary_stream(
                 '/Core/QueryTaskResult',
-                request_serializer=core__pb2.QueryParams.SerializeToString,
-                response_deserializer=core__pb2.PastResults.FromString,
+                request_serializer=core__pb2.QueryTaskRequest.SerializeToString,
+                response_deserializer=core__pb2.QueryTaskResponse.FromString,
                 _registered_method=True)
 
 
@@ -84,8 +99,29 @@ class CoreServicer(object):
     - Tracks DAG execution state and handles distributed failure modes
     """
 
+    def RegisterWorker(self, request, context):
+        """Registers a worker with core
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetNonce(self, request, context):
+        """Get a nonce from the server
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CheckNonce(self, request, context):
+        """Check a nonce with the server and issues access key
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def RegisterWorkerSnapshot(self, request, context):
-        """Registers a worker, along with all assets defined in the worker's codebase.
+        """Registers all assets defined in the worker's codebase.
         This operation is idempotent on the worker name and git commit hash.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -137,10 +173,25 @@ class CoreServicer(object):
 
 def add_CoreServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'RegisterWorkerSnapshot': grpc.unary_unary_rpc_method_handler(
-                    servicer.RegisterWorkerSnapshot,
+            'RegisterWorker': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterWorker,
                     request_deserializer=core__pb2.RegisterWorkerRequest.FromString,
                     response_serializer=core__pb2.RegisterWorkerResponse.SerializeToString,
+            ),
+            'GetNonce': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetNonce,
+                    request_deserializer=core__pb2.GetNonceRequest.FromString,
+                    response_serializer=core__pb2.GetNonceResponse.SerializeToString,
+            ),
+            'CheckNonce': grpc.unary_unary_rpc_method_handler(
+                    servicer.CheckNonce,
+                    request_deserializer=core__pb2.CheckNonceRequest.FromString,
+                    response_serializer=core__pb2.CheckNonceResponse.SerializeToString,
+            ),
+            'RegisterWorkerSnapshot': grpc.unary_unary_rpc_method_handler(
+                    servicer.RegisterWorkerSnapshot,
+                    request_deserializer=core__pb2.RegisterWorkerSnapshotRequest.FromString,
+                    response_serializer=core__pb2.RegisterWorkerSnapshotResponse.SerializeToString,
             ),
             'RegisterServing': grpc.unary_unary_rpc_method_handler(
                     servicer.RegisterServing,
@@ -169,8 +220,8 @@ def add_CoreServicer_to_server(servicer, server):
             ),
             'QueryTaskResult': grpc.unary_stream_rpc_method_handler(
                     servicer.QueryTaskResult,
-                    request_deserializer=core__pb2.QueryParams.FromString,
-                    response_serializer=core__pb2.PastResults.SerializeToString,
+                    request_deserializer=core__pb2.QueryTaskRequest.FromString,
+                    response_serializer=core__pb2.QueryTaskResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -189,6 +240,87 @@ class Core(object):
     """
 
     @staticmethod
+    def RegisterWorker(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Core/RegisterWorker',
+            core__pb2.RegisterWorkerRequest.SerializeToString,
+            core__pb2.RegisterWorkerResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetNonce(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Core/GetNonce',
+            core__pb2.GetNonceRequest.SerializeToString,
+            core__pb2.GetNonceResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CheckNonce(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/Core/CheckNonce',
+            core__pb2.CheckNonceRequest.SerializeToString,
+            core__pb2.CheckNonceResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def RegisterWorkerSnapshot(request,
             target,
             options=(),
@@ -203,8 +335,8 @@ class Core(object):
             request,
             target,
             '/Core/RegisterWorkerSnapshot',
-            core__pb2.RegisterWorkerRequest.SerializeToString,
-            core__pb2.RegisterWorkerResponse.FromString,
+            core__pb2.RegisterWorkerSnapshotRequest.SerializeToString,
+            core__pb2.RegisterWorkerSnapshotResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -365,8 +497,8 @@ class Core(object):
             request,
             target,
             '/Core/QueryTaskResult',
-            core__pb2.QueryParams.SerializeToString,
-            core__pb2.PastResults.FromString,
+            core__pb2.QueryTaskRequest.SerializeToString,
+            core__pb2.QueryTaskResponse.FromString,
             options,
             channel_credentials,
             insecure,

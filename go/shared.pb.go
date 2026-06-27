@@ -4,7 +4,7 @@
 // 	protoc        v4.25.9
 // source: shared.proto
 
-package _go
+package v2
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -77,56 +77,6 @@ func (TriggerSource) EnumDescriptor() ([]byte, []int) {
 	return file_shared_proto_rawDescGZIP(), []int{0}
 }
 
-// RegistrationStatus is the result of a registration RPC.
-type RegistrationStatus int32
-
-const (
-	RegistrationStatus_REGISTRATION_STATUS_UNSPECIFIED RegistrationStatus = 0
-	RegistrationStatus_REGISTRATION_STATUS_SUCCESSFUL  RegistrationStatus = 1
-	RegistrationStatus_REGISTRATION_STATUS_FAILED      RegistrationStatus = 2
-)
-
-// Enum value maps for RegistrationStatus.
-var (
-	RegistrationStatus_name = map[int32]string{
-		0: "REGISTRATION_STATUS_UNSPECIFIED",
-		1: "REGISTRATION_STATUS_SUCCESSFUL",
-		2: "REGISTRATION_STATUS_FAILED",
-	}
-	RegistrationStatus_value = map[string]int32{
-		"REGISTRATION_STATUS_UNSPECIFIED": 0,
-		"REGISTRATION_STATUS_SUCCESSFUL":  1,
-		"REGISTRATION_STATUS_FAILED":      2,
-	}
-)
-
-func (x RegistrationStatus) Enum() *RegistrationStatus {
-	p := new(RegistrationStatus)
-	*p = x
-	return p
-}
-
-func (x RegistrationStatus) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (RegistrationStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_shared_proto_enumTypes[1].Descriptor()
-}
-
-func (RegistrationStatus) Type() protoreflect.EnumType {
-	return &file_shared_proto_enumTypes[1]
-}
-
-func (x RegistrationStatus) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use RegistrationStatus.Descriptor instead.
-func (RegistrationStatus) EnumDescriptor() ([]byte, []int) {
-	return file_shared_proto_rawDescGZIP(), []int{1}
-}
-
 // TriggerStatus is the result of a workflow trigger RPC.
 type TriggerStatus int32
 
@@ -161,11 +111,11 @@ func (x TriggerStatus) String() string {
 }
 
 func (TriggerStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_shared_proto_enumTypes[2].Descriptor()
+	return file_shared_proto_enumTypes[1].Descriptor()
 }
 
 func (TriggerStatus) Type() protoreflect.EnumType {
-	return &file_shared_proto_enumTypes[2]
+	return &file_shared_proto_enumTypes[1]
 }
 
 func (x TriggerStatus) Number() protoreflect.EnumNumber {
@@ -174,7 +124,7 @@ func (x TriggerStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TriggerStatus.Descriptor instead.
 func (TriggerStatus) EnumDescriptor() ([]byte, []int) {
-	return file_shared_proto_rawDescGZIP(), []int{2}
+	return file_shared_proto_rawDescGZIP(), []int{1}
 }
 
 // ExecutionStatus is the result of a task or data function execution.
@@ -211,11 +161,11 @@ func (x ExecutionStatus) String() string {
 }
 
 func (ExecutionStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_shared_proto_enumTypes[3].Descriptor()
+	return file_shared_proto_enumTypes[2].Descriptor()
 }
 
 func (ExecutionStatus) Type() protoreflect.EnumType {
-	return &file_shared_proto_enumTypes[3]
+	return &file_shared_proto_enumTypes[2]
 }
 
 func (x ExecutionStatus) Number() protoreflect.EnumNumber {
@@ -224,7 +174,7 @@ func (x ExecutionStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ExecutionStatus.Descriptor instead.
 func (ExecutionStatus) EnumDescriptor() ([]byte, []int) {
-	return file_shared_proto_rawDescGZIP(), []int{3}
+	return file_shared_proto_rawDescGZIP(), []int{2}
 }
 
 // BackoffStrategy defines the retry backoff behaviour for a task.
@@ -261,11 +211,11 @@ func (x BackoffStrategy) String() string {
 }
 
 func (BackoffStrategy) Descriptor() protoreflect.EnumDescriptor {
-	return file_shared_proto_enumTypes[4].Descriptor()
+	return file_shared_proto_enumTypes[3].Descriptor()
 }
 
 func (BackoffStrategy) Type() protoreflect.EnumType {
-	return &file_shared_proto_enumTypes[4]
+	return &file_shared_proto_enumTypes[3]
 }
 
 func (x BackoffStrategy) Number() protoreflect.EnumNumber {
@@ -274,7 +224,7 @@ func (x BackoffStrategy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use BackoffStrategy.Descriptor instead.
 func (BackoffStrategy) EnumDescriptor() ([]byte, []int) {
-	return file_shared_proto_rawDescGZIP(), []int{4}
+	return file_shared_proto_rawDescGZIP(), []int{3}
 }
 
 // DataFunctionSettings holds configuration that governs the lifecycle of
@@ -284,10 +234,10 @@ type DataFunctionSettings struct {
 	// TTL controls how long produced data is retained.
 	// 0 = clean up immediately after DAG execution of all dependent tasks completes.
 	// >0 = retention duration in seconds.
-	Ttl int64 `protobuf:"varint,1,opt,name=ttl,proto3" json:"ttl,omitempty"`
+	Ttl int32 `protobuf:"varint,1,opt,name=ttl,proto3" json:"ttl,omitempty"`
 	// Timeout is the maximum duration (in seconds) allowed for the data
 	// function's full lifecycle.
-	Timeout       int64 `protobuf:"varint,2,opt,name=timeout,proto3" json:"timeout,omitempty"`
+	Timeout       int32 `protobuf:"varint,2,opt,name=timeout,proto3" json:"timeout,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -322,14 +272,14 @@ func (*DataFunctionSettings) Descriptor() ([]byte, []int) {
 	return file_shared_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *DataFunctionSettings) GetTtl() int64 {
+func (x *DataFunctionSettings) GetTtl() int32 {
 	if x != nil {
 		return x.Ttl
 	}
 	return 0
 }
 
-func (x *DataFunctionSettings) GetTimeout() int64 {
+func (x *DataFunctionSettings) GetTimeout() int32 {
 	if x != nil {
 		return x.Timeout
 	}
@@ -341,14 +291,14 @@ type TaskExecutionSettings struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// ExecutionTimeout is the maximum duration (in seconds) allowed for a
 	// single task execution attempt.
-	ExecutionTimeout int64 `protobuf:"varint,1,opt,name=executionTimeout,proto3" json:"executionTimeout,omitempty"`
+	ExecutionTimeout int32 `protobuf:"varint,1,opt,name=executionTimeout,proto3" json:"executionTimeout,omitempty"`
 	// RetryCount is the number of times the task should be retried on failure.
 	RetryCount int32 `protobuf:"varint,2,opt,name=retryCount,proto3" json:"retryCount,omitempty"`
 	// BackoffStrategy defines whether retries use linear or exponential backoff.
 	BackoffStrategy BackoffStrategy `protobuf:"varint,3,opt,name=backoffStrategy,proto3,enum=BackoffStrategy" json:"backoffStrategy,omitempty"`
 	// Deadline is an SLA value in seconds. If execution exceeds this deadline,
 	// an alert is raised against this task's execution status.
-	Deadline      int64 `protobuf:"varint,4,opt,name=deadline,proto3" json:"deadline,omitempty"`
+	Deadline      int32 `protobuf:"varint,4,opt,name=deadline,proto3" json:"deadline,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -383,7 +333,7 @@ func (*TaskExecutionSettings) Descriptor() ([]byte, []int) {
 	return file_shared_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *TaskExecutionSettings) GetExecutionTimeout() int64 {
+func (x *TaskExecutionSettings) GetExecutionTimeout() int32 {
 	if x != nil {
 		return x.ExecutionTimeout
 	}
@@ -404,7 +354,7 @@ func (x *TaskExecutionSettings) GetBackoffStrategy() BackoffStrategy {
 	return BackoffStrategy_BACKOFF_STRATEGY_UNSPECIFIED
 }
 
-func (x *TaskExecutionSettings) GetDeadline() int64 {
+func (x *TaskExecutionSettings) GetDeadline() int32 {
 	if x != nil {
 		return x.Deadline
 	}
@@ -487,8 +437,11 @@ type WorkflowExecutionSettings struct {
 	// ConcurrencyLimit caps the number of tasks that may execute in
 	// parallel at any point in time.
 	ConcurrencyLimit int32 `protobuf:"varint,2,opt,name=concurrencyLimit,proto3" json:"concurrencyLimit,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// HaltOnFailure instructs the orchestrator to stop parallel task execution
+	// if any task encounters a failure.
+	HaltOnFailure bool `protobuf:"varint,3,opt,name=haltOnFailure,proto3" json:"haltOnFailure,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *WorkflowExecutionSettings) Reset() {
@@ -533,6 +486,13 @@ func (x *WorkflowExecutionSettings) GetConcurrencyLimit() int32 {
 		return x.ConcurrencyLimit
 	}
 	return 0
+}
+
+func (x *WorkflowExecutionSettings) GetHaltOnFailure() bool {
+	if x != nil {
+		return x.HaltOnFailure
+	}
+	return false
 }
 
 // ComputeMetrics captures resource consumption for a single task execution.
@@ -596,24 +556,25 @@ const file_shared_proto_rawDesc = "" +
 	"\n" +
 	"\fshared.proto\"B\n" +
 	"\x14DataFunctionSettings\x12\x10\n" +
-	"\x03ttl\x18\x01 \x01(\x03R\x03ttl\x12\x18\n" +
-	"\atimeout\x18\x02 \x01(\x03R\atimeout\"\xbb\x01\n" +
+	"\x03ttl\x18\x01 \x01(\x05R\x03ttl\x12\x18\n" +
+	"\atimeout\x18\x02 \x01(\x05R\atimeout\"\xbb\x01\n" +
 	"\x15TaskExecutionSettings\x12*\n" +
-	"\x10executionTimeout\x18\x01 \x01(\x03R\x10executionTimeout\x12\x1e\n" +
+	"\x10executionTimeout\x18\x01 \x01(\x05R\x10executionTimeout\x12\x1e\n" +
 	"\n" +
 	"retryCount\x18\x02 \x01(\x05R\n" +
 	"retryCount\x12:\n" +
 	"\x0fbackoffStrategy\x18\x03 \x01(\x0e2\x10.BackoffStrategyR\x0fbackoffStrategy\x12\x1a\n" +
-	"\bdeadline\x18\x04 \x01(\x03R\bdeadline\"z\n" +
+	"\bdeadline\x18\x04 \x01(\x05R\bdeadline\"z\n" +
 	"\x12RequiredPastResult\x12\x1a\n" +
 	"\btaskName\x18\x01 \x01(\tR\btaskName\x12(\n" +
 	"\x0fexecutionParams\x18\x02 \x01(\tR\x0fexecutionParams\x12\x1e\n" +
 	"\n" +
 	"taskResult\x18\x03 \x01(\tR\n" +
-	"taskResult\"m\n" +
+	"taskResult\"\x93\x01\n" +
 	"\x19WorkflowExecutionSettings\x12$\n" +
 	"\rpriorityQueue\x18\x01 \x03(\tR\rpriorityQueue\x12*\n" +
-	"\x10concurrencyLimit\x18\x02 \x01(\x05R\x10concurrencyLimit\"\\\n" +
+	"\x10concurrencyLimit\x18\x02 \x01(\x05R\x10concurrencyLimit\x12$\n" +
+	"\rhaltOnFailure\x18\x03 \x01(\bR\rhaltOnFailure\"\\\n" +
 	"\x0eComputeMetrics\x12\x1e\n" +
 	"\n" +
 	"cpuSeconds\x18\x01 \x01(\x01R\n" +
@@ -624,11 +585,7 @@ const file_shared_proto_rawDesc = "" +
 	"\x13TRIGGER_SOURCE_CRON\x10\x01\x12\x1a\n" +
 	"\x16TRIGGER_SOURCE_WEBHOOK\x10\x02\x12\x15\n" +
 	"\x11TRIGGER_SOURCE_UI\x10\x03\x12\x16\n" +
-	"\x12TRIGGER_SOURCE_CLI\x10\x04*}\n" +
-	"\x12RegistrationStatus\x12#\n" +
-	"\x1fREGISTRATION_STATUS_UNSPECIFIED\x10\x00\x12\"\n" +
-	"\x1eREGISTRATION_STATUS_SUCCESSFUL\x10\x01\x12\x1e\n" +
-	"\x1aREGISTRATION_STATUS_FAILED\x10\x02*i\n" +
+	"\x12TRIGGER_SOURCE_CLI\x10\x04*i\n" +
 	"\rTriggerStatus\x12\x1e\n" +
 	"\x1aTRIGGER_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17TRIGGER_STATUS_ACCEPTED\x10\x01\x12\x1b\n" +
@@ -640,7 +597,7 @@ const file_shared_proto_rawDesc = "" +
 	"\x0fBackoffStrategy\x12 \n" +
 	"\x1cBACKOFF_STRATEGY_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17BACKOFF_STRATEGY_LINEAR\x10\x01\x12 \n" +
-	"\x1cBACKOFF_STRATEGY_EXPONENTIAL\x10\x02B'Z%github.com/orca-telemetry/contract/gob\x06proto3"
+	"\x1cBACKOFF_STRATEGY_EXPONENTIAL\x10\x02B*Z(github.com/orca-telemetry/contract/go/v2b\x06proto3"
 
 var (
 	file_shared_proto_rawDescOnce sync.Once
@@ -654,22 +611,21 @@ func file_shared_proto_rawDescGZIP() []byte {
 	return file_shared_proto_rawDescData
 }
 
-var file_shared_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_shared_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
 var file_shared_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_shared_proto_goTypes = []any{
 	(TriggerSource)(0),                // 0: TriggerSource
-	(RegistrationStatus)(0),           // 1: RegistrationStatus
-	(TriggerStatus)(0),                // 2: TriggerStatus
-	(ExecutionStatus)(0),              // 3: ExecutionStatus
-	(BackoffStrategy)(0),              // 4: BackoffStrategy
-	(*DataFunctionSettings)(nil),      // 5: DataFunctionSettings
-	(*TaskExecutionSettings)(nil),     // 6: TaskExecutionSettings
-	(*RequiredPastResult)(nil),        // 7: RequiredPastResult
-	(*WorkflowExecutionSettings)(nil), // 8: WorkflowExecutionSettings
-	(*ComputeMetrics)(nil),            // 9: ComputeMetrics
+	(TriggerStatus)(0),                // 1: TriggerStatus
+	(ExecutionStatus)(0),              // 2: ExecutionStatus
+	(BackoffStrategy)(0),              // 3: BackoffStrategy
+	(*DataFunctionSettings)(nil),      // 4: DataFunctionSettings
+	(*TaskExecutionSettings)(nil),     // 5: TaskExecutionSettings
+	(*RequiredPastResult)(nil),        // 6: RequiredPastResult
+	(*WorkflowExecutionSettings)(nil), // 7: WorkflowExecutionSettings
+	(*ComputeMetrics)(nil),            // 8: ComputeMetrics
 }
 var file_shared_proto_depIdxs = []int32{
-	4, // 0: TaskExecutionSettings.backoffStrategy:type_name -> BackoffStrategy
+	3, // 0: TaskExecutionSettings.backoffStrategy:type_name -> BackoffStrategy
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -687,7 +643,7 @@ func file_shared_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_shared_proto_rawDesc), len(file_shared_proto_rawDesc)),
-			NumEnums:      5,
+			NumEnums:      4,
 			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,

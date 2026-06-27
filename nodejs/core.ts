@@ -27,9 +27,6 @@ import {
   ExecutionStatus,
   executionStatusFromJSON,
   executionStatusToJSON,
-  RegistrationStatus,
-  registrationStatusFromJSON,
-  registrationStatusToJSON,
   TaskExecutionSettings,
   TriggerSource,
   triggerSourceFromJSON,
@@ -41,6 +38,39 @@ import {
 } from "./shared";
 
 export const protobufPackage = "";
+
+export enum WorkflowSource {
+  WORKER = 0,
+  UNDEFINED = 1,
+  UNRECOGNIZED = -1,
+}
+
+export function workflowSourceFromJSON(object: any): WorkflowSource {
+  switch (object) {
+    case 0:
+    case "WORKER":
+      return WorkflowSource.WORKER;
+    case 1:
+    case "UNDEFINED":
+      return WorkflowSource.UNDEFINED;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return WorkflowSource.UNRECOGNIZED;
+  }
+}
+
+export function workflowSourceToJSON(object: WorkflowSource): string {
+  switch (object) {
+    case WorkflowSource.WORKER:
+      return "WORKER";
+    case WorkflowSource.UNDEFINED:
+      return "UNDEFINED";
+    case WorkflowSource.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
 
 /** The comparator to apply in a LeafFilter. */
 export enum Comparator {
@@ -240,8 +270,8 @@ export interface DataFunction {
   name?:
     | string
     | undefined;
-  /** Hash is the hash of the AST segment that defines the data function. */
-  hash?:
+  /** The git commit hash of the data function */
+  gitCommitHash?:
     | string
     | undefined;
   /**
@@ -249,7 +279,7 @@ export interface DataFunction {
    * This model must be satisfied by the execution model of the owning workflow.
    */
   inputModel?:
-    | string
+    | Buffer
     | undefined;
   /**
    * OutputModel is a marshalled JSON schema describing a single output record.
@@ -257,7 +287,7 @@ export interface DataFunction {
    * orchestrator for caching. Validated once at retrieval time.
    */
   outputModel?:
-    | string
+    | Buffer
     | undefined;
   /**
    * Settings governs the lifecycle and retention of data produced by this
@@ -266,10 +296,27 @@ export interface DataFunction {
   settings?: DataFunctionSettings | undefined;
 }
 
+/**
+ * A data function representation that is required to globally reference a data
+ * function
+ */
+export interface DataFunctionReference {
+  /** The data function name */
+  dfName?:
+    | string
+    | undefined;
+  /** Worker ID of the datafunction */
+  dfWorkerId?:
+    | string
+    | undefined;
+  /** The git commit hash of the data function */
+  dfGitCommitHash?: string | undefined;
+}
+
 /** Task defines a registered task and its execution configuration. */
 export interface Task {
-  /** TaskHash is the hash of the AST segment corresponding to this task. */
-  taskHash?:
+  /** GitCommitHash is the commit where this task was registered */
+  gitCommitHash?:
     | string
     | undefined;
   /** Name is the unique name of this task. */
@@ -289,17 +336,17 @@ export interface Task {
    * the task's accepted input. Validation and pointer extensions are not enforced.
    */
   inputModel?:
-    | string
+    | Buffer
     | undefined;
   /**
    * OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
    * the task's output. Validation and pointer extensions are not enforced.
    */
   outputModel?:
-    | string
+    | Buffer
     | undefined;
   /** RequiredDataFunctions lists all data functions this task depends on. */
-  requiredDataFunctions?: string[] | undefined;
+  requiredDataFunctions?: DataFunctionReference[] | undefined;
 }
 
 /**
@@ -311,24 +358,24 @@ export interface WorkflowEdge {
   fromTaskName?:
     | string
     | undefined;
-  /** The hash of the AST segment of the task */
-  fromTaskHash?:
+  /** The git commit of the task */
+  fromTaskGitCommitHash?:
     | string
     | undefined;
-  /** The worker that implements the task */
-  fromTaskWorker?:
+  /** The ID of the worker that implements the task */
+  fromTaskWorkerId?:
     | string
     | undefined;
   /** The name of the task going from */
   toTaskName?:
     | string
     | undefined;
-  /** The hash of the AST segment of the task */
-  toTaskHash?:
+  /** The git commit of the task */
+  toTaskGitCommitHash?:
     | string
     | undefined;
-  /** The worker that implements the task */
-  toTaskWorker?: string | undefined;
+  /** The ID of the worker that implements the task */
+  toTaskWorkerId?: string | undefined;
 }
 
 /** Workflow defines a registered workflow, its task graph, and runtime settings. */
@@ -339,6 +386,10 @@ export interface Workflow {
     | undefined;
   /** Description is a human-readable explanation of the workflow's purpose. */
   description?:
+    | string
+    | undefined;
+  /** The git commit has of the workflow, if applicable */
+  gitCommitHash?:
     | string
     | undefined;
   /**
@@ -361,13 +412,79 @@ export interface Workflow {
    * parameters that must be provided at workflow trigger time.
    */
   inputModel?:
+    | Buffer
+    | undefined;
+  /** Where the workflow was defined */
+  workflowSource?: WorkflowSource | undefined;
+}
+
+/**
+ * ============================================================
+ * RegisterWorker RPC
+ * ============================================================
+ */
+export interface RegisterWorkerRequest {
+  /** The Ed25519 ublic key of the worker */
+  publicKey?: Buffer | undefined;
+}
+
+/** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
+export interface RegisterWorkerResponse {
+  /** The unique worker Id */
+  workerId?:
     | string
     | undefined;
   /**
-   * HaltOnFailure instructs the orchestrator to stop parallel task execution
-   * if any task encounters a failure.
+   * The unique ID of the issued nonce. Multiple worker instances can be requesting a nonce,
+   * so providing the nonce_id makes it simpler to verify against the right nonce.
    */
-  haltOnFailure?: boolean | undefined;
+  nonceId?: string | undefined;
+}
+
+/**
+ * ============================================================
+ * GetNonce RPC
+ * ============================================================
+ */
+export interface GetNonceRequest {
+  /** The unique ID of the worker */
+  workerId?: string | undefined;
+}
+
+export interface GetNonceResponse {
+  /** A challenge that the worker needs to sign */
+  challenge?:
+    | Buffer
+    | undefined;
+  /** A unique ID of the nonce */
+  nonceId?: string | undefined;
+}
+
+/**
+ * ============================================================
+ * CheckNonce RPC
+ * ============================================================
+ */
+export interface CheckNonceRequest {
+  /** the response to the challenge */
+  signedChallenge?:
+    | Buffer
+    | undefined;
+  /** The worker ID */
+  workerId?:
+    | string
+    | undefined;
+  /** The nonce ID */
+  nonceId?: string | undefined;
+}
+
+export interface CheckNonceResponse {
+  /** Access key expiry datetime */
+  expiresAt?:
+    | Date
+    | undefined;
+  /** A short lived access key */
+  accessKey?: Buffer | undefined;
 }
 
 /**
@@ -375,15 +492,7 @@ export interface Workflow {
  * RegisterWorkerSnapshot RPC
  * ============================================================
  */
-export interface RegisterWorkerRequest {
-  /** Name is the globally unique name of the codebase. */
-  name?:
-    | string
-    | undefined;
-  /** GitCommitHash is the current git commit */
-  gitCommitHash?:
-    | string
-    | undefined;
+export interface RegisterWorkerSnapshotRequest {
   /** Datafunctions is an array of data functions */
   dataFunctions?:
     | DataFunction[]
@@ -393,21 +502,11 @@ export interface RegisterWorkerRequest {
     | Task[]
     | undefined;
   /** Workflows is an array of workflows */
-  workflows?:
-    | Workflow[]
-    | undefined;
-  /** The external connection URL of the worker */
-  url?: string | undefined;
+  workflows?: Workflow[] | undefined;
 }
 
 /** RegisterWorkerResponse is the response message for the Registercodebase RPC. */
-export interface RegisterWorkerResponse {
-  /** Status indicates whether registration succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why registration failed, if applicable. */
-  message?: string | undefined;
+export interface RegisterWorkerSnapshotResponse {
 }
 
 /**
@@ -417,29 +516,20 @@ export interface RegisterWorkerResponse {
  * RegisterServingStatus message
  */
 export interface RegisterServingRequest {
-  /** MD5 hash of the worker */
-  md5?:
-    | string
-    | undefined;
   /** Connection URL from the perspective of the core orchestrator */
   connectionUrl?:
     | string
     | undefined;
-  /**
-   * Serving percentage to apply when the MD5 exists but has a different
-   * connection URL
-   */
-  servingPercentage?: number | undefined;
+  /** Explicit flag stating whether the worker is serving */
+  isServing?:
+    | boolean
+    | undefined;
+  /** The git commit hash of the current deployment */
+  commitHash?: string | undefined;
 }
 
 /** RegisterServingResponse message */
 export interface RegisterServingResponse {
-  /** Status indicates whether registration succeeded or failed. */
-  status?:
-    | RegistrationStatus
-    | undefined;
-  /** Message provides detail on why registration failed, if applicable. */
-  message?: string | undefined;
 }
 
 /** TriggerWorkflowRequest is the request message for the TriggerWorkflow RPC. */
@@ -587,7 +677,7 @@ export interface ExposeStateResponse {
  *
  * The top-level request message for QueryTaskResult.
  */
-export interface QueryParams {
+export interface QueryTaskRequest {
   /** The name of the task to return results for. */
   name?:
     | string
@@ -617,7 +707,7 @@ export interface QueryParams {
 }
 
 /** The top-level response message for QueryTaskResult. */
-export interface PastResults {
+export interface QueryTaskResponse {
   /** The matched task results. */
   results?:
     | TaskResult[]
@@ -697,7 +787,13 @@ export interface OrderByStatement {
 }
 
 function createBaseDataFunction(): DataFunction {
-  return { name: "", hash: "", inputModel: "", outputModel: "", settings: undefined };
+  return {
+    name: "",
+    gitCommitHash: "",
+    inputModel: Buffer.alloc(0),
+    outputModel: Buffer.alloc(0),
+    settings: undefined,
+  };
 }
 
 export const DataFunction: MessageFns<DataFunction> = {
@@ -705,14 +801,14 @@ export const DataFunction: MessageFns<DataFunction> = {
     if (message.name !== undefined && message.name !== "") {
       writer.uint32(10).string(message.name);
     }
-    if (message.hash !== undefined && message.hash !== "") {
-      writer.uint32(18).string(message.hash);
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      writer.uint32(18).string(message.gitCommitHash);
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(26).string(message.inputModel);
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      writer.uint32(26).bytes(message.inputModel);
     }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      writer.uint32(34).string(message.outputModel);
+    if (message.outputModel !== undefined && message.outputModel.length !== 0) {
+      writer.uint32(34).bytes(message.outputModel);
     }
     if (message.settings !== undefined) {
       DataFunctionSettings.encode(message.settings, writer.uint32(42).fork()).join();
@@ -740,7 +836,7 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.hash = reader.string();
+          message.gitCommitHash = reader.string();
           continue;
         }
         case 3: {
@@ -748,7 +844,7 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.inputModel = reader.string();
+          message.inputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 4: {
@@ -756,7 +852,7 @@ export const DataFunction: MessageFns<DataFunction> = {
             break;
           }
 
-          message.outputModel = reader.string();
+          message.outputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 5: {
@@ -779,9 +875,9 @@ export const DataFunction: MessageFns<DataFunction> = {
   fromJSON(object: any): DataFunction {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
-      hash: isSet(object.hash) ? globalThis.String(object.hash) : "",
-      inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
-      outputModel: isSet(object.outputModel) ? globalThis.String(object.outputModel) : "",
+      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
+      inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
+      outputModel: isSet(object.outputModel) ? Buffer.from(bytesFromBase64(object.outputModel)) : Buffer.alloc(0),
       settings: isSet(object.settings) ? DataFunctionSettings.fromJSON(object.settings) : undefined,
     };
   },
@@ -791,14 +887,14 @@ export const DataFunction: MessageFns<DataFunction> = {
     if (message.name !== undefined && message.name !== "") {
       obj.name = message.name;
     }
-    if (message.hash !== undefined && message.hash !== "") {
-      obj.hash = message.hash;
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      obj.gitCommitHash = message.gitCommitHash;
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      obj.inputModel = message.inputModel;
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      obj.inputModel = base64FromBytes(message.inputModel);
     }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      obj.outputModel = message.outputModel;
+    if (message.outputModel !== undefined && message.outputModel.length !== 0) {
+      obj.outputModel = base64FromBytes(message.outputModel);
     }
     if (message.settings !== undefined) {
       obj.settings = DataFunctionSettings.toJSON(message.settings);
@@ -812,9 +908,9 @@ export const DataFunction: MessageFns<DataFunction> = {
   fromPartial<I extends Exact<DeepPartial<DataFunction>, I>>(object: I): DataFunction {
     const message = createBaseDataFunction();
     message.name = object.name ?? "";
-    message.hash = object.hash ?? "";
-    message.inputModel = object.inputModel ?? "";
-    message.outputModel = object.outputModel ?? "";
+    message.gitCommitHash = object.gitCommitHash ?? "";
+    message.inputModel = object.inputModel ?? Buffer.alloc(0);
+    message.outputModel = object.outputModel ?? Buffer.alloc(0);
     message.settings = (object.settings !== undefined && object.settings !== null)
       ? DataFunctionSettings.fromPartial(object.settings)
       : undefined;
@@ -822,22 +918,126 @@ export const DataFunction: MessageFns<DataFunction> = {
   },
 };
 
+function createBaseDataFunctionReference(): DataFunctionReference {
+  return { dfName: "", dfWorkerId: "", dfGitCommitHash: "" };
+}
+
+export const DataFunctionReference: MessageFns<DataFunctionReference> = {
+  encode(message: DataFunctionReference, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.dfName !== undefined && message.dfName !== "") {
+      writer.uint32(10).string(message.dfName);
+    }
+    if (message.dfWorkerId !== undefined && message.dfWorkerId !== "") {
+      writer.uint32(18).string(message.dfWorkerId);
+    }
+    if (message.dfGitCommitHash !== undefined && message.dfGitCommitHash !== "") {
+      writer.uint32(26).string(message.dfGitCommitHash);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DataFunctionReference {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDataFunctionReference();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.dfName = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.dfWorkerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.dfGitCommitHash = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DataFunctionReference {
+    return {
+      dfName: isSet(object.dfName)
+        ? globalThis.String(object.dfName)
+        : isSet(object.df_name)
+        ? globalThis.String(object.df_name)
+        : "",
+      dfWorkerId: isSet(object.dfWorkerId)
+        ? globalThis.String(object.dfWorkerId)
+        : isSet(object.df_worker_id)
+        ? globalThis.String(object.df_worker_id)
+        : "",
+      dfGitCommitHash: isSet(object.dfGitCommitHash)
+        ? globalThis.String(object.dfGitCommitHash)
+        : isSet(object.df_git_commit_hash)
+        ? globalThis.String(object.df_git_commit_hash)
+        : "",
+    };
+  },
+
+  toJSON(message: DataFunctionReference): unknown {
+    const obj: any = {};
+    if (message.dfName !== undefined && message.dfName !== "") {
+      obj.dfName = message.dfName;
+    }
+    if (message.dfWorkerId !== undefined && message.dfWorkerId !== "") {
+      obj.dfWorkerId = message.dfWorkerId;
+    }
+    if (message.dfGitCommitHash !== undefined && message.dfGitCommitHash !== "") {
+      obj.dfGitCommitHash = message.dfGitCommitHash;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DataFunctionReference>, I>>(base?: I): DataFunctionReference {
+    return DataFunctionReference.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DataFunctionReference>, I>>(object: I): DataFunctionReference {
+    const message = createBaseDataFunctionReference();
+    message.dfName = object.dfName ?? "";
+    message.dfWorkerId = object.dfWorkerId ?? "";
+    message.dfGitCommitHash = object.dfGitCommitHash ?? "";
+    return message;
+  },
+};
+
 function createBaseTask(): Task {
   return {
-    taskHash: "",
+    gitCommitHash: "",
     name: "",
     description: "",
     executionSettings: undefined,
-    inputModel: "",
-    outputModel: "",
+    inputModel: Buffer.alloc(0),
+    outputModel: Buffer.alloc(0),
     requiredDataFunctions: [],
   };
 }
 
 export const Task: MessageFns<Task> = {
   encode(message: Task, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.taskHash !== undefined && message.taskHash !== "") {
-      writer.uint32(10).string(message.taskHash);
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      writer.uint32(10).string(message.gitCommitHash);
     }
     if (message.name !== undefined && message.name !== "") {
       writer.uint32(18).string(message.name);
@@ -848,15 +1048,15 @@ export const Task: MessageFns<Task> = {
     if (message.executionSettings !== undefined) {
       TaskExecutionSettings.encode(message.executionSettings, writer.uint32(34).fork()).join();
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(42).string(message.inputModel);
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      writer.uint32(42).bytes(message.inputModel);
     }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      writer.uint32(50).string(message.outputModel);
+    if (message.outputModel !== undefined && message.outputModel.length !== 0) {
+      writer.uint32(50).bytes(message.outputModel);
     }
     if (message.requiredDataFunctions !== undefined && message.requiredDataFunctions.length !== 0) {
       for (const v of message.requiredDataFunctions) {
-        writer.uint32(58).string(v!);
+        DataFunctionReference.encode(v!, writer.uint32(58).fork()).join();
       }
     }
     return writer;
@@ -874,7 +1074,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          message.taskHash = reader.string();
+          message.gitCommitHash = reader.string();
           continue;
         }
         case 2: {
@@ -906,7 +1106,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          message.inputModel = reader.string();
+          message.inputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 6: {
@@ -914,7 +1114,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          message.outputModel = reader.string();
+          message.outputModel = Buffer.from(reader.bytes());
           continue;
         }
         case 7: {
@@ -922,7 +1122,7 @@ export const Task: MessageFns<Task> = {
             break;
           }
 
-          const el = reader.string();
+          const el = DataFunctionReference.decode(reader, reader.uint32());
           if (el !== undefined) {
             message.requiredDataFunctions!.push(el);
           }
@@ -939,24 +1139,24 @@ export const Task: MessageFns<Task> = {
 
   fromJSON(object: any): Task {
     return {
-      taskHash: isSet(object.taskHash) ? globalThis.String(object.taskHash) : "",
+      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       executionSettings: isSet(object.executionSettings)
         ? TaskExecutionSettings.fromJSON(object.executionSettings)
         : undefined,
-      inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
-      outputModel: isSet(object.outputModel) ? globalThis.String(object.outputModel) : "",
+      inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
+      outputModel: isSet(object.outputModel) ? Buffer.from(bytesFromBase64(object.outputModel)) : Buffer.alloc(0),
       requiredDataFunctions: globalThis.Array.isArray(object?.requiredDataFunctions)
-        ? object.requiredDataFunctions.map((e: any) => globalThis.String(e))
+        ? object.requiredDataFunctions.map((e: any) => DataFunctionReference.fromJSON(e))
         : [],
     };
   },
 
   toJSON(message: Task): unknown {
     const obj: any = {};
-    if (message.taskHash !== undefined && message.taskHash !== "") {
-      obj.taskHash = message.taskHash;
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      obj.gitCommitHash = message.gitCommitHash;
     }
     if (message.name !== undefined && message.name !== "") {
       obj.name = message.name;
@@ -967,14 +1167,14 @@ export const Task: MessageFns<Task> = {
     if (message.executionSettings !== undefined) {
       obj.executionSettings = TaskExecutionSettings.toJSON(message.executionSettings);
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      obj.inputModel = message.inputModel;
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      obj.inputModel = base64FromBytes(message.inputModel);
     }
-    if (message.outputModel !== undefined && message.outputModel !== "") {
-      obj.outputModel = message.outputModel;
+    if (message.outputModel !== undefined && message.outputModel.length !== 0) {
+      obj.outputModel = base64FromBytes(message.outputModel);
     }
     if (message.requiredDataFunctions?.length) {
-      obj.requiredDataFunctions = message.requiredDataFunctions;
+      obj.requiredDataFunctions = message.requiredDataFunctions.map((e) => DataFunctionReference.toJSON(e));
     }
     return obj;
   },
@@ -984,21 +1184,29 @@ export const Task: MessageFns<Task> = {
   },
   fromPartial<I extends Exact<DeepPartial<Task>, I>>(object: I): Task {
     const message = createBaseTask();
-    message.taskHash = object.taskHash ?? "";
+    message.gitCommitHash = object.gitCommitHash ?? "";
     message.name = object.name ?? "";
     message.description = object.description ?? "";
     message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)
       ? TaskExecutionSettings.fromPartial(object.executionSettings)
       : undefined;
-    message.inputModel = object.inputModel ?? "";
-    message.outputModel = object.outputModel ?? "";
-    message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => e) || [];
+    message.inputModel = object.inputModel ?? Buffer.alloc(0);
+    message.outputModel = object.outputModel ?? Buffer.alloc(0);
+    message.requiredDataFunctions = object.requiredDataFunctions?.map((e) => DataFunctionReference.fromPartial(e)) ||
+      [];
     return message;
   },
 };
 
 function createBaseWorkflowEdge(): WorkflowEdge {
-  return { fromTaskName: "", fromTaskHash: "", fromTaskWorker: "", toTaskName: "", toTaskHash: "", toTaskWorker: "" };
+  return {
+    fromTaskName: "",
+    fromTaskGitCommitHash: "",
+    fromTaskWorkerId: "",
+    toTaskName: "",
+    toTaskGitCommitHash: "",
+    toTaskWorkerId: "",
+  };
 }
 
 export const WorkflowEdge: MessageFns<WorkflowEdge> = {
@@ -1006,20 +1214,20 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
     if (message.fromTaskName !== undefined && message.fromTaskName !== "") {
       writer.uint32(10).string(message.fromTaskName);
     }
-    if (message.fromTaskHash !== undefined && message.fromTaskHash !== "") {
-      writer.uint32(18).string(message.fromTaskHash);
+    if (message.fromTaskGitCommitHash !== undefined && message.fromTaskGitCommitHash !== "") {
+      writer.uint32(18).string(message.fromTaskGitCommitHash);
     }
-    if (message.fromTaskWorker !== undefined && message.fromTaskWorker !== "") {
-      writer.uint32(26).string(message.fromTaskWorker);
+    if (message.fromTaskWorkerId !== undefined && message.fromTaskWorkerId !== "") {
+      writer.uint32(26).string(message.fromTaskWorkerId);
     }
     if (message.toTaskName !== undefined && message.toTaskName !== "") {
       writer.uint32(34).string(message.toTaskName);
     }
-    if (message.toTaskHash !== undefined && message.toTaskHash !== "") {
-      writer.uint32(42).string(message.toTaskHash);
+    if (message.toTaskGitCommitHash !== undefined && message.toTaskGitCommitHash !== "") {
+      writer.uint32(42).string(message.toTaskGitCommitHash);
     }
-    if (message.toTaskWorker !== undefined && message.toTaskWorker !== "") {
-      writer.uint32(50).string(message.toTaskWorker);
+    if (message.toTaskWorkerId !== undefined && message.toTaskWorkerId !== "") {
+      writer.uint32(50).string(message.toTaskWorkerId);
     }
     return writer;
   },
@@ -1044,7 +1252,7 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
             break;
           }
 
-          message.fromTaskHash = reader.string();
+          message.fromTaskGitCommitHash = reader.string();
           continue;
         }
         case 3: {
@@ -1052,7 +1260,7 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
             break;
           }
 
-          message.fromTaskWorker = reader.string();
+          message.fromTaskWorkerId = reader.string();
           continue;
         }
         case 4: {
@@ -1068,7 +1276,7 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
             break;
           }
 
-          message.toTaskHash = reader.string();
+          message.toTaskGitCommitHash = reader.string();
           continue;
         }
         case 6: {
@@ -1076,7 +1284,7 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
             break;
           }
 
-          message.toTaskWorker = reader.string();
+          message.toTaskWorkerId = reader.string();
           continue;
         }
       }
@@ -1091,11 +1299,11 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
   fromJSON(object: any): WorkflowEdge {
     return {
       fromTaskName: isSet(object.fromTaskName) ? globalThis.String(object.fromTaskName) : "",
-      fromTaskHash: isSet(object.fromTaskHash) ? globalThis.String(object.fromTaskHash) : "",
-      fromTaskWorker: isSet(object.fromTaskWorker) ? globalThis.String(object.fromTaskWorker) : "",
+      fromTaskGitCommitHash: isSet(object.fromTaskGitCommitHash) ? globalThis.String(object.fromTaskGitCommitHash) : "",
+      fromTaskWorkerId: isSet(object.fromTaskWorkerId) ? globalThis.String(object.fromTaskWorkerId) : "",
       toTaskName: isSet(object.toTaskName) ? globalThis.String(object.toTaskName) : "",
-      toTaskHash: isSet(object.toTaskHash) ? globalThis.String(object.toTaskHash) : "",
-      toTaskWorker: isSet(object.toTaskWorker) ? globalThis.String(object.toTaskWorker) : "",
+      toTaskGitCommitHash: isSet(object.toTaskGitCommitHash) ? globalThis.String(object.toTaskGitCommitHash) : "",
+      toTaskWorkerId: isSet(object.toTaskWorkerId) ? globalThis.String(object.toTaskWorkerId) : "",
     };
   },
 
@@ -1104,20 +1312,20 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
     if (message.fromTaskName !== undefined && message.fromTaskName !== "") {
       obj.fromTaskName = message.fromTaskName;
     }
-    if (message.fromTaskHash !== undefined && message.fromTaskHash !== "") {
-      obj.fromTaskHash = message.fromTaskHash;
+    if (message.fromTaskGitCommitHash !== undefined && message.fromTaskGitCommitHash !== "") {
+      obj.fromTaskGitCommitHash = message.fromTaskGitCommitHash;
     }
-    if (message.fromTaskWorker !== undefined && message.fromTaskWorker !== "") {
-      obj.fromTaskWorker = message.fromTaskWorker;
+    if (message.fromTaskWorkerId !== undefined && message.fromTaskWorkerId !== "") {
+      obj.fromTaskWorkerId = message.fromTaskWorkerId;
     }
     if (message.toTaskName !== undefined && message.toTaskName !== "") {
       obj.toTaskName = message.toTaskName;
     }
-    if (message.toTaskHash !== undefined && message.toTaskHash !== "") {
-      obj.toTaskHash = message.toTaskHash;
+    if (message.toTaskGitCommitHash !== undefined && message.toTaskGitCommitHash !== "") {
+      obj.toTaskGitCommitHash = message.toTaskGitCommitHash;
     }
-    if (message.toTaskWorker !== undefined && message.toTaskWorker !== "") {
-      obj.toTaskWorker = message.toTaskWorker;
+    if (message.toTaskWorkerId !== undefined && message.toTaskWorkerId !== "") {
+      obj.toTaskWorkerId = message.toTaskWorkerId;
     }
     return obj;
   },
@@ -1128,11 +1336,11 @@ export const WorkflowEdge: MessageFns<WorkflowEdge> = {
   fromPartial<I extends Exact<DeepPartial<WorkflowEdge>, I>>(object: I): WorkflowEdge {
     const message = createBaseWorkflowEdge();
     message.fromTaskName = object.fromTaskName ?? "";
-    message.fromTaskHash = object.fromTaskHash ?? "";
-    message.fromTaskWorker = object.fromTaskWorker ?? "";
+    message.fromTaskGitCommitHash = object.fromTaskGitCommitHash ?? "";
+    message.fromTaskWorkerId = object.fromTaskWorkerId ?? "";
     message.toTaskName = object.toTaskName ?? "";
-    message.toTaskHash = object.toTaskHash ?? "";
-    message.toTaskWorker = object.toTaskWorker ?? "";
+    message.toTaskGitCommitHash = object.toTaskGitCommitHash ?? "";
+    message.toTaskWorkerId = object.toTaskWorkerId ?? "";
     return message;
   },
 };
@@ -1141,11 +1349,12 @@ function createBaseWorkflow(): Workflow {
   return {
     workflowName: "",
     description: "",
+    gitCommitHash: "",
     workflowHash: "",
     edges: [],
     executionSettings: undefined,
-    inputModel: "",
-    haltOnFailure: false,
+    inputModel: Buffer.alloc(0),
+    workflowSource: 0,
   };
 }
 
@@ -1157,22 +1366,25 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.description !== undefined && message.description !== "") {
       writer.uint32(18).string(message.description);
     }
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      writer.uint32(26).string(message.gitCommitHash);
+    }
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
-      writer.uint32(26).string(message.workflowHash);
+      writer.uint32(34).string(message.workflowHash);
     }
     if (message.edges !== undefined && message.edges.length !== 0) {
       for (const v of message.edges) {
-        WorkflowEdge.encode(v!, writer.uint32(34).fork()).join();
+        WorkflowEdge.encode(v!, writer.uint32(42).fork()).join();
       }
     }
     if (message.executionSettings !== undefined) {
-      WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(42).fork()).join();
+      WorkflowExecutionSettings.encode(message.executionSettings, writer.uint32(50).fork()).join();
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      writer.uint32(50).string(message.inputModel);
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      writer.uint32(58).bytes(message.inputModel);
     }
-    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
-      writer.uint32(56).bool(message.haltOnFailure);
+    if (message.workflowSource !== undefined && message.workflowSource !== 0) {
+      writer.uint32(64).int32(message.workflowSource);
     }
     return writer;
   },
@@ -1205,11 +1417,19 @@ export const Workflow: MessageFns<Workflow> = {
             break;
           }
 
-          message.workflowHash = reader.string();
+          message.gitCommitHash = reader.string();
           continue;
         }
         case 4: {
           if (tag !== 34) {
+            break;
+          }
+
+          message.workflowHash = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
             break;
           }
 
@@ -1219,28 +1439,28 @@ export const Workflow: MessageFns<Workflow> = {
           }
           continue;
         }
-        case 5: {
-          if (tag !== 42) {
+        case 6: {
+          if (tag !== 50) {
             break;
           }
 
           message.executionSettings = WorkflowExecutionSettings.decode(reader, reader.uint32());
           continue;
         }
-        case 6: {
-          if (tag !== 50) {
+        case 7: {
+          if (tag !== 58) {
             break;
           }
 
-          message.inputModel = reader.string();
+          message.inputModel = Buffer.from(reader.bytes());
           continue;
         }
-        case 7: {
-          if (tag !== 56) {
+        case 8: {
+          if (tag !== 64) {
             break;
           }
 
-          message.haltOnFailure = reader.bool();
+          message.workflowSource = reader.int32() as any;
           continue;
         }
       }
@@ -1256,13 +1476,18 @@ export const Workflow: MessageFns<Workflow> = {
     return {
       workflowName: isSet(object.workflowName) ? globalThis.String(object.workflowName) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
+      gitCommitHash: isSet(object.gitCommitHash)
+        ? globalThis.String(object.gitCommitHash)
+        : isSet(object.git_commit_hash)
+        ? globalThis.String(object.git_commit_hash)
+        : "",
       workflowHash: isSet(object.workflowHash) ? globalThis.String(object.workflowHash) : "",
       edges: globalThis.Array.isArray(object?.edges) ? object.edges.map((e: any) => WorkflowEdge.fromJSON(e)) : [],
       executionSettings: isSet(object.executionSettings)
         ? WorkflowExecutionSettings.fromJSON(object.executionSettings)
         : undefined,
-      inputModel: isSet(object.inputModel) ? globalThis.String(object.inputModel) : "",
-      haltOnFailure: isSet(object.haltOnFailure) ? globalThis.Boolean(object.haltOnFailure) : false,
+      inputModel: isSet(object.inputModel) ? Buffer.from(bytesFromBase64(object.inputModel)) : Buffer.alloc(0),
+      workflowSource: isSet(object.workflowSource) ? workflowSourceFromJSON(object.workflowSource) : 0,
     };
   },
 
@@ -1274,6 +1499,9 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.description !== undefined && message.description !== "") {
       obj.description = message.description;
     }
+    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
+      obj.gitCommitHash = message.gitCommitHash;
+    }
     if (message.workflowHash !== undefined && message.workflowHash !== "") {
       obj.workflowHash = message.workflowHash;
     }
@@ -1283,11 +1511,11 @@ export const Workflow: MessageFns<Workflow> = {
     if (message.executionSettings !== undefined) {
       obj.executionSettings = WorkflowExecutionSettings.toJSON(message.executionSettings);
     }
-    if (message.inputModel !== undefined && message.inputModel !== "") {
-      obj.inputModel = message.inputModel;
+    if (message.inputModel !== undefined && message.inputModel.length !== 0) {
+      obj.inputModel = base64FromBytes(message.inputModel);
     }
-    if (message.haltOnFailure !== undefined && message.haltOnFailure !== false) {
-      obj.haltOnFailure = message.haltOnFailure;
+    if (message.workflowSource !== undefined && message.workflowSource !== 0) {
+      obj.workflowSource = workflowSourceToJSON(message.workflowSource);
     }
     return obj;
   },
@@ -1299,46 +1527,26 @@ export const Workflow: MessageFns<Workflow> = {
     const message = createBaseWorkflow();
     message.workflowName = object.workflowName ?? "";
     message.description = object.description ?? "";
+    message.gitCommitHash = object.gitCommitHash ?? "";
     message.workflowHash = object.workflowHash ?? "";
     message.edges = object.edges?.map((e) => WorkflowEdge.fromPartial(e)) || [];
     message.executionSettings = (object.executionSettings !== undefined && object.executionSettings !== null)
       ? WorkflowExecutionSettings.fromPartial(object.executionSettings)
       : undefined;
-    message.inputModel = object.inputModel ?? "";
-    message.haltOnFailure = object.haltOnFailure ?? false;
+    message.inputModel = object.inputModel ?? Buffer.alloc(0);
+    message.workflowSource = object.workflowSource ?? 0;
     return message;
   },
 };
 
 function createBaseRegisterWorkerRequest(): RegisterWorkerRequest {
-  return { name: "", gitCommitHash: "", dataFunctions: [], tasks: [], workflows: [], url: "" };
+  return { publicKey: Buffer.alloc(0) };
 }
 
 export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   encode(message: RegisterWorkerRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.name !== undefined && message.name !== "") {
-      writer.uint32(10).string(message.name);
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      writer.uint32(18).string(message.gitCommitHash);
-    }
-    if (message.dataFunctions !== undefined && message.dataFunctions.length !== 0) {
-      for (const v of message.dataFunctions) {
-        DataFunction.encode(v!, writer.uint32(26).fork()).join();
-      }
-    }
-    if (message.tasks !== undefined && message.tasks.length !== 0) {
-      for (const v of message.tasks) {
-        Task.encode(v!, writer.uint32(34).fork()).join();
-      }
-    }
-    if (message.workflows !== undefined && message.workflows.length !== 0) {
-      for (const v of message.workflows) {
-        Workflow.encode(v!, writer.uint32(42).fork()).join();
-      }
-    }
-    if (message.url !== undefined && message.url !== "") {
-      writer.uint32(50).string(message.url);
+    if (message.publicKey !== undefined && message.publicKey.length !== 0) {
+      writer.uint32(10).bytes(message.publicKey);
     }
     return writer;
   },
@@ -1355,56 +1563,7 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
             break;
           }
 
-          message.name = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.gitCommitHash = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          const el = DataFunction.decode(reader, reader.uint32());
-          if (el !== undefined) {
-            message.dataFunctions!.push(el);
-          }
-          continue;
-        }
-        case 4: {
-          if (tag !== 34) {
-            break;
-          }
-
-          const el = Task.decode(reader, reader.uint32());
-          if (el !== undefined) {
-            message.tasks!.push(el);
-          }
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          const el = Workflow.decode(reader, reader.uint32());
-          if (el !== undefined) {
-            message.workflows!.push(el);
-          }
-          continue;
-        }
-        case 6: {
-          if (tag !== 50) {
-            break;
-          }
-
-          message.url = reader.string();
+          message.publicKey = Buffer.from(reader.bytes());
           continue;
         }
       }
@@ -1418,38 +1577,18 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
 
   fromJSON(object: any): RegisterWorkerRequest {
     return {
-      name: isSet(object.name) ? globalThis.String(object.name) : "",
-      gitCommitHash: isSet(object.gitCommitHash) ? globalThis.String(object.gitCommitHash) : "",
-      dataFunctions: globalThis.Array.isArray(object?.dataFunctions)
-        ? object.dataFunctions.map((e: any) => DataFunction.fromJSON(e))
-        : [],
-      tasks: globalThis.Array.isArray(object?.tasks) ? object.tasks.map((e: any) => Task.fromJSON(e)) : [],
-      workflows: globalThis.Array.isArray(object?.workflows)
-        ? object.workflows.map((e: any) => Workflow.fromJSON(e))
-        : [],
-      url: isSet(object.url) ? globalThis.String(object.url) : "",
+      publicKey: isSet(object.publicKey)
+        ? Buffer.from(bytesFromBase64(object.publicKey))
+        : isSet(object.public_key)
+        ? Buffer.from(bytesFromBase64(object.public_key))
+        : Buffer.alloc(0),
     };
   },
 
   toJSON(message: RegisterWorkerRequest): unknown {
     const obj: any = {};
-    if (message.name !== undefined && message.name !== "") {
-      obj.name = message.name;
-    }
-    if (message.gitCommitHash !== undefined && message.gitCommitHash !== "") {
-      obj.gitCommitHash = message.gitCommitHash;
-    }
-    if (message.dataFunctions?.length) {
-      obj.dataFunctions = message.dataFunctions.map((e) => DataFunction.toJSON(e));
-    }
-    if (message.tasks?.length) {
-      obj.tasks = message.tasks.map((e) => Task.toJSON(e));
-    }
-    if (message.workflows?.length) {
-      obj.workflows = message.workflows.map((e) => Workflow.toJSON(e));
-    }
-    if (message.url !== undefined && message.url !== "") {
-      obj.url = message.url;
+    if (message.publicKey !== undefined && message.publicKey.length !== 0) {
+      obj.publicKey = base64FromBytes(message.publicKey);
     }
     return obj;
   },
@@ -1459,27 +1598,22 @@ export const RegisterWorkerRequest: MessageFns<RegisterWorkerRequest> = {
   },
   fromPartial<I extends Exact<DeepPartial<RegisterWorkerRequest>, I>>(object: I): RegisterWorkerRequest {
     const message = createBaseRegisterWorkerRequest();
-    message.name = object.name ?? "";
-    message.gitCommitHash = object.gitCommitHash ?? "";
-    message.dataFunctions = object.dataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
-    message.tasks = object.tasks?.map((e) => Task.fromPartial(e)) || [];
-    message.workflows = object.workflows?.map((e) => Workflow.fromPartial(e)) || [];
-    message.url = object.url ?? "";
+    message.publicKey = object.publicKey ?? Buffer.alloc(0);
     return message;
   },
 };
 
 function createBaseRegisterWorkerResponse(): RegisterWorkerResponse {
-  return { status: 0, message: "" };
+  return { workerId: "", nonceId: "" };
 }
 
 export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
   encode(message: RegisterWorkerResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
+    if (message.workerId !== undefined && message.workerId !== "") {
+      writer.uint32(10).string(message.workerId);
     }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      writer.uint32(18).string(message.nonceId);
     }
     return writer;
   },
@@ -1492,11 +1626,11 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.status = reader.int32() as any;
+          message.workerId = reader.string();
           continue;
         }
         case 2: {
@@ -1504,7 +1638,7 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
             break;
           }
 
-          message.message = reader.string();
+          message.nonceId = reader.string();
           continue;
         }
       }
@@ -1518,18 +1652,26 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
 
   fromJSON(object: any): RegisterWorkerResponse {
     return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
+      workerId: isSet(object.workerId)
+        ? globalThis.String(object.workerId)
+        : isSet(object.worker_id)
+        ? globalThis.String(object.worker_id)
+        : "",
+      nonceId: isSet(object.nonceId)
+        ? globalThis.String(object.nonceId)
+        : isSet(object.nonce_id)
+        ? globalThis.String(object.nonce_id)
+        : "",
     };
   },
 
   toJSON(message: RegisterWorkerResponse): unknown {
     const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
+    if (message.workerId !== undefined && message.workerId !== "") {
+      obj.workerId = message.workerId;
     }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      obj.nonceId = message.nonceId;
     }
     return obj;
   },
@@ -1539,26 +1681,514 @@ export const RegisterWorkerResponse: MessageFns<RegisterWorkerResponse> = {
   },
   fromPartial<I extends Exact<DeepPartial<RegisterWorkerResponse>, I>>(object: I): RegisterWorkerResponse {
     const message = createBaseRegisterWorkerResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
+    message.workerId = object.workerId ?? "";
+    message.nonceId = object.nonceId ?? "";
+    return message;
+  },
+};
+
+function createBaseGetNonceRequest(): GetNonceRequest {
+  return { workerId: "" };
+}
+
+export const GetNonceRequest: MessageFns<GetNonceRequest> = {
+  encode(message: GetNonceRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.workerId !== undefined && message.workerId !== "") {
+      writer.uint32(10).string(message.workerId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetNonceRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetNonceRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.workerId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetNonceRequest {
+    return {
+      workerId: isSet(object.workerId)
+        ? globalThis.String(object.workerId)
+        : isSet(object.worker_id)
+        ? globalThis.String(object.worker_id)
+        : "",
+    };
+  },
+
+  toJSON(message: GetNonceRequest): unknown {
+    const obj: any = {};
+    if (message.workerId !== undefined && message.workerId !== "") {
+      obj.workerId = message.workerId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GetNonceRequest>, I>>(base?: I): GetNonceRequest {
+    return GetNonceRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GetNonceRequest>, I>>(object: I): GetNonceRequest {
+    const message = createBaseGetNonceRequest();
+    message.workerId = object.workerId ?? "";
+    return message;
+  },
+};
+
+function createBaseGetNonceResponse(): GetNonceResponse {
+  return { challenge: Buffer.alloc(0), nonceId: "" };
+}
+
+export const GetNonceResponse: MessageFns<GetNonceResponse> = {
+  encode(message: GetNonceResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.challenge !== undefined && message.challenge.length !== 0) {
+      writer.uint32(10).bytes(message.challenge);
+    }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      writer.uint32(18).string(message.nonceId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetNonceResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetNonceResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.challenge = Buffer.from(reader.bytes());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.nonceId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetNonceResponse {
+    return {
+      challenge: isSet(object.challenge) ? Buffer.from(bytesFromBase64(object.challenge)) : Buffer.alloc(0),
+      nonceId: isSet(object.nonceId)
+        ? globalThis.String(object.nonceId)
+        : isSet(object.nonce_id)
+        ? globalThis.String(object.nonce_id)
+        : "",
+    };
+  },
+
+  toJSON(message: GetNonceResponse): unknown {
+    const obj: any = {};
+    if (message.challenge !== undefined && message.challenge.length !== 0) {
+      obj.challenge = base64FromBytes(message.challenge);
+    }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      obj.nonceId = message.nonceId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<GetNonceResponse>, I>>(base?: I): GetNonceResponse {
+    return GetNonceResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GetNonceResponse>, I>>(object: I): GetNonceResponse {
+    const message = createBaseGetNonceResponse();
+    message.challenge = object.challenge ?? Buffer.alloc(0);
+    message.nonceId = object.nonceId ?? "";
+    return message;
+  },
+};
+
+function createBaseCheckNonceRequest(): CheckNonceRequest {
+  return { signedChallenge: Buffer.alloc(0), workerId: "", nonceId: "" };
+}
+
+export const CheckNonceRequest: MessageFns<CheckNonceRequest> = {
+  encode(message: CheckNonceRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.signedChallenge !== undefined && message.signedChallenge.length !== 0) {
+      writer.uint32(10).bytes(message.signedChallenge);
+    }
+    if (message.workerId !== undefined && message.workerId !== "") {
+      writer.uint32(18).string(message.workerId);
+    }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      writer.uint32(26).string(message.nonceId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CheckNonceRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCheckNonceRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.signedChallenge = Buffer.from(reader.bytes());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.workerId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.nonceId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CheckNonceRequest {
+    return {
+      signedChallenge: isSet(object.signedChallenge)
+        ? Buffer.from(bytesFromBase64(object.signedChallenge))
+        : isSet(object.signed_challenge)
+        ? Buffer.from(bytesFromBase64(object.signed_challenge))
+        : Buffer.alloc(0),
+      workerId: isSet(object.workerId)
+        ? globalThis.String(object.workerId)
+        : isSet(object.worker_id)
+        ? globalThis.String(object.worker_id)
+        : "",
+      nonceId: isSet(object.nonceId)
+        ? globalThis.String(object.nonceId)
+        : isSet(object.nonce_id)
+        ? globalThis.String(object.nonce_id)
+        : "",
+    };
+  },
+
+  toJSON(message: CheckNonceRequest): unknown {
+    const obj: any = {};
+    if (message.signedChallenge !== undefined && message.signedChallenge.length !== 0) {
+      obj.signedChallenge = base64FromBytes(message.signedChallenge);
+    }
+    if (message.workerId !== undefined && message.workerId !== "") {
+      obj.workerId = message.workerId;
+    }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      obj.nonceId = message.nonceId;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CheckNonceRequest>, I>>(base?: I): CheckNonceRequest {
+    return CheckNonceRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CheckNonceRequest>, I>>(object: I): CheckNonceRequest {
+    const message = createBaseCheckNonceRequest();
+    message.signedChallenge = object.signedChallenge ?? Buffer.alloc(0);
+    message.workerId = object.workerId ?? "";
+    message.nonceId = object.nonceId ?? "";
+    return message;
+  },
+};
+
+function createBaseCheckNonceResponse(): CheckNonceResponse {
+  return { expiresAt: undefined, accessKey: Buffer.alloc(0) };
+}
+
+export const CheckNonceResponse: MessageFns<CheckNonceResponse> = {
+  encode(message: CheckNonceResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.expiresAt !== undefined) {
+      Timestamp.encode(toTimestamp(message.expiresAt), writer.uint32(10).fork()).join();
+    }
+    if (message.accessKey !== undefined && message.accessKey.length !== 0) {
+      writer.uint32(18).bytes(message.accessKey);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CheckNonceResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCheckNonceResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.expiresAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.accessKey = Buffer.from(reader.bytes());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CheckNonceResponse {
+    return {
+      expiresAt: isSet(object.expiresAt)
+        ? fromJsonTimestamp(object.expiresAt)
+        : isSet(object.expires_at)
+        ? fromJsonTimestamp(object.expires_at)
+        : undefined,
+      accessKey: isSet(object.accessKey)
+        ? Buffer.from(bytesFromBase64(object.accessKey))
+        : isSet(object.access_key)
+        ? Buffer.from(bytesFromBase64(object.access_key))
+        : Buffer.alloc(0),
+    };
+  },
+
+  toJSON(message: CheckNonceResponse): unknown {
+    const obj: any = {};
+    if (message.expiresAt !== undefined) {
+      obj.expiresAt = message.expiresAt.toISOString();
+    }
+    if (message.accessKey !== undefined && message.accessKey.length !== 0) {
+      obj.accessKey = base64FromBytes(message.accessKey);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CheckNonceResponse>, I>>(base?: I): CheckNonceResponse {
+    return CheckNonceResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CheckNonceResponse>, I>>(object: I): CheckNonceResponse {
+    const message = createBaseCheckNonceResponse();
+    message.expiresAt = object.expiresAt ?? undefined;
+    message.accessKey = object.accessKey ?? Buffer.alloc(0);
+    return message;
+  },
+};
+
+function createBaseRegisterWorkerSnapshotRequest(): RegisterWorkerSnapshotRequest {
+  return { dataFunctions: [], tasks: [], workflows: [] };
+}
+
+export const RegisterWorkerSnapshotRequest: MessageFns<RegisterWorkerSnapshotRequest> = {
+  encode(message: RegisterWorkerSnapshotRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.dataFunctions !== undefined && message.dataFunctions.length !== 0) {
+      for (const v of message.dataFunctions) {
+        DataFunction.encode(v!, writer.uint32(10).fork()).join();
+      }
+    }
+    if (message.tasks !== undefined && message.tasks.length !== 0) {
+      for (const v of message.tasks) {
+        Task.encode(v!, writer.uint32(18).fork()).join();
+      }
+    }
+    if (message.workflows !== undefined && message.workflows.length !== 0) {
+      for (const v of message.workflows) {
+        Workflow.encode(v!, writer.uint32(26).fork()).join();
+      }
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerSnapshotRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegisterWorkerSnapshotRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          const el = DataFunction.decode(reader, reader.uint32());
+          if (el !== undefined) {
+            message.dataFunctions!.push(el);
+          }
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          const el = Task.decode(reader, reader.uint32());
+          if (el !== undefined) {
+            message.tasks!.push(el);
+          }
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          const el = Workflow.decode(reader, reader.uint32());
+          if (el !== undefined) {
+            message.workflows!.push(el);
+          }
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RegisterWorkerSnapshotRequest {
+    return {
+      dataFunctions: globalThis.Array.isArray(object?.dataFunctions)
+        ? object.dataFunctions.map((e: any) => DataFunction.fromJSON(e))
+        : [],
+      tasks: globalThis.Array.isArray(object?.tasks) ? object.tasks.map((e: any) => Task.fromJSON(e)) : [],
+      workflows: globalThis.Array.isArray(object?.workflows)
+        ? object.workflows.map((e: any) => Workflow.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: RegisterWorkerSnapshotRequest): unknown {
+    const obj: any = {};
+    if (message.dataFunctions?.length) {
+      obj.dataFunctions = message.dataFunctions.map((e) => DataFunction.toJSON(e));
+    }
+    if (message.tasks?.length) {
+      obj.tasks = message.tasks.map((e) => Task.toJSON(e));
+    }
+    if (message.workflows?.length) {
+      obj.workflows = message.workflows.map((e) => Workflow.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RegisterWorkerSnapshotRequest>, I>>(base?: I): RegisterWorkerSnapshotRequest {
+    return RegisterWorkerSnapshotRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RegisterWorkerSnapshotRequest>, I>>(
+    object: I,
+  ): RegisterWorkerSnapshotRequest {
+    const message = createBaseRegisterWorkerSnapshotRequest();
+    message.dataFunctions = object.dataFunctions?.map((e) => DataFunction.fromPartial(e)) || [];
+    message.tasks = object.tasks?.map((e) => Task.fromPartial(e)) || [];
+    message.workflows = object.workflows?.map((e) => Workflow.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseRegisterWorkerSnapshotResponse(): RegisterWorkerSnapshotResponse {
+  return {};
+}
+
+export const RegisterWorkerSnapshotResponse: MessageFns<RegisterWorkerSnapshotResponse> = {
+  encode(_: RegisterWorkerSnapshotResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterWorkerSnapshotResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegisterWorkerSnapshotResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): RegisterWorkerSnapshotResponse {
+    return {};
+  },
+
+  toJSON(_: RegisterWorkerSnapshotResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RegisterWorkerSnapshotResponse>, I>>(base?: I): RegisterWorkerSnapshotResponse {
+    return RegisterWorkerSnapshotResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RegisterWorkerSnapshotResponse>, I>>(_: I): RegisterWorkerSnapshotResponse {
+    const message = createBaseRegisterWorkerSnapshotResponse();
     return message;
   },
 };
 
 function createBaseRegisterServingRequest(): RegisterServingRequest {
-  return { md5: "", connectionUrl: "", servingPercentage: undefined };
+  return { connectionUrl: "", isServing: false, commitHash: "" };
 }
 
 export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
   encode(message: RegisterServingRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.md5 !== undefined && message.md5 !== "") {
-      writer.uint32(10).string(message.md5);
-    }
     if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
-      writer.uint32(18).string(message.connectionUrl);
+      writer.uint32(10).string(message.connectionUrl);
     }
-    if (message.servingPercentage !== undefined) {
-      writer.uint32(29).float(message.servingPercentage);
+    if (message.isServing !== undefined && message.isServing !== false) {
+      writer.uint32(16).bool(message.isServing);
+    }
+    if (message.commitHash !== undefined && message.commitHash !== "") {
+      writer.uint32(26).string(message.commitHash);
     }
     return writer;
   },
@@ -1575,23 +2205,23 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
             break;
           }
 
-          message.md5 = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
           message.connectionUrl = reader.string();
           continue;
         }
-        case 3: {
-          if (tag !== 29) {
+        case 2: {
+          if (tag !== 16) {
             break;
           }
 
-          message.servingPercentage = reader.float();
+          message.isServing = reader.bool();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.commitHash = reader.string();
           continue;
         }
       }
@@ -1605,22 +2235,22 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
 
   fromJSON(object: any): RegisterServingRequest {
     return {
-      md5: isSet(object.md5) ? globalThis.String(object.md5) : "",
       connectionUrl: isSet(object.connectionUrl) ? globalThis.String(object.connectionUrl) : "",
-      servingPercentage: isSet(object.servingPercentage) ? globalThis.Number(object.servingPercentage) : undefined,
+      isServing: isSet(object.isServing) ? globalThis.Boolean(object.isServing) : false,
+      commitHash: isSet(object.commitHash) ? globalThis.String(object.commitHash) : "",
     };
   },
 
   toJSON(message: RegisterServingRequest): unknown {
     const obj: any = {};
-    if (message.md5 !== undefined && message.md5 !== "") {
-      obj.md5 = message.md5;
-    }
     if (message.connectionUrl !== undefined && message.connectionUrl !== "") {
       obj.connectionUrl = message.connectionUrl;
     }
-    if (message.servingPercentage !== undefined) {
-      obj.servingPercentage = message.servingPercentage;
+    if (message.isServing !== undefined && message.isServing !== false) {
+      obj.isServing = message.isServing;
+    }
+    if (message.commitHash !== undefined && message.commitHash !== "") {
+      obj.commitHash = message.commitHash;
     }
     return obj;
   },
@@ -1630,25 +2260,19 @@ export const RegisterServingRequest: MessageFns<RegisterServingRequest> = {
   },
   fromPartial<I extends Exact<DeepPartial<RegisterServingRequest>, I>>(object: I): RegisterServingRequest {
     const message = createBaseRegisterServingRequest();
-    message.md5 = object.md5 ?? "";
     message.connectionUrl = object.connectionUrl ?? "";
-    message.servingPercentage = object.servingPercentage ?? undefined;
+    message.isServing = object.isServing ?? false;
+    message.commitHash = object.commitHash ?? "";
     return message;
   },
 };
 
 function createBaseRegisterServingResponse(): RegisterServingResponse {
-  return { status: 0, message: "" };
+  return {};
 }
 
 export const RegisterServingResponse: MessageFns<RegisterServingResponse> = {
-  encode(message: RegisterServingResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.status !== undefined && message.status !== 0) {
-      writer.uint32(8).int32(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      writer.uint32(18).string(message.message);
-    }
+  encode(_: RegisterServingResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
@@ -1659,22 +2283,6 @@ export const RegisterServingResponse: MessageFns<RegisterServingResponse> = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.status = reader.int32() as any;
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.message = reader.string();
-          continue;
-        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1684,31 +2292,20 @@ export const RegisterServingResponse: MessageFns<RegisterServingResponse> = {
     return message;
   },
 
-  fromJSON(object: any): RegisterServingResponse {
-    return {
-      status: isSet(object.status) ? registrationStatusFromJSON(object.status) : 0,
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-    };
+  fromJSON(_: any): RegisterServingResponse {
+    return {};
   },
 
-  toJSON(message: RegisterServingResponse): unknown {
+  toJSON(_: RegisterServingResponse): unknown {
     const obj: any = {};
-    if (message.status !== undefined && message.status !== 0) {
-      obj.status = registrationStatusToJSON(message.status);
-    }
-    if (message.message !== undefined && message.message !== "") {
-      obj.message = message.message;
-    }
     return obj;
   },
 
   create<I extends Exact<DeepPartial<RegisterServingResponse>, I>>(base?: I): RegisterServingResponse {
     return RegisterServingResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RegisterServingResponse>, I>>(object: I): RegisterServingResponse {
+  fromPartial<I extends Exact<DeepPartial<RegisterServingResponse>, I>>(_: I): RegisterServingResponse {
     const message = createBaseRegisterServingResponse();
-    message.status = object.status ?? 0;
-    message.message = object.message ?? "";
     return message;
   },
 };
@@ -2444,7 +3041,7 @@ export const ExposeStateResponse: MessageFns<ExposeStateResponse> = {
   },
 };
 
-function createBaseQueryParams(): QueryParams {
+function createBaseQueryTaskRequest(): QueryTaskRequest {
   return {
     name: "",
     executionParameterFilters: [],
@@ -2456,8 +3053,8 @@ function createBaseQueryParams(): QueryParams {
   };
 }
 
-export const QueryParams: MessageFns<QueryParams> = {
-  encode(message: QueryParams, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const QueryTaskRequest: MessageFns<QueryTaskRequest> = {
+  encode(message: QueryTaskRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.name !== undefined && message.name !== "") {
       writer.uint32(10).string(message.name);
     }
@@ -2490,10 +3087,10 @@ export const QueryParams: MessageFns<QueryParams> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryParams {
+  decode(input: BinaryReader | Uint8Array, length?: number): QueryTaskRequest {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryParams();
+    const message = createBaseQueryTaskRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2574,7 +3171,7 @@ export const QueryParams: MessageFns<QueryParams> = {
     return message;
   },
 
-  fromJSON(object: any): QueryParams {
+  fromJSON(object: any): QueryTaskRequest {
     return {
       name: isSet(object.name) ? globalThis.String(object.name) : "",
       executionParameterFilters: globalThis.Array.isArray(object?.executionParameterFilters)
@@ -2610,7 +3207,7 @@ export const QueryParams: MessageFns<QueryParams> = {
     };
   },
 
-  toJSON(message: QueryParams): unknown {
+  toJSON(message: QueryTaskRequest): unknown {
     const obj: any = {};
     if (message.name !== undefined && message.name !== "") {
       obj.name = message.name;
@@ -2636,11 +3233,11 @@ export const QueryParams: MessageFns<QueryParams> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<QueryParams>, I>>(base?: I): QueryParams {
-    return QueryParams.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<QueryTaskRequest>, I>>(base?: I): QueryTaskRequest {
+    return QueryTaskRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<QueryParams>, I>>(object: I): QueryParams {
-    const message = createBaseQueryParams();
+  fromPartial<I extends Exact<DeepPartial<QueryTaskRequest>, I>>(object: I): QueryTaskRequest {
+    const message = createBaseQueryTaskRequest();
     message.name = object.name ?? "";
     message.executionParameterFilters = object.executionParameterFilters?.map((e) => FilterGroup.fromPartial(e)) || [];
     message.resultFilters = object.resultFilters?.map((e) => FilterGroup.fromPartial(e)) || [];
@@ -2652,12 +3249,12 @@ export const QueryParams: MessageFns<QueryParams> = {
   },
 };
 
-function createBasePastResults(): PastResults {
+function createBaseQueryTaskResponse(): QueryTaskResponse {
   return { results: [], nextPageToken: undefined };
 }
 
-export const PastResults: MessageFns<PastResults> = {
-  encode(message: PastResults, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const QueryTaskResponse: MessageFns<QueryTaskResponse> = {
+  encode(message: QueryTaskResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.results !== undefined && message.results.length !== 0) {
       for (const v of message.results) {
         TaskResult.encode(v!, writer.uint32(10).fork()).join();
@@ -2669,10 +3266,10 @@ export const PastResults: MessageFns<PastResults> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PastResults {
+  decode(input: BinaryReader | Uint8Array, length?: number): QueryTaskResponse {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePastResults();
+    const message = createBaseQueryTaskResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2704,7 +3301,7 @@ export const PastResults: MessageFns<PastResults> = {
     return message;
   },
 
-  fromJSON(object: any): PastResults {
+  fromJSON(object: any): QueryTaskResponse {
     return {
       results: globalThis.Array.isArray(object?.results) ? object.results.map((e: any) => TaskResult.fromJSON(e)) : [],
       nextPageToken: isSet(object.nextPageToken)
@@ -2715,7 +3312,7 @@ export const PastResults: MessageFns<PastResults> = {
     };
   },
 
-  toJSON(message: PastResults): unknown {
+  toJSON(message: QueryTaskResponse): unknown {
     const obj: any = {};
     if (message.results?.length) {
       obj.results = message.results.map((e) => TaskResult.toJSON(e));
@@ -2726,11 +3323,11 @@ export const PastResults: MessageFns<PastResults> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PastResults>, I>>(base?: I): PastResults {
-    return PastResults.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<QueryTaskResponse>, I>>(base?: I): QueryTaskResponse {
+    return QueryTaskResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PastResults>, I>>(object: I): PastResults {
-    const message = createBasePastResults();
+  fromPartial<I extends Exact<DeepPartial<QueryTaskResponse>, I>>(object: I): QueryTaskResponse {
+    const message = createBaseQueryTaskResponse();
     message.results = object.results?.map((e) => TaskResult.fromPartial(e)) || [];
     message.nextPageToken = object.nextPageToken ?? undefined;
     return message;
@@ -3188,12 +3785,9 @@ export const OrderByStatement: MessageFns<OrderByStatement> = {
  */
 export type CoreService = typeof CoreService;
 export const CoreService = {
-  /**
-   * Registers a worker, along with all assets defined in the worker's codebase.
-   * This operation is idempotent on the worker name and git commit hash.
-   */
-  registerWorkerSnapshot: {
-    path: "/Core/RegisterWorkerSnapshot" as const,
+  /** Registers a worker with core */
+  registerWorker: {
+    path: "/Core/RegisterWorker" as const,
     requestStream: false as const,
     responseStream: false as const,
     requestSerialize: (value: RegisterWorkerRequest): Buffer =>
@@ -3202,6 +3796,42 @@ export const CoreService = {
     responseSerialize: (value: RegisterWorkerResponse): Buffer =>
       Buffer.from(RegisterWorkerResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): RegisterWorkerResponse => RegisterWorkerResponse.decode(value),
+  },
+  /** Get a nonce from the server */
+  getNonce: {
+    path: "/Core/GetNonce" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: GetNonceRequest): Buffer => Buffer.from(GetNonceRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): GetNonceRequest => GetNonceRequest.decode(value),
+    responseSerialize: (value: GetNonceResponse): Buffer => Buffer.from(GetNonceResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): GetNonceResponse => GetNonceResponse.decode(value),
+  },
+  /** Check a nonce with the server and issues access key */
+  checkNonce: {
+    path: "/Core/CheckNonce" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: CheckNonceRequest): Buffer => Buffer.from(CheckNonceRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CheckNonceRequest => CheckNonceRequest.decode(value),
+    responseSerialize: (value: CheckNonceResponse): Buffer => Buffer.from(CheckNonceResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): CheckNonceResponse => CheckNonceResponse.decode(value),
+  },
+  /**
+   * Registers all assets defined in the worker's codebase.
+   * This operation is idempotent on the worker name and git commit hash.
+   */
+  registerWorkerSnapshot: {
+    path: "/Core/RegisterWorkerSnapshot" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: RegisterWorkerSnapshotRequest): Buffer =>
+      Buffer.from(RegisterWorkerSnapshotRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RegisterWorkerSnapshotRequest => RegisterWorkerSnapshotRequest.decode(value),
+    responseSerialize: (value: RegisterWorkerSnapshotResponse): Buffer =>
+      Buffer.from(RegisterWorkerSnapshotResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): RegisterWorkerSnapshotResponse =>
+      RegisterWorkerSnapshotResponse.decode(value),
   },
   /** Notify existence */
   registerServing: {
@@ -3268,19 +3898,25 @@ export const CoreService = {
     path: "/Core/QueryTaskResult" as const,
     requestStream: false as const,
     responseStream: true as const,
-    requestSerialize: (value: QueryParams): Buffer => Buffer.from(QueryParams.encode(value).finish()),
-    requestDeserialize: (value: Buffer): QueryParams => QueryParams.decode(value),
-    responseSerialize: (value: PastResults): Buffer => Buffer.from(PastResults.encode(value).finish()),
-    responseDeserialize: (value: Buffer): PastResults => PastResults.decode(value),
+    requestSerialize: (value: QueryTaskRequest): Buffer => Buffer.from(QueryTaskRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): QueryTaskRequest => QueryTaskRequest.decode(value),
+    responseSerialize: (value: QueryTaskResponse): Buffer => Buffer.from(QueryTaskResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): QueryTaskResponse => QueryTaskResponse.decode(value),
   },
 } as const;
 
 export interface CoreServer extends UntypedServiceImplementation {
+  /** Registers a worker with core */
+  registerWorker: handleUnaryCall<RegisterWorkerRequest, RegisterWorkerResponse>;
+  /** Get a nonce from the server */
+  getNonce: handleUnaryCall<GetNonceRequest, GetNonceResponse>;
+  /** Check a nonce with the server and issues access key */
+  checkNonce: handleUnaryCall<CheckNonceRequest, CheckNonceResponse>;
   /**
-   * Registers a worker, along with all assets defined in the worker's codebase.
+   * Registers all assets defined in the worker's codebase.
    * This operation is idempotent on the worker name and git commit hash.
    */
-  registerWorkerSnapshot: handleUnaryCall<RegisterWorkerRequest, RegisterWorkerResponse>;
+  registerWorkerSnapshot: handleUnaryCall<RegisterWorkerSnapshotRequest, RegisterWorkerSnapshotResponse>;
   /** Notify existence */
   registerServing: handleUnaryCall<RegisterServingRequest, RegisterServingResponse>;
   /** Triggers a workflow */
@@ -3295,28 +3931,76 @@ export interface CoreServer extends UntypedServiceImplementation {
   /** Expose the internal state of the orchestration stack */
   exposeState: handleUnaryCall<ExposeStateRequest, ExposeStateResponse>;
   /** Query past results of tasks */
-  queryTaskResult: handleServerStreamingCall<QueryParams, PastResults>;
+  queryTaskResult: handleServerStreamingCall<QueryTaskRequest, QueryTaskResponse>;
 }
 
 export interface CoreClient extends Client {
-  /**
-   * Registers a worker, along with all assets defined in the worker's codebase.
-   * This operation is idempotent on the worker name and git commit hash.
-   */
-  registerWorkerSnapshot(
+  /** Registers a worker with core */
+  registerWorker(
     request: RegisterWorkerRequest,
     callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
   ): ClientUnaryCall;
-  registerWorkerSnapshot(
+  registerWorker(
     request: RegisterWorkerRequest,
     metadata: Metadata,
     callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
   ): ClientUnaryCall;
-  registerWorkerSnapshot(
+  registerWorker(
     request: RegisterWorkerRequest,
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: RegisterWorkerResponse) => void,
+  ): ClientUnaryCall;
+  /** Get a nonce from the server */
+  getNonce(
+    request: GetNonceRequest,
+    callback: (error: ServiceError | null, response: GetNonceResponse) => void,
+  ): ClientUnaryCall;
+  getNonce(
+    request: GetNonceRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: GetNonceResponse) => void,
+  ): ClientUnaryCall;
+  getNonce(
+    request: GetNonceRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: GetNonceResponse) => void,
+  ): ClientUnaryCall;
+  /** Check a nonce with the server and issues access key */
+  checkNonce(
+    request: CheckNonceRequest,
+    callback: (error: ServiceError | null, response: CheckNonceResponse) => void,
+  ): ClientUnaryCall;
+  checkNonce(
+    request: CheckNonceRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CheckNonceResponse) => void,
+  ): ClientUnaryCall;
+  checkNonce(
+    request: CheckNonceRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CheckNonceResponse) => void,
+  ): ClientUnaryCall;
+  /**
+   * Registers all assets defined in the worker's codebase.
+   * This operation is idempotent on the worker name and git commit hash.
+   */
+  registerWorkerSnapshot(
+    request: RegisterWorkerSnapshotRequest,
+    callback: (error: ServiceError | null, response: RegisterWorkerSnapshotResponse) => void,
+  ): ClientUnaryCall;
+  registerWorkerSnapshot(
+    request: RegisterWorkerSnapshotRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: RegisterWorkerSnapshotResponse) => void,
+  ): ClientUnaryCall;
+  registerWorkerSnapshot(
+    request: RegisterWorkerSnapshotRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: RegisterWorkerSnapshotResponse) => void,
   ): ClientUnaryCall;
   /** Notify existence */
   registerServing(
@@ -3399,12 +4083,12 @@ export interface CoreClient extends Client {
     callback: (error: ServiceError | null, response: ExposeStateResponse) => void,
   ): ClientUnaryCall;
   /** Query past results of tasks */
-  queryTaskResult(request: QueryParams, options?: Partial<CallOptions>): ClientReadableStream<PastResults>;
+  queryTaskResult(request: QueryTaskRequest, options?: Partial<CallOptions>): ClientReadableStream<QueryTaskResponse>;
   queryTaskResult(
-    request: QueryParams,
+    request: QueryTaskRequest,
     metadata?: Metadata,
     options?: Partial<CallOptions>,
-  ): ClientReadableStream<PastResults>;
+  ): ClientReadableStream<QueryTaskResponse>;
 }
 
 export const CoreClient = makeGenericClientConstructor(CoreService, "Core") as unknown as {
@@ -3412,6 +4096,14 @@ export const CoreClient = makeGenericClientConstructor(CoreService, "Core") as u
   service: typeof CoreService;
   serviceName: string;
 };
+
+function bytesFromBase64(b64: string): Uint8Array {
+  return Uint8Array.from(globalThis.Buffer.from(b64, "base64"));
+}
+
+function base64FromBytes(arr: Uint8Array): string {
+  return globalThis.Buffer.from(arr).toString("base64");
+}
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 

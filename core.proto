@@ -1,6 +1,5 @@
 syntax = "proto3";
-
-option go_package = "github.com/orca-telemetry/contract/go";
+option go_package = "github.com/orca-telemetry/contract/go/v2";
 
 import "google/protobuf/timestamp.proto";
 import "shared.proto";
@@ -11,9 +10,18 @@ import "shared.proto";
 // - Coordinates algorithm execution across distributed processors
 // - Tracks DAG execution state and handles distributed failure modes
 service Core {
-  // Registers a worker, along with all assets defined in the worker's codebase.
+  // Registers a worker with core
+  rpc RegisterWorker(RegisterWorkerRequest) returns (RegisterWorkerResponse);
+
+  // Get a nonce from the server
+  rpc GetNonce(GetNonceRequest) returns (GetNonceResponse);
+
+  // Check a nonce with the server and issues access key
+  rpc CheckNonce(CheckNonceRequest) returns (CheckNonceResponse);
+
+  // Registers all assets defined in the worker's codebase.
   // This operation is idempotent on the worker name and git commit hash.
-  rpc RegisterWorkerSnapshot(RegisterWorkerRequest) returns (RegisterWorkerResponse);
+  rpc RegisterWorkerSnapshot(RegisterWorkerSnapshotRequest) returns (RegisterWorkerSnapshotResponse);
 
   // Notify existence
   rpc RegisterServing(RegisterServingRequest) returns (RegisterServingResponse);
@@ -31,7 +39,7 @@ service Core {
   rpc ExposeState(ExposeStateRequest) returns (ExposeStateResponse);
 
   // Query past results of tasks
-  rpc QueryTaskResult(QueryParams) returns (stream PastResults);
+  rpc QueryTaskResult(QueryTaskRequest) returns (stream QueryTaskResponse);
 };
 
 // ============================================================
@@ -43,27 +51,40 @@ message DataFunction {
   // Name is the globally unique identifier for this data function.
   string name = 1;
 
-  // Hash is the hash of the AST segment that defines the data function.
-  string hash = 2;
+  // The git commit hash of the data function
+  string gitCommitHash = 2;
 
   // InputModel is a marshalled JSON schema describing the accepted input.
   // This model must be satisfied by the execution model of the owning workflow.
-  string inputModel = 3;
+  bytes inputModel = 3;
 
   // OutputModel is a marshalled JSON schema describing a single output record.
   // The data function produces an array of this schema, streamed to the
   // orchestrator for caching. Validated once at retrieval time.
-  string outputModel = 4;
+  bytes outputModel = 4;
 
   // Settings governs the lifecycle and retention of data produced by this
   // data function.
   DataFunctionSettings settings = 5;
 }
 
+// A data function representation that is required to globally reference a data
+// function
+message DataFunctionReference {
+  // The data function name
+  string df_name = 1;
+
+  // Worker ID of the datafunction
+  string df_worker_id = 2;
+
+  // The git commit hash of the data function
+  string df_git_commit_hash = 3;
+}
+
 // Task defines a registered task and its execution configuration.
 message Task {
-  // TaskHash is the hash of the AST segment corresponding to this task.
-  string taskHash = 1;
+  // GitCommitHash is the commit where this task was registered
+  string gitCommitHash = 1;
 
   // Name is the unique name of this task.
   string name = 2;
@@ -76,14 +97,14 @@ message Task {
 
   // InputModel is a marshalled JSON schema (JSON Schema Standard) describing
   // the task's accepted input. Validation and pointer extensions are not enforced.
-  string inputModel = 5;
+  bytes inputModel = 5;
 
   // OutputModel is a marshalled JSON schema (JSON Schema Standard) describing
   // the task's output. Validation and pointer extensions are not enforced.
-  string outputModel = 6;
+  bytes outputModel = 6;
 
   // RequiredDataFunctions lists all data functions this task depends on.
-  repeated string requiredDataFunctions = 7;
+  repeated DataFunctionReference requiredDataFunctions = 7;
 }
 
 // WorkflowEdge defines the relationship between two tasks in the workflow.
@@ -92,20 +113,26 @@ message WorkflowEdge{
   // The name of the task going from
   string fromTaskName = 1;
 
-  // The hash of the AST segment of the task
-  string fromTaskHash = 2;
+  // The git commit of the task
+  string fromTaskGitCommitHash = 2;
 
-  // The worker that implements the task
-  string fromTaskWorker = 3;
+  // The ID of the worker that implements the task
+  string fromTaskWorkerId = 3;
 
   // The name of the task going from
   string toTaskName = 4;
 
-  // The hash of the AST segment of the task
-  string toTaskHash = 5;
+  // The git commit of the task
+  string toTaskGitCommitHash= 5;
 
-  // The worker that implements the task
-  string toTaskWorker = 6;
+  // The ID of the worker that implements the task
+  string toTaskWorkerId = 6;
+
+}
+
+enum WorkflowSource {
+    WORKER = 0;
+    UNDEFINED = 1;
 }
 
 // Workflow defines a registered workflow, its task graph, and runtime settings.
@@ -116,81 +143,119 @@ message Workflow {
   // Description is a human-readable explanation of the workflow's purpose.
   string description = 2;
 
+  // The git commit has of the workflow, if applicable
+  string git_commit_hash = 3;
+
   // WorkflowHash is a hash of the workflow structure, factoring in tasks,
   // dependencies, and execution models.
-  string workflowHash = 3;
+  string workflowHash = 4;
 
   // Edges defines the dependency relationships between tasks in this workflow.
-  repeated WorkflowEdge edges = 4;
+  repeated WorkflowEdge edges = 5;
 
   // ExecutionSettings defines concurrency limits and task prioritisation.
-  WorkflowExecutionSettings executionSettings = 5;
+  WorkflowExecutionSettings executionSettings = 6;
 
   // InputModel is a marshalled JSON schema describing the
   // parameters that must be provided at workflow trigger time.
-  string inputModel = 6;
+  bytes inputModel = 7;
 
-  // HaltOnFailure instructs the orchestrator to stop parallel task execution
-  // if any task encounters a failure.
-  bool haltOnFailure = 7;
+
+  // Where the workflow was defined
+  WorkflowSource workflowSource = 8;
 }
 
+
 // ============================================================
-// RegisterWorkerSnapshot RPC
+// RegisterWorker RPC
 // ============================================================
 message RegisterWorkerRequest {
-  // Name is the globally unique name of the codebase.
-  string name = 1;
-
-  // GitCommitHash is the current git commit
-  string gitCommitHash = 2;
-
-  // Datafunctions is an array of data functions
-  repeated DataFunction dataFunctions = 3;
-
-  // Tasks is an array of tasks
-  repeated Task tasks = 4;
-
-  // Workflows is an array of workflows
-  repeated Workflow workflows = 5;
-
-  // The external connection URL of the worker
-  string url = 6;
+  // The Ed25519 ublic key of the worker
+  bytes public_key = 1;
 };
 
 // RegisterWorkerResponse is the response message for the Registercodebase RPC.
 message RegisterWorkerResponse {
-  // Status indicates whether registration succeeded or failed.
-  RegistrationStatus status = 1;
+  // The unique worker Id
+  string worker_id = 1;
 
-  // Message provides detail on why registration failed, if applicable.
-  string message = 2;
+  // The unique ID of the issued nonce. Multiple worker instances can be requesting a nonce, 
+  // so providing the nonce_id makes it simpler to verify against the right nonce.
+  string nonce_id = 2;
+};
+
+// ============================================================
+// GetNonce RPC
+// ============================================================
+message GetNonceRequest {
+  // The unique ID of the worker
+  string worker_id = 1;
+};
+
+message GetNonceResponse {
+  // A challenge that the worker needs to sign
+  bytes challenge = 1;
+
+  // A unique ID of the nonce
+  string nonce_id = 2;
 }
+
+// ============================================================
+// CheckNonce RPC
+// ============================================================
+message CheckNonceRequest {
+  // the response to the challenge
+  bytes signed_challenge = 1;
+
+  // The worker ID
+  string worker_id = 2;
+
+  // The nonce ID
+  string nonce_id = 3;
+};
+
+message CheckNonceResponse {
+  // Access key expiry datetime
+  google.protobuf.Timestamp expires_at = 1;
+
+  // A short lived access key
+  bytes access_key = 2;
+};
+
+// ============================================================
+// RegisterWorkerSnapshot RPC
+// ============================================================
+message RegisterWorkerSnapshotRequest {
+  // Datafunctions is an array of data functions
+  repeated DataFunction dataFunctions = 1;
+
+  // Tasks is an array of tasks
+  repeated Task tasks = 2;
+
+  // Workflows is an array of workflows
+  repeated Workflow workflows = 3;
+};
+
+// RegisterWorkerResponse is the response message for the Registercodebase RPC.
+message RegisterWorkerSnapshotResponse {}
 
 // ============================================================
 // RegisterServingStatus RPC
 // ============================================================
 // RegisterServingStatus message
 message RegisterServingRequest {
-  // MD5 hash of the worker
-  string md5 = 1;
-
   // Connection URL from the perspective of the core orchestrator
-  string connectionUrl = 2;
+  string connectionUrl = 1;
 
-  // Serving percentage to apply when the MD5 exists but has a different
-  // connection URL
-  optional float servingPercentage = 3;
+  // Explicit flag stating whether the worker is serving
+  bool isServing = 2;
+
+  // The git commit hash of the current deployment
+  string commitHash = 3;
 };
 
 // RegisterServingResponse message
-message RegisterServingResponse{
-  // Status indicates whether registration succeeded or failed.
-  RegistrationStatus status = 1;
-
-  // Message provides detail on why registration failed, if applicable.
-  string message = 2;
-}
+message RegisterServingResponse{}
 
 // ============================================================
 // TriggerWorkflow RPC
@@ -314,7 +379,7 @@ message ExposeStateResponse {
 // ============================================================
 //
 // The top-level request message for QueryTaskResult.
-message QueryParams {
+message QueryTaskRequest {
   // The name of the task to return results for.
   string name = 1;
 
@@ -338,7 +403,7 @@ message QueryParams {
 }
 
 // The top-level response message for QueryTaskResult.
-message PastResults {
+message QueryTaskResponse {
   // The matched task results.
   repeated TaskResult results = 1;
 

@@ -14,12 +14,6 @@ class TriggerSource(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     TRIGGER_SOURCE_UI: _ClassVar[TriggerSource]
     TRIGGER_SOURCE_CLI: _ClassVar[TriggerSource]
 
-class RegistrationStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = ()
-    REGISTRATION_STATUS_UNSPECIFIED: _ClassVar[RegistrationStatus]
-    REGISTRATION_STATUS_SUCCESSFUL: _ClassVar[RegistrationStatus]
-    REGISTRATION_STATUS_FAILED: _ClassVar[RegistrationStatus]
-
 class TriggerStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     TRIGGER_STATUS_UNSPECIFIED: _ClassVar[TriggerStatus]
@@ -42,9 +36,6 @@ TRIGGER_SOURCE_CRON: TriggerSource
 TRIGGER_SOURCE_WEBHOOK: TriggerSource
 TRIGGER_SOURCE_UI: TriggerSource
 TRIGGER_SOURCE_CLI: TriggerSource
-REGISTRATION_STATUS_UNSPECIFIED: RegistrationStatus
-REGISTRATION_STATUS_SUCCESSFUL: RegistrationStatus
-REGISTRATION_STATUS_FAILED: RegistrationStatus
 TRIGGER_STATUS_UNSPECIFIED: TriggerStatus
 TRIGGER_STATUS_ACCEPTED: TriggerStatus
 TRIGGER_STATUS_REJECTED: TriggerStatus
@@ -86,12 +77,14 @@ class RequiredPastResult(_message.Message):
     def __init__(self, taskName: _Optional[str] = ..., executionParams: _Optional[str] = ..., taskResult: _Optional[str] = ...) -> None: ...
 
 class WorkflowExecutionSettings(_message.Message):
-    __slots__ = ("priorityQueue", "concurrencyLimit")
+    __slots__ = ("priorityQueue", "concurrencyLimit", "haltOnFailure")
     PRIORITYQUEUE_FIELD_NUMBER: _ClassVar[int]
     CONCURRENCYLIMIT_FIELD_NUMBER: _ClassVar[int]
+    HALTONFAILURE_FIELD_NUMBER: _ClassVar[int]
     priorityQueue: _containers.RepeatedScalarFieldContainer[str]
     concurrencyLimit: int
-    def __init__(self, priorityQueue: _Optional[_Iterable[str]] = ..., concurrencyLimit: _Optional[int] = ...) -> None: ...
+    haltOnFailure: bool
+    def __init__(self, priorityQueue: _Optional[_Iterable[str]] = ..., concurrencyLimit: _Optional[int] = ..., haltOnFailure: bool = ...) -> None: ...
 
 class ComputeMetrics(_message.Message):
     __slots__ = ("cpuSeconds", "memoryGiBSeconds")

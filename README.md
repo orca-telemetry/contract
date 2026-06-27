@@ -1,8 +1,26 @@
-# README 
+# README
+
+Herein is the description of the API design / contract for the orca core
+service, and for workers.
 
 # Core Service
 
 These are all the remote procedure calls that should sit under the core service.
+
+## RegisterWorker
+
+This service initialises the worker, and in return sends a unique key that the
+worker should use to authenticate itself with the core.
+
+### Request Message
+
+* **WorkerName** - The name of the worker
+
+### Response Message
+
+* **Status** - Success | Failed
+* **Message** - The failure message if any
+* **Key** - Access key 
 
 ## RegisterCodebaseSnapshot
 
@@ -16,13 +34,10 @@ idempotent on git commit has and codebase name.
 
 * **WorkerName**: The name of the worker that implements the assets. Globally unique.
 * **GitCommitHash**: The current git commit of codebase.
-* **MD5**: An MD5 hash performed on the combination of DataFunctions, Tasks, and
-    workflows. Used to check integrity server side and as a lookup index for contacting
-    the worker when the worker notifies of it's readiness to serve.
 * **DataFunctions**: An array of data functions
+* **PublicKey**: The public key associated with this worker.
 * **Tasks**: An array of tasks
 * **Workflows**: An array of workflows
-* **URL**: A connection URL that should be used to contact this worker.
 
 ### Response Message
 * **Status**: Success | Failure 
@@ -98,8 +113,6 @@ MD5 hash that that would have been indexed at snapshot registration time.
 ### Request Message
 
 * **Name**: The name of the worker.
-* **MD5**: The MD5 hash of the workers state, including data functions, tasks,
-    and workflows, and worker name. Does not factor in the git commit state.
 * **ConnectionUrl**: The connection URL of the worker. This must be the gRPC URL
     that the core orchestrator must contact to request processing.
 * **IsServing**: True | False - whether the worker is serving requests.

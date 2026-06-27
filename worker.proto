@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/orca-telemetry/contract/go";
+option go_package = "github.com/orca-telemetry/contract/go/v2";
 
 import "shared.proto";
 

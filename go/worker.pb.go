@@ -4,7 +4,7 @@
 // 	protoc        v4.25.9
 // source: worker.proto
 
-package _go
+package v2
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -447,7 +447,7 @@ const file_worker_proto_rawDesc = "" +
 	"\x06Worker\x12P\n" +
 	"\x13ExecuteDataFunction\x12\x1b.ExecuteDataFunctionRequest\x1a\x1c.ExecuteDataFunctionResponse\x12Y\n" +
 	"\x16ExecuteWorkflowSegment\x12\x1e.ExecuteWorkflowSegmentRequest\x1a\x1f.ExecuteWorkflowSegmentResponse\x122\n" +
-	"\tHeartbeat\x12\x11.HeartbeatRequest\x1a\x12.HeartbeatResponseB'Z%github.com/orca-telemetry/contract/gob\x06proto3"
+	"\tHeartbeat\x12\x11.HeartbeatRequest\x1a\x12.HeartbeatResponseB*Z(github.com/orca-telemetry/contract/go/v2b\x06proto3"
 
 var (
 	file_worker_proto_rawDescOnce sync.Once
