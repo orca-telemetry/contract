@@ -161,10 +161,12 @@ class GetNonceRequest(_message.Message):
     def __init__(self, worker_id: _Optional[str] = ...) -> None: ...
 
 class GetNonceResponse(_message.Message):
-    __slots__ = ("challenge",)
+    __slots__ = ("challenge", "nonce_id")
     CHALLENGE_FIELD_NUMBER: _ClassVar[int]
+    NONCE_ID_FIELD_NUMBER: _ClassVar[int]
     challenge: bytes
-    def __init__(self, challenge: _Optional[bytes] = ...) -> None: ...
+    nonce_id: str
+    def __init__(self, challenge: _Optional[bytes] = ..., nonce_id: _Optional[str] = ...) -> None: ...
 
 class CheckNonceRequest(_message.Message):
     __slots__ = ("signed_challenge", "worker_id", "nonce_id")

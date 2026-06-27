@@ -195,6 +195,9 @@ message GetNonceRequest {
 message GetNonceResponse {
   // A challenge that the worker needs to sign
   bytes challenge = 1;
+
+  // A unique ID of the nonce
+  string nonce_id = 2;
 }
 
 // ============================================================

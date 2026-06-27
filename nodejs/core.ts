@@ -453,7 +453,11 @@ export interface GetNonceRequest {
 
 export interface GetNonceResponse {
   /** A challenge that the worker needs to sign */
-  challenge?: Buffer | undefined;
+  challenge?:
+    | Buffer
+    | undefined;
+  /** A unique ID of the nonce */
+  nonceId?: string | undefined;
 }
 
 /**
@@ -1748,13 +1752,16 @@ export const GetNonceRequest: MessageFns<GetNonceRequest> = {
 };
 
 function createBaseGetNonceResponse(): GetNonceResponse {
-  return { challenge: Buffer.alloc(0) };
+  return { challenge: Buffer.alloc(0), nonceId: "" };
 }
 
 export const GetNonceResponse: MessageFns<GetNonceResponse> = {
   encode(message: GetNonceResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.challenge !== undefined && message.challenge.length !== 0) {
       writer.uint32(10).bytes(message.challenge);
+    }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      writer.uint32(18).string(message.nonceId);
     }
     return writer;
   },
@@ -1774,6 +1781,14 @@ export const GetNonceResponse: MessageFns<GetNonceResponse> = {
           message.challenge = Buffer.from(reader.bytes());
           continue;
         }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.nonceId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1784,13 +1799,23 @@ export const GetNonceResponse: MessageFns<GetNonceResponse> = {
   },
 
   fromJSON(object: any): GetNonceResponse {
-    return { challenge: isSet(object.challenge) ? Buffer.from(bytesFromBase64(object.challenge)) : Buffer.alloc(0) };
+    return {
+      challenge: isSet(object.challenge) ? Buffer.from(bytesFromBase64(object.challenge)) : Buffer.alloc(0),
+      nonceId: isSet(object.nonceId)
+        ? globalThis.String(object.nonceId)
+        : isSet(object.nonce_id)
+        ? globalThis.String(object.nonce_id)
+        : "",
+    };
   },
 
   toJSON(message: GetNonceResponse): unknown {
     const obj: any = {};
     if (message.challenge !== undefined && message.challenge.length !== 0) {
       obj.challenge = base64FromBytes(message.challenge);
+    }
+    if (message.nonceId !== undefined && message.nonceId !== "") {
+      obj.nonceId = message.nonceId;
     }
     return obj;
   },
@@ -1801,6 +1826,7 @@ export const GetNonceResponse: MessageFns<GetNonceResponse> = {
   fromPartial<I extends Exact<DeepPartial<GetNonceResponse>, I>>(object: I): GetNonceResponse {
     const message = createBaseGetNonceResponse();
     message.challenge = object.challenge ?? Buffer.alloc(0);
+    message.nonceId = object.nonceId ?? "";
     return message;
   },
 };

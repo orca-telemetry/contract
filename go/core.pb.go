@@ -859,7 +859,9 @@ func (x *GetNonceRequest) GetWorkerId() string {
 type GetNonceResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// A challenge that the worker needs to sign
-	Challenge     []byte `protobuf:"bytes,1,opt,name=challenge,proto3" json:"challenge,omitempty"`
+	Challenge []byte `protobuf:"bytes,1,opt,name=challenge,proto3" json:"challenge,omitempty"`
+	// A unique ID of the nonce
+	NonceId       string `protobuf:"bytes,2,opt,name=nonce_id,json=nonceId,proto3" json:"nonce_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -899,6 +901,13 @@ func (x *GetNonceResponse) GetChallenge() []byte {
 		return x.Challenge
 	}
 	return nil
+}
+
+func (x *GetNonceResponse) GetNonceId() string {
+	if x != nil {
+		return x.NonceId
+	}
+	return ""
 }
 
 // ============================================================
@@ -2273,9 +2282,10 @@ const file_core_proto_rawDesc = "" +
 	"\tworker_id\x18\x01 \x01(\tR\bworkerId\x12\x19\n" +
 	"\bnonce_id\x18\x02 \x01(\tR\anonceId\".\n" +
 	"\x0fGetNonceRequest\x12\x1b\n" +
-	"\tworker_id\x18\x01 \x01(\tR\bworkerId\"0\n" +
+	"\tworker_id\x18\x01 \x01(\tR\bworkerId\"K\n" +
 	"\x10GetNonceResponse\x12\x1c\n" +
-	"\tchallenge\x18\x01 \x01(\fR\tchallenge\"v\n" +
+	"\tchallenge\x18\x01 \x01(\fR\tchallenge\x12\x19\n" +
+	"\bnonce_id\x18\x02 \x01(\tR\anonceId\"v\n" +
 	"\x11CheckNonceRequest\x12)\n" +
 	"\x10signed_challenge\x18\x01 \x01(\fR\x0fsignedChallenge\x12\x1b\n" +
 	"\tworker_id\x18\x02 \x01(\tR\bworkerId\x12\x19\n" +
